@@ -47,7 +47,7 @@
 
 ## 7. 문의
 
-[연락처 이메일]
+ehsheh@gmail.com
 
 ---
 
@@ -67,4 +67,4 @@ Quickhand is a Chrome extension that shows the keyboard shortcut for an action y
 
 **Your control:** view your records from the toolbar icon › View saved records, and delete them at any time with Delete all records. Removing the extension also removes its stored records.
 
-**Contact:** [contact email]
+**Contact:** ehsheh@gmail.com
