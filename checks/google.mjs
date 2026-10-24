@@ -88,6 +88,10 @@ if (want('gmail')) {
   await run('Gmail 보낸편지함', () => shown(page.locator('a[href$="#sent"]')).click(), { wait: 2500 });
   await run('Gmail 받은편지함', () => shown(page.locator('a[href$="#inbox"]')).click(), { wait: 2500 });
   await run('Gmail 편지쓰기', () => shown(page.locator('[role="button"]', { hasText: '편지쓰기' })).click(), { wait: 2500 });
+  // Gmail's "pause mobile notifications" offer can cover the compose toolbar;
+  // decline it ("취소") so nothing is granted.
+  const offer = page.locator('div', { hasText: /^기기를 사용하는 동안 모바일 알림/ }).last();
+  await offer.locator('xpath=ancestor-or-self::*[.//*[normalize-space()="취소"]][1]').getByText('취소', { exact: true }).first().click({ timeout: 3000 }).catch(() => {});
   // The formatting bar may be folded away behind the "Aa" (formatting options) button.
   const bold = page.locator('[role="dialog"] [data-tooltip^="굵게"]').filter({ visible: true });
   if (!(await bold.count())) await shown(page.locator('[role="dialog"] [data-tooltip="서식 지정 옵션"]')).click().catch(() => {});

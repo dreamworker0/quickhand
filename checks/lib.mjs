@@ -26,6 +26,8 @@ function watchCards() {
       const r = card.getBoundingClientRect();
       const hit = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
       entry.visible = hit === host && r.width > 0;
+      const img = root.querySelector('img');
+      entry.picture = img ? img.complete && img.naturalWidth > 0 : false;
       entry.inside = host.parentElement === document.documentElement ? 'page' : host.parentElement.id || host.parentElement.tagName;
     }, 1000); // after the slide-in and any layout change the click caused
   };
@@ -63,7 +65,15 @@ export async function launch({ headless = true } = {}) {
     // first message wakes it.
     const waiting = context.waitForEvent('serviceworker', { predicate: isOurs, timeout: 15000 }).catch(() => null);
     const popup = await context.newPage();
-    await popup.goto(`chrome-extension://${extensionId}/src/popup/popup.html`);
+    // Right after loading, Chrome may still refuse the page for a moment.
+    for (let i = 0; i < 5; i++) {
+      try {
+        await popup.goto(`chrome-extension://${extensionId}/src/popup/popup.html`);
+        break;
+      } catch (e) {
+        await popup.waitForTimeout(1000);
+      }
+    }
     worker = (await waiting) || context.serviceWorkers().find(isOurs);
     await popup.close();
   }
@@ -112,6 +122,7 @@ export async function check(page, worker, name, step, { wait = 1500 } = {}) {
     card: cards.length ? cards[cards.length - 1].text : null,
     visible: cards.length ? cards[cards.length - 1].visible : null,
     inside: cards.length ? cards[cards.length - 1].inside : null,
+    picture: cards.length ? cards[cards.length - 1].picture : null,
     error,
   };
   const shot = path.join(RESULTS, name.replace(/[^\w가-힣]+/g, '_') + '.png');
