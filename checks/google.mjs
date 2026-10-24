@@ -104,6 +104,37 @@ if (want('gmail')) {
   console.log('NEWEST DRAFTS (dates):', JSON.stringify(drafts));
 }
 
+if (want('calendar')) {
+  // Only controls that move around or open and close things; nothing is saved.
+  await page.goto('https://calendar.google.com/calendar/u/0/r/week', { waitUntil: 'domcontentloaded' });
+  const header = page.locator('[role="banner"], header').first();
+  await header.locator('[jsname="P6mm8"]').first().waitFor({ timeout: 60000 });
+  await page.waitForTimeout(2000);
+  await run('캘린더 다음 기간', () => shown(header.locator('[jsname="OCpkoe"]')).click());
+  await run('캘린더 이전 기간', () => shown(header.locator('[jsname="VfNHU"]')).click());
+  await run('캘린더 오늘', () => shown(header.locator('[jsname="P6mm8"]')).click());
+  await run('캘린더 보기 → 월', async () => {
+    await shown(header.locator('button[aria-haspopup], [role="button"][aria-haspopup]').filter({ hasText: /^\s*주\s*$|주\s*▼|^주/ })).click();
+    await shown(page.locator('[role="menuitem"], [role="menuitemradio"]', { hasText: '월' })).click();
+  });
+  await run('캘린더 보기 → 주', async () => {
+    await shown(header.locator('button[aria-haspopup], [role="button"][aria-haspopup]').filter({ hasText: /월/ })).click();
+    await shown(page.locator('[role="menuitem"], [role="menuitemradio"]', { hasText: '주' })).click();
+  });
+  await run('캘린더 검색', () => shown(header.locator('[aria-label="검색"]')).click());
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(800);
+  await run('캘린더 만들기 (열고 닫기)', () => shown(page.locator('[jsname="todz4c"]')).click());
+  await page.keyboard.press('Escape');
+  await page.keyboard.press('Escape');
+  await run('캘린더 C 키', () => page.keyboard.press('c'));
+  // "C" opens the full new-event editor; leave it for the week view so nothing is saved.
+  await page.goto('https://calendar.google.com/calendar/u/0/r/week', { waitUntil: 'domcontentloaded' });
+  await page.waitForTimeout(3000);
+  const left = await page.evaluate(() => (document.querySelector('[role="main"]') || document.body).innerText);
+  console.log('untitled events this week:', (left.match(/제목 없음|No title/g) || []).length);
+}
+
 fs.writeFileSync(path.join(RESULTS, 'google.json'), JSON.stringify({ docUrl, results }, null, 2));
 console.log('DOC', docUrl);
 await context.close();

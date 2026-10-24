@@ -99,8 +99,10 @@ cd ../checks
 npm install                 # 처음 한 번 (Playwright)
 node youtube.mjs --headed   # 유튜브 일반 영상·쇼츠 (로그인 필요 없음)
 node login.mjs              # 구글 로그인 창: 로그인한 뒤 창을 닫기
-node google.mjs             # 문서·드라이브·Gmail (docs / drive / gmail 중 하나만 지정 가능)
+node google.mjs             # 문서·드라이브·Gmail·캘린더 (docs / drive / gmail / calendar 중 일부만 지정 가능)
 ```
 
 `google.mjs`는 "손빠르미 점검용 (지워도 됨)" 문서를 새로 만들어 그 문서만 고치고, Gmail에서는 메일을 바꾸지 않는 버튼만 누릅니다.
+캘린더에서는 이동·보기 전환·검색만 하고, 새 일정 창은 저장하지 않고 빠져나옵니다(끝에 이번 주 '제목 없음' 일정이 0개인지 확인).
+로그인 창의 크롬은 창을 닫은 뒤에도 뒤에서 실행 중일 수 있습니다. 점검용 크롬이 열리지 않으면(종료 코드 21) 그 크롬을 먼저 닫으세요.
 점검이 끝나면 `node cleanup.mjs`로 점검용 문서를 휴지통으로 옮기고 로그아웃한 뒤, `checks/.profile` 폴더를 지우면 로그인 정보가 남지 않습니다.
