@@ -1,0 +1,6 @@
+# Installed packages
+node_modules/
+
+# Real-site checks: browser profiles (may hold a Google sign-in) and screenshots
+checks/.profile*/
+checks/results/

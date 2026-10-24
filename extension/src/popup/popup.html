@@ -1,0 +1,96 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Quickhand</title>
+  <link rel="stylesheet" href="../ui/ui.css">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <header class="top">
+    <img src="../../assets/icons/icon-48.png" alt="" width="32" height="32">
+    <div class="who">
+      <h1 data-i18n="extShortName"></h1>
+      <p id="status" class="status"></p>
+    </div>
+    <button id="toggle" class="btn" type="button"></button>
+  </header>
+
+  <p id="tab-status" class="tab-status" role="status" hidden></p>
+
+  <section id="observing" class="notice" hidden>
+    <p id="observing-text"></p>
+    <button id="skip-observe" class="btn" type="button" data-i18n="popSkipObserve"></button>
+  </section>
+
+  <section class="block">
+    <h2 data-i18n="popToday"></h2>
+    <div class="stats">
+      <div class="stat"><span data-i18n="popMouse"></span><strong id="today-mouse">0</strong></div>
+      <div class="stat"><span data-i18n="popKeyboard"></span><strong id="today-key">0</strong></div>
+    </div>
+    <p class="private" data-i18n="privateNote"></p>
+  </section>
+
+  <section class="block">
+    <h2 data-i18n="popMissed"></h2>
+    <ul id="missed" class="list"></ul>
+    <p id="waiting" class="hint" hidden></p>
+  </section>
+
+  <section class="block">
+    <h2><span data-i18n="popLearned"></span> <span id="learned-count" class="count"></span></h2>
+    <div id="learned-sites" class="site-counts" role="tablist"></div>
+    <ul id="learned" class="list"></ul>
+    <button id="learned-more" class="btn more" type="button" hidden></button>
+  </section>
+
+  <details class="block log">
+    <summary data-i18n="popLog"></summary>
+    <p class="hint" data-i18n="popLogHint"></p>
+    <ul id="log" class="list log-list"></ul>
+  </details>
+
+  <details class="block settings">
+    <summary data-i18n="popSettings"></summary>
+
+    <h3 data-i18n="popStrength"></h3>
+    <div id="strengths"></div>
+
+    <h3 data-i18n="popPause"></h3>
+    <div class="row">
+      <button class="btn" type="button" data-pause="30" data-i18n="pause30"></button>
+      <button class="btn" type="button" data-pause="60" data-i18n="pause60"></button>
+      <button class="btn" type="button" data-pause="today" data-i18n="pauseToday"></button>
+    </div>
+    <p id="toggle-hint" class="hint"></p>
+
+    <h3 data-i18n="popSites"></h3>
+    <label class="switch"><input type="checkbox" data-site="youtube"><img class="site-icon" src="../../assets/sites/youtube.svg" alt=""><span data-i18n="siteYoutube"></span></label>
+    <label class="switch"><input type="checkbox" data-site="gmail"><img class="site-icon" src="../../assets/sites/gmail.svg" alt=""><span data-i18n="siteGmail"></span></label>
+    <label class="switch"><input type="checkbox" data-site="calendar"><img class="site-icon" src="../../assets/sites/calendar.svg" alt=""><span data-i18n="siteCalendar"></span></label>
+    <label class="switch"><input type="checkbox" data-site="drive"><img class="site-icon" src="../../assets/sites/drive.svg" alt=""><span data-i18n="siteDrive"></span></label>
+    <label class="switch"><input type="checkbox" data-site="docs"><img class="site-icon" src="../../assets/sites/docs.svg" alt=""><span data-i18n="siteDocs"></span></label>
+    <label class="switch"><input type="checkbox" data-site="sheets"><img class="site-icon" src="../../assets/sites/sheets.svg" alt=""><span data-i18n="siteSheets"></span></label>
+    <label class="switch"><input type="checkbox" data-site="slides"><img class="site-icon" src="../../assets/sites/slides.svg" alt=""><span data-i18n="siteSlides"></span></label>
+
+    <h3 data-i18n="popMuted"></h3>
+    <ul id="muted" class="list muted"></ul>
+  </details>
+
+  <details class="block records">
+    <summary data-i18n="popRecords"></summary>
+    <p class="hint" data-i18n="popRecordsHint"></p>
+    <table>
+      <thead><tr><th data-i18n="popColAction"></th><th data-i18n="popColMouse"></th><th data-i18n="popColKey"></th></tr></thead>
+      <tbody id="records"></tbody>
+    </table>
+    <button id="reset" class="btn danger" type="button" data-i18n="popReset"></button>
+  </details>
+
+  <script src="../core/keys.js"></script>
+  <script src="../ui/ui.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

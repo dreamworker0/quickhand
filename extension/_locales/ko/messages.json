@@ -1,0 +1,194 @@
+{
+  "extName": { "message": "손빠르미 – 단축키 코치" },
+  "extShortName": { "message": "손빠르미" },
+  "extDescription": { "message": "마우스로 한 동작에 단축키가 있으면 그 자리에서 살짝 알려 주는 단축키 코치예요." },
+  "cmdToggle": { "message": "알림 켜고 끄기" },
+
+  "cardTitle": { "message": "이 동작은 단축키가 있어요" },
+  "cardTry": { "message": "다음엔 키보드로 해 보세요!" },
+  "cardReminder": { "message": "요즘 다시 마우스로 하고 계셨네요." },
+  "cardOr": { "message": "또는" },
+  "cardThen": { "message": "다음" },
+  "cardGmailNote": { "message": "Gmail 설정 > 바로가기 키 사용을 켜야 작동해요." },
+  "cardClose": { "message": "닫기" },
+  "cardMute": { "message": "이 단축키는 그만 알리기" },
+  "cardMuted": { "message": "이 단축키는 이제 알리지 않을게요." },
+  "cardMutedHint": { "message": "툴바 아이콘 → 설정에서 다시 켤 수 있어요." },
+  "learnedTitle": { "message": "익혔어요!" },
+  "learnedText": { "message": "이제 이 단축키는 따로 알려 드리지 않을게요." },
+  "toastOn": { "message": "알림을 켰어요" },
+  "toastOff": { "message": "알림을 껐어요" },
+  "toastHintWin": { "message": "Alt+Shift+P로 다시 켜고 끌 수 있어요." },
+  "toastHintMac": { "message": "Option+Shift+P로 다시 켜고 끌 수 있어요." },
+
+  "ytPlayPause": { "message": "재생 / 일시정지" },
+  "ytMute": { "message": "음소거" },
+  "ytFullscreen": { "message": "전체 화면" },
+  "ytCaptions": { "message": "자막" },
+  "ytTheater": { "message": "극장 모드" },
+  "ytMiniplayer": { "message": "미니 플레이어" },
+  "ytNext": { "message": "다음 동영상" },
+  "ytSeek": { "message": "10초 뒤로 / 앞으로" },
+  "ytPrev": { "message": "이전 동영상 (재생목록)" },
+  "ytSpeed": { "message": "재생 속도 빠르게 / 느리게" },
+  "ytSearch": { "message": "검색창으로 이동" },
+  "ytShortsNext": { "message": "다음 쇼츠" },
+  "ytShortsPrev": { "message": "이전 쇼츠" },
+
+  "popStatusOn": { "message": "알림 켜짐" },
+  "popStatusOff": { "message": "알림 꺼짐" },
+  "popPausedUntil": {
+    "message": "$TIME$까지 쉬는 중",
+    "placeholders": { "time": { "content": "$1" } }
+  },
+  "tabWorking": {
+    "message": "이 탭: $SITE$에서 작동 중",
+    "placeholders": { "site": { "content": "$1" } }
+  },
+  "tabReload": { "message": "이 탭은 새로고침해야 작동해요." },
+  "tabReloadButton": { "message": "새로고침" },
+  "tabSiteOff": {
+    "message": "$SITE$ 알림은 설정에서 꺼 두었어요.",
+    "placeholders": { "site": { "content": "$1" } }
+  },
+  "tabUnsupported": { "message": "이 사이트는 아직 지원하지 않아요. 유튜브, Gmail, 구글 캘린더·드라이브·문서·스프레드시트·슬라이드에서 작동해요." },
+  "popTurnOn": { "message": "켜기" },
+  "popTurnOff": { "message": "끄기" },
+  "popObserving": {
+    "message": "처음에는 평소 습관을 지켜보기만 해요. $COUNT$번 더 지켜본 뒤 알려 드릴게요.",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "popSkipObserve": { "message": "바로 시작하기" },
+  "popToday": { "message": "오늘" },
+  "popMouse": { "message": "마우스로" },
+  "popKeyboard": { "message": "단축키로" },
+  "popTimes": {
+    "message": "$COUNT$번",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "popMissed": { "message": "오늘 마우스로 한 동작" },
+  "popMissedEmpty": { "message": "아직 없어요." },
+  "popWaiting": {
+    "message": "하루 상한을 넘겨 다음에 알려 드릴 단축키가 $COUNT$개 있어요.",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "popLearned": { "message": "익힌 단축키" },
+  "popLearnedEmpty": { "message": "아직 없어요. 단축키를 한 번 눌러 보면 여기에 모여요!" },
+  "popAll": { "message": "전체" },
+  "popLearnedMore": {
+    "message": "모두 보기 ($COUNT$개)",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "privateNote": { "message": "이 기록은 이 컴퓨터의 내 크롬에만 저장돼서 나만 볼 수 있어요. 기관이나 다른 사람에게 보내지 않아요." },
+  "colTitle": { "message": "익힌 단축키 모음" },
+  "colLead": { "message": "키보드로 써 본 단축키가 서비스별로 모여 있어요." },
+  "colTotal": {
+    "message": "모두 $COUNT$개",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "colBySite": { "message": "서비스별 개수" },
+  "colUses": {
+    "message": "단축키로 $COUNT$번 사용",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "popSettings": { "message": "설정" },
+  "popStrength": { "message": "알림 강도" },
+  "strengthGentle": { "message": "조금씩" },
+  "strengthNormal": { "message": "보통" },
+  "strengthActive": { "message": "적극적으로" },
+  "strengthGentleDesc": { "message": "같은 동작 5번째부터, 하루 새 단축키 2개까지" },
+  "strengthNormalDesc": { "message": "같은 동작 3번째부터, 하루 새 단축키 3개까지" },
+  "strengthActiveDesc": { "message": "단축키가 있는 동작이면 매번 알려 드려요" },
+  "popPause": { "message": "잠시 쉬기" },
+  "pause30": { "message": "30분" },
+  "pause60": { "message": "1시간" },
+  "pauseToday": { "message": "오늘 하루" },
+  "popResume": { "message": "다시 켜기" },
+  "popSites": { "message": "사이트별 알림" },
+  "siteYoutube": { "message": "유튜브" },
+  "siteGmail": { "message": "Gmail" },
+  "siteCalendar": { "message": "구글 캘린더" },
+  "siteDrive": { "message": "구글 드라이브" },
+  "siteDocs": { "message": "구글 문서" },
+  "siteSheets": { "message": "구글 스프레드시트" },
+  "siteSlides": { "message": "구글 슬라이드" },
+  "popLog": { "message": "알림이 안 떴나요? 최근 동작 보기" },
+  "popLogHint": { "message": "최근 동작 10개와, 알림을 띄우거나 띄우지 않은 이유예요." },
+  "popLogEmpty": { "message": "아직 기록된 동작이 없어요." },
+  "whyNew": { "message": "이 단축키를 처음 알려 드렸어요." },
+  "whyRepeat": { "message": "한 번 더 알려 드렸어요." },
+  "whyReminder": { "message": "다시 마우스로 하셔서 상기시켜 드렸어요." },
+  "whyKey": { "message": "단축키로 하셨어요." },
+  "whyLearnedNow": { "message": "단축키로 하셨어요. 이제 익힌 단축키예요!" },
+  "whyMuted": { "message": "'그만 알리기'한 단축키라 알리지 않았어요." },
+  "whySuppressed": { "message": "전체 화면이라 알림을 띄우지 않았어요." },
+  "whyPaused": { "message": "알림이 꺼져 있거나 쉬는 중이었어요." },
+  "whyObserving": {
+    "message": "처음에는 지켜보기만 해요. $COUNT$번 더 지켜본 뒤 알려 드려요.",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "whyLearned": { "message": "이미 단축키로 잘 쓰고 계셔서 알리지 않았어요." },
+  "whyRepeatWait": {
+    "message": "이미 알려 드린 단축키예요. $TIME$부터 다시 알려 드릴 수 있어요.",
+    "placeholders": { "time": { "content": "$1" } }
+  },
+  "whyBelowThreshold": {
+    "message": "같은 동작 $NEED$번째부터 알려 드려요. (지금 $COUNT$번째)",
+    "placeholders": { "need": { "content": "$1" }, "count": { "content": "$2" } }
+  },
+  "whyDailyCap": {
+    "message": "오늘 새 단축키 $COUNT$개를 이미 알려 드렸어요. 내일 알려 드릴게요.",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "whyGap": {
+    "message": "알림 사이에는 1분을 두어요. $TIME$ 이후에 다시 하시면 알려 드려요.",
+    "placeholders": { "time": { "content": "$1" } }
+  },
+  "whyNewWaiting": { "message": "아직 못 알려 드린 새 단축키에 먼저 차례를 줬어요." },
+  "tabMissing": {
+    "message": "이 탭: $SITE$에서 작동 중이지만 일부 버튼을 찾지 못했어요 ($NAMES$). 사이트 화면이 바뀌었을 수 있어요.",
+    "placeholders": { "site": { "content": "$1" }, "names": { "content": "$2" } }
+  },
+  "popMuted": { "message": "알리지 않는 단축키" },
+  "popMutedEmpty": { "message": "없어요. 알림 카드에서 '그만 알리기'를 누르면 여기에 모여요." },
+  "popUnmute": { "message": "다시 알리기" },
+  "popUnmuteLabel": {
+    "message": "$NAME$ 다시 알리기",
+    "placeholders": { "name": { "content": "$1" } }
+  },
+  "popRecords": { "message": "저장된 기록 보기" },
+  "popRecordsHint": { "message": "동작 이름과 횟수만 이 기기에 저장돼요. 입력한 글자나 문서 내용은 저장하지 않아요." },
+  "popRecordsEmpty": { "message": "저장된 기록이 없어요." },
+  "popColAction": { "message": "동작" },
+  "popColMouse": { "message": "마우스" },
+  "popColKey": { "message": "단축키" },
+  "popReset": { "message": "기록 모두 지우기" },
+  "popResetConfirm": { "message": "저장된 기록을 모두 지울까요? 되돌릴 수 없어요." },
+  "popToggleWin": { "message": "알림 켜고 끄기: Alt+Shift+P" },
+  "popToggleMac": { "message": "알림 켜고 끄기: Option+Shift+P" },
+
+  "welTitle": { "message": "안녕하세요, 손빠르미예요!" },
+  "welLead": { "message": "마우스로 한 동작에 단축키가 있으면, 화면 오른쪽 아래에 살짝 알려 드려요." },
+  "welHowTitle": { "message": "이렇게 도와드려요" },
+  "welHow1": { "message": "처음 30번은 평소 습관을 지켜보기만 해요. 이미 아는 단축키는 알려 드리지 않아요." },
+  "welHow2": { "message": "같은 동작을 마우스로 여러 번 하면, 그때 단축키를 알려 드려요." },
+  "welHow3": { "message": "단축키를 손에 익히면 더 이상 알려 드리지 않아요." },
+  "welRecTitle": { "message": "기록하는 것" },
+  "welRec1": { "message": "동작 이름 (예: 굵게, 재생)" },
+  "welRec2": { "message": "마우스로 했는지, 단축키로 했는지" },
+  "welRec3": { "message": "횟수와 날짜" },
+  "welNoRecTitle": { "message": "기록하지 않는 것" },
+  "welNoRec1": { "message": "입력한 글자" },
+  "welNoRec2": { "message": "문서·동영상 내용" },
+  "welNoRec3": { "message": "방문한 주소" },
+  "welStore": { "message": "기록은 이 기기에만 저장되고 어디로도 보내지 않아요. 설정만 크롬 동기화로 다른 기기와 맞춰져요. 언제든 아이콘을 눌러 기록을 보거나 지울 수 있어요." },
+  "welStrength": { "message": "알림 강도를 골라 주세요" },
+  "welSites": { "message": "지금은 유튜브, Gmail, 구글 캘린더·드라이브·문서·스프레드시트·슬라이드에서 작동해요." },
+  "welToggleWin": { "message": "알림은 Alt+Shift+P로 언제든 켜고 끌 수 있어요." },
+  "welToggleMac": { "message": "알림은 Option+Shift+P로 언제든 켜고 끌 수 있어요." },
+  "welStart": { "message": "시작하기" },
+  "welDoneTitle": { "message": "준비됐어요!" },
+  "welDone": { "message": "이제 유튜브나 Gmail, 구글 캘린더·드라이브·문서에서 평소처럼 일해 보세요." },
+  "welClose": { "message": "이 탭 닫기" },
+  "welError": { "message": "설정을 저장하지 못했어요. chrome://extensions에서 손빠르미를 새로고침한 뒤 다시 눌러 주세요." }
+}

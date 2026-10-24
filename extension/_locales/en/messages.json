@@ -1,0 +1,194 @@
+{
+  "extName": { "message": "Quickhand – Shortcut Coach" },
+  "extShortName": { "message": "Quickhand" },
+  "extDescription": { "message": "A friendly shortcut coach that gently shows the keyboard shortcut when you do something with the mouse." },
+  "cmdToggle": { "message": "Turn hints on or off" },
+
+  "cardTitle": { "message": "There's a shortcut for this" },
+  "cardTry": { "message": "Try the keyboard next time!" },
+  "cardReminder": { "message": "Looks like you're back to the mouse." },
+  "cardOr": { "message": "or" },
+  "cardThen": { "message": "then" },
+  "cardGmailNote": { "message": "Turn on Settings > Keyboard shortcuts in Gmail first." },
+  "cardClose": { "message": "Close" },
+  "cardMute": { "message": "Stop hinting this shortcut" },
+  "cardMuted": { "message": "I won't hint this shortcut anymore." },
+  "cardMutedHint": { "message": "Turn it back on from the toolbar icon → Settings." },
+  "learnedTitle": { "message": "You've got it!" },
+  "learnedText": { "message": "I won't remind you about this one anymore." },
+  "toastOn": { "message": "Hints are on" },
+  "toastOff": { "message": "Hints are off" },
+  "toastHintWin": { "message": "Press Alt+Shift+P to turn them on or off." },
+  "toastHintMac": { "message": "Press Option+Shift+P to turn them on or off." },
+
+  "ytPlayPause": { "message": "Play / pause" },
+  "ytMute": { "message": "Mute" },
+  "ytFullscreen": { "message": "Full screen" },
+  "ytCaptions": { "message": "Captions" },
+  "ytTheater": { "message": "Theater mode" },
+  "ytMiniplayer": { "message": "Miniplayer" },
+  "ytNext": { "message": "Next video" },
+  "ytSeek": { "message": "Back / forward 10 seconds" },
+  "ytPrev": { "message": "Previous video (playlist)" },
+  "ytSpeed": { "message": "Playback speed up / down" },
+  "ytSearch": { "message": "Go to search" },
+  "ytShortsNext": { "message": "Next Short" },
+  "ytShortsPrev": { "message": "Previous Short" },
+
+  "popStatusOn": { "message": "Hints on" },
+  "popStatusOff": { "message": "Hints off" },
+  "popPausedUntil": {
+    "message": "Resting until $TIME$",
+    "placeholders": { "time": { "content": "$1" } }
+  },
+  "tabWorking": {
+    "message": "This tab: watching $SITE$",
+    "placeholders": { "site": { "content": "$1" } }
+  },
+  "tabReload": { "message": "Reload this tab to start." },
+  "tabReloadButton": { "message": "Reload" },
+  "tabSiteOff": {
+    "message": "Hints for $SITE$ are turned off in settings.",
+    "placeholders": { "site": { "content": "$1" } }
+  },
+  "tabUnsupported": { "message": "This site isn't supported yet. I work on YouTube, Gmail and Google Calendar, Drive, Docs, Sheets and Slides." },
+  "popTurnOn": { "message": "Turn on" },
+  "popTurnOff": { "message": "Turn off" },
+  "popObserving": {
+    "message": "At first I only watch your usual habits. I'll start after $COUNT$ more actions.",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "popSkipObserve": { "message": "Start now" },
+  "popToday": { "message": "Today" },
+  "popMouse": { "message": "With the mouse" },
+  "popKeyboard": { "message": "With shortcuts" },
+  "popTimes": {
+    "message": "$COUNT$×",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "popMissed": { "message": "Done with the mouse today" },
+  "popMissedEmpty": { "message": "Nothing yet." },
+  "popWaiting": {
+    "message": "$COUNT$ more shortcuts are waiting for another day.",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "popLearned": { "message": "Shortcuts learned" },
+  "popLearnedEmpty": { "message": "None yet. Press a shortcut once and it shows up here!" },
+  "popAll": { "message": "All" },
+  "popLearnedMore": {
+    "message": "See all ($COUNT$)",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "privateNote": { "message": "These records are saved only in your Chrome on this computer, so only you can see them. Nothing is sent to your organization or anyone else." },
+  "colTitle": { "message": "Your shortcut collection" },
+  "colLead": { "message": "Every shortcut you've pressed, grouped by service." },
+  "colTotal": {
+    "message": "$COUNT$ in all",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "colBySite": { "message": "Count by service" },
+  "colUses": {
+    "message": "Used $COUNT$× with the keyboard",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "popSettings": { "message": "Settings" },
+  "popStrength": { "message": "Hint level" },
+  "strengthGentle": { "message": "Gentle" },
+  "strengthNormal": { "message": "Normal" },
+  "strengthActive": { "message": "Active" },
+  "strengthGentleDesc": { "message": "From the 5th time, up to 2 new shortcuts a day" },
+  "strengthNormalDesc": { "message": "From the 3rd time, up to 3 new shortcuts a day" },
+  "strengthActiveDesc": { "message": "Every time an action has a shortcut" },
+  "popPause": { "message": "Take a break" },
+  "pause30": { "message": "30 min" },
+  "pause60": { "message": "1 hour" },
+  "pauseToday": { "message": "Today" },
+  "popResume": { "message": "Resume" },
+  "popSites": { "message": "Hints by site" },
+  "siteYoutube": { "message": "YouTube" },
+  "siteGmail": { "message": "Gmail" },
+  "siteCalendar": { "message": "Google Calendar" },
+  "siteDrive": { "message": "Google Drive" },
+  "siteDocs": { "message": "Google Docs" },
+  "siteSheets": { "message": "Google Sheets" },
+  "siteSlides": { "message": "Google Slides" },
+  "popLog": { "message": "No hint? See recent actions" },
+  "popLogHint": { "message": "Your last 10 actions, and why a hint did or didn't show." },
+  "popLogEmpty": { "message": "No actions recorded yet." },
+  "whyNew": { "message": "Hinted this shortcut for the first time." },
+  "whyRepeat": { "message": "Hinted it once more." },
+  "whyReminder": { "message": "You went back to the mouse, so I reminded you." },
+  "whyKey": { "message": "You used the shortcut." },
+  "whyLearnedNow": { "message": "You used the shortcut. It's learned now!" },
+  "whyMuted": { "message": "You stopped hints for this shortcut." },
+  "whySuppressed": { "message": "No hint in full screen." },
+  "whyPaused": { "message": "Hints were off or paused." },
+  "whyObserving": {
+    "message": "Just watching at first. Hints start after $COUNT$ more actions.",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "whyLearned": { "message": "You already use this shortcut, so no hint." },
+  "whyRepeatWait": {
+    "message": "Already hinted. It can come up again from $TIME$.",
+    "placeholders": { "time": { "content": "$1" } }
+  },
+  "whyBelowThreshold": {
+    "message": "Hints start at use number $NEED$ (this was number $COUNT$).",
+    "placeholders": { "need": { "content": "$1" }, "count": { "content": "$2" } }
+  },
+  "whyDailyCap": {
+    "message": "Already hinted $COUNT$ new shortcuts today. More tomorrow.",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "whyGap": {
+    "message": "Hints are at least a minute apart. Try again after $TIME$.",
+    "placeholders": { "time": { "content": "$1" } }
+  },
+  "whyNewWaiting": { "message": "Gave a waiting new shortcut its turn first." },
+  "tabMissing": {
+    "message": "This tab: working on $SITE$, but some buttons weren't found ($NAMES$). The site may have changed.",
+    "placeholders": { "site": { "content": "$1" }, "names": { "content": "$2" } }
+  },
+  "popMuted": { "message": "Muted shortcuts" },
+  "popMutedEmpty": { "message": "None. Shortcuts you stop from a hint card show up here." },
+  "popUnmute": { "message": "Hint again" },
+  "popUnmuteLabel": {
+    "message": "Hint $NAME$ again",
+    "placeholders": { "name": { "content": "$1" } }
+  },
+  "popRecords": { "message": "View saved records" },
+  "popRecordsHint": { "message": "Only action names and counts are saved on this device. Nothing you type and no document content is saved." },
+  "popRecordsEmpty": { "message": "No records yet." },
+  "popColAction": { "message": "Action" },
+  "popColMouse": { "message": "Mouse" },
+  "popColKey": { "message": "Shortcut" },
+  "popReset": { "message": "Delete all records" },
+  "popResetConfirm": { "message": "Delete all saved records? This can't be undone." },
+  "popToggleWin": { "message": "Turn hints on or off: Alt+Shift+P" },
+  "popToggleMac": { "message": "Turn hints on or off: Option+Shift+P" },
+
+  "welTitle": { "message": "Hi, I'm Quickhand!" },
+  "welLead": { "message": "When something you do with the mouse has a shortcut, I'll show it in the bottom-right corner." },
+  "welHowTitle": { "message": "How I help" },
+  "welHow1": { "message": "For the first 30 actions I only watch. I skip shortcuts you already know." },
+  "welHow2": { "message": "When you repeat an action with the mouse, I show its shortcut." },
+  "welHow3": { "message": "Once a shortcut is second nature, I stop mentioning it." },
+  "welRecTitle": { "message": "What I record" },
+  "welRec1": { "message": "Action names (e.g. Bold, Play)" },
+  "welRec2": { "message": "Whether you used the mouse or a shortcut" },
+  "welRec3": { "message": "Counts and dates" },
+  "welNoRecTitle": { "message": "What I never record" },
+  "welNoRec1": { "message": "What you type" },
+  "welNoRec2": { "message": "Document or video content" },
+  "welNoRec3": { "message": "Addresses you visit" },
+  "welStore": { "message": "Records stay on this device and are never sent anywhere. Only settings sync across your devices through Chrome sync. Click the icon any time to view or delete records." },
+  "welStrength": { "message": "Choose a hint level" },
+  "welSites": { "message": "For now I work on YouTube, Gmail and Google Calendar, Drive, Docs, Sheets and Slides." },
+  "welToggleWin": { "message": "Press Alt+Shift+P any time to turn hints on or off." },
+  "welToggleMac": { "message": "Press Option+Shift+P any time to turn hints on or off." },
+  "welStart": { "message": "Get started" },
+  "welDoneTitle": { "message": "All set!" },
+  "welDone": { "message": "Work on YouTube, Gmail or Google Calendar, Drive and Docs as usual." },
+  "welClose": { "message": "Close this tab" },
+  "welError": { "message": "Couldn't save your settings. Reload Quickhand at chrome://extensions and try again." }
+}

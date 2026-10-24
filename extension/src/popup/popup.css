@@ -1,0 +1,135 @@
+body { width: 360px; }
+
+.top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--line);
+}
+
+.who { flex: 1; min-width: 0; }
+.who h1 { font-size: 16px; }
+.status { font-size: 12px; color: var(--quiet); }
+.status.on::before { content: "● "; color: var(--accent); }
+
+.tab-status {
+  margin: 12px 16px 0;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: var(--panel);
+  color: var(--quiet);
+  font-size: 13px;
+}
+
+.tab-status.ok { color: var(--ink); }
+.tab-status.ok::before { content: "● "; color: var(--accent); }
+
+.tab-status.warn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  background: var(--warn-bg);
+  color: var(--warn-ink);
+}
+
+.tab-status.warn .btn { flex: none; }
+
+.notice {
+  margin: 12px 16px 0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--warn-bg);
+  color: var(--warn-ink);
+  font-size: 13px;
+}
+
+.notice .btn { margin-top: 8px; }
+
+.block { padding: 12px 16px; }
+.block + .block { border-top: 1px solid var(--line); }
+
+.stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: var(--panel);
+  font-size: 12px;
+  color: var(--quiet);
+}
+
+.stat strong { font-size: 20px; color: var(--ink); }
+
+.list { list-style: none; margin: 0; padding: 0; }
+
+/* icon · name (count) · keys, kept on one line */
+.list li {
+  display: grid;
+  grid-template-columns: 16px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+}
+
+.list li + li { border-top: 1px dashed var(--line); }
+.list li.empty { display: block; color: var(--quiet); font-size: 13px; }
+.list .name { display: flex; align-items: baseline; gap: 6px; min-width: 0; }
+.list .label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.list .times { flex: none; color: var(--quiet); font-size: 12px; }
+.list .keys { flex-wrap: nowrap; white-space: nowrap; gap: 2px; }
+.list .keys .sep { font-size: 11px; padding: 0 1px; }
+.list kbd { font-size: 11px; padding: 3px 5px; border-bottom-width: 2px; }
+
+/* recent actions: icon · name (time) · keys, then the reason on its own line */
+.log-list { margin-top: 6px; }
+.log-list .why { grid-column: 2 / -1; margin-top: -4px; font-size: 12px; color: var(--quiet); }
+.log-list li.shown .why { color: var(--accent); font-weight: 600; }
+.log-list li.by-key .why { color: var(--ink); }
+
+/* muted shortcuts: icon · name · keys · "hint again" */
+.list.muted li { grid-template-columns: 16px minmax(0, 1fr) auto auto; }
+.btn.small { padding: 2px 8px; font-size: 12px; white-space: nowrap; }
+
+.site-icon { width: 16px; height: 16px; display: block; }
+
+.site-counts { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 4px; }
+.site-counts:empty { display: none; }
+.site-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 24px;
+  padding: 2px 9px 2px 5px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: var(--panel);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.site-count:first-child { padding-left: 9px; }
+.site-count:hover { border-color: var(--line); }
+.site-count[aria-selected="true"] { border-color: var(--accent); background: var(--bg); color: var(--accent); }
+
+.btn.more { display: block; width: 100%; margin-top: 8px; font-size: 13px; }
+td .site-icon { display: inline-block; margin-right: 6px; vertical-align: -3px; }
+
+.count { color: var(--accent); }
+.hint { margin-top: 6px; font-size: 12px; color: var(--quiet); }
+
+summary { cursor: pointer; font-weight: 600; }
+.settings h3 { margin: 14px 0 6px; font-size: 12px; color: var(--quiet); font-weight: 600; }
+.row { display: flex; gap: 6px; flex-wrap: wrap; }
+
+.switch { display: flex; align-items: center; gap: 8px; padding: 3px 0; cursor: pointer; }
+.switch input { accent-color: var(--accent); }
+
+table { width: 100%; margin: 8px 0; border-collapse: collapse; font-size: 12px; }
+th, td { padding: 4px 2px; text-align: left; border-bottom: 1px solid var(--line); }
+th:not(:first-child), td:not(:first-child) { text-align: right; width: 56px; }
+.btn.danger { color: #b3261e; }
+@media (prefers-color-scheme: dark) { .btn.danger { color: #f2b8b5; } }

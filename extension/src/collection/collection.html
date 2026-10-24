@@ -1,0 +1,32 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Quickhand</title>
+  <link rel="stylesheet" href="../ui/ui.css">
+  <link rel="stylesheet" href="collection.css">
+</head>
+<body>
+  <main>
+    <header class="hero">
+      <img src="../../assets/mascot/cheer.png" alt="" width="96" height="96">
+      <div>
+        <h1 data-i18n="colTitle"></h1>
+        <p class="lead" data-i18n="colLead"></p>
+        <p id="total" class="total"></p>
+      </div>
+    </header>
+
+    <p class="private" data-i18n="privateNote"></p>
+
+    <nav id="site-counts" class="site-counts" aria-label=""></nav>
+
+    <p id="empty" class="empty" hidden data-i18n="popLearnedEmpty"></p>
+    <div id="sections"></div>
+  </main>
+
+  <script src="../ui/ui.js"></script>
+  <script src="collection.js"></script>
+</body>
+</html>

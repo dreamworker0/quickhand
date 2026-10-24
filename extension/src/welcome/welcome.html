@@ -1,0 +1,73 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Quickhand</title>
+  <link rel="stylesheet" href="../ui/ui.css">
+  <link rel="stylesheet" href="welcome.css">
+</head>
+<body>
+  <main>
+    <header class="hero">
+      <img src="../../assets/mascot/main.png" alt="" width="128" height="128">
+      <div>
+        <h1 data-i18n="welTitle"></h1>
+        <p class="lead" data-i18n="welLead"></p>
+      </div>
+    </header>
+
+    <section>
+      <h2 data-i18n="welHowTitle"></h2>
+      <ol>
+        <li data-i18n="welHow1"></li>
+        <li data-i18n="welHow2"></li>
+        <li data-i18n="welHow3"></li>
+      </ol>
+    </section>
+
+    <section class="privacy">
+      <div>
+        <h2 data-i18n="welRecTitle"></h2>
+        <ul>
+          <li data-i18n="welRec1"></li>
+          <li data-i18n="welRec2"></li>
+          <li data-i18n="welRec3"></li>
+        </ul>
+      </div>
+      <div>
+        <h2 data-i18n="welNoRecTitle"></h2>
+        <ul class="no">
+          <li data-i18n="welNoRec1"></li>
+          <li data-i18n="welNoRec2"></li>
+          <li data-i18n="welNoRec3"></li>
+        </ul>
+      </div>
+      <p class="store" data-i18n="welStore"></p>
+    </section>
+
+    <section>
+      <h2 data-i18n="welStrength"></h2>
+      <div id="strengths"></div>
+      <p class="hint" data-i18n="welSites"></p>
+      <p id="toggle-hint" class="hint"></p>
+    </section>
+
+    <footer>
+      <button id="start" class="btn primary" type="button" data-i18n="welStart"></button>
+      <p id="error" class="error" role="alert" hidden data-i18n="welError"></p>
+      <div id="done" class="done" role="status" tabindex="-1" hidden>
+        <img src="../../assets/mascot/cheer.png" alt="" width="72" height="72">
+        <div>
+          <p class="done-title" data-i18n="welDoneTitle"></p>
+          <p data-i18n="welDone"></p>
+          <button id="close" class="btn primary" type="button" data-i18n="welClose"></button>
+        </div>
+      </div>
+    </footer>
+  </main>
+
+  <script src="../core/keys.js"></script>
+  <script src="welcome.js"></script>
+</body>
+</html>
