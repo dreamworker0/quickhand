@@ -45,6 +45,77 @@ if (want('docs')) {
   await run('문서 Ctrl+B 키', () => page.keyboard.press('Control+B'));
 }
 
+// A new Sheets or Slides file named TITLE, so only test files are changed.
+async function newEditorFile(url) {
+  await page.goto(url, { waitUntil: 'domcontentloaded' });
+  await page.waitForSelector('.docs-title-input', { timeout: 60000 });
+  await page.waitForTimeout(3000);
+  await page.locator('.docs-title-input').click();
+  await page.keyboard.press('Control+A');
+  await page.keyboard.type(TITLE);
+  await page.keyboard.press('Enter');
+  await page.waitForTimeout(1500);
+}
+const tip = (start) => shown(page.locator(`[data-tooltip^="${start}"]`));
+const menuItem = (name) => shown(page.locator('.goog-menuitem, [role="menuitem"]', { hasText: name }));
+// Menubar entries by their ids, which stay the same in every UI language.
+const MENUS = { 수정: '#docs-edit-menu', 보기: '#docs-view-menu', 슬라이드: '#punch-slide-menu' };
+const topMenu = (name) => shown(page.locator(MENUS[name]));
+
+if (want('sheets')) {
+  // Wider than the other checks: at 1280px Sheets folds italic and more into its overflow menu.
+  await page.setViewportSize({ width: 1600, height: 900 });
+  await newEditorFile('https://sheets.new');
+  // Type into A1, then select it again for the formatting buttons.
+  const grid = page.locator('#waffle-grid-container');
+  const box = await grid.boundingBox();
+  await page.mouse.click(box.x + 80, box.y + 30);
+  await page.keyboard.type('손빠르미 점검');
+  await page.keyboard.press('Enter');
+  await page.keyboard.press('ArrowUp');
+  await run('시트 굵게 버튼', () => tip('굵게').click());
+  await run('시트 기울임꼴 버튼', () => tip('기울임').click());
+  await run('시트 실행취소 버튼', () => tip('실행취소').click());
+  await run('시트 수정 메뉴 → 찾기 및 바꾸기', async () => {
+    await topMenu('수정').click();
+    await menuItem('찾기 및 바꾸기').click();
+  });
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(800);
+  // Shown with no shortcut on screen: matched by name (Shift+F11).
+  await run('시트 시트 추가 버튼', () => shown(page.locator('.docs-sheet-add-button, [aria-label="시트 추가"]')).click());
+  // Clicking another sheet's tab switches sheets (Alt+↓ / Alt+↑).
+  await run('시트 다른 시트 탭 클릭', () => shown(page.locator('.docs-sheet-tab:not(.docs-sheet-active-tab)')).click());
+  await run('시트 Ctrl+B 키', async () => {
+    await page.mouse.click(box.x + 80, box.y + 30);
+    await page.keyboard.press('Control+B');
+  });
+}
+
+if (want('slides')) {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await newEditorFile('https://slides.new');
+  await page.keyboard.press('Escape'); // a theme panel may open for a new presentation
+  await run('슬라이드 새 슬라이드 버튼', () => tip('새 슬라이드').click());
+  await run('슬라이드 실행취소 버튼', () => tip('실행취소').click());
+  // Shown with no shortcut on screen: matched by name (Ctrl+D).
+  await run('슬라이드 슬라이드 메뉴 → 슬라이드 복사', async () => {
+    await topMenu('슬라이드').click();
+    await menuItem(/슬라이드 (복사|복제)/).click();
+  });
+  await page.keyboard.press('Escape'); // close any menu left open
+  // Shown with no shortcut on screen: matched by name (Ctrl+Alt+Shift+S).
+  await run('슬라이드 보기 메뉴 → 발표자 노트', async () => {
+    await topMenu('보기').click();
+    await menuItem('발표자 노트').click();
+  });
+  await run('슬라이드 Ctrl+M 키', async () => {
+    await page.keyboard.press('Escape');
+    await page.locator('.punch-filmstrip-thumbnail, [class*="filmstrip"]').first().click().catch(() => {});
+    await page.keyboard.press('Control+M');
+  });
+}
+
 if (want('drive')) {
   await page.goto('https://drive.google.com/drive/recent', { waitUntil: 'domcontentloaded' });
   const file = shown(page.locator('[role="row"], [role="gridcell"], [data-id]', { hasText: TITLE }));

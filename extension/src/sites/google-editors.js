@@ -123,7 +123,7 @@
       names: {
         'mod+m': ['새 슬라이드', 'New slide'],
         'mod+f5': ['슬라이드쇼 시작', 'Start slideshow'],
-        'mod+d': ['복제', 'Duplicate'],
+        'mod+d': ['슬라이드 복사', 'Duplicate slide'],
         'mod+alt+g': ['그룹화', 'Group'],
         'mod+alt+shift+g': ['그룹 해제', 'Ungroup'],
         'mod+shift+7': ['번호 매기기 목록', 'Numbered list'],
@@ -136,6 +136,8 @@
         'mod+.': ['윗첨자', 'Superscript'],
       },
       rules: [
+        // The Slide menu shows no key for this one ("슬라이드 복사" in Korean today).
+        [/^슬라이드 (복사|복제)$|^Duplicate slide$/i, 'Ctrl+D'],
         [/발표자 노트|speaker notes/i, 'Ctrl+Alt+Shift+S'],
         [/^애니메이션|^Animation|^Motion$|^모션$/i, 'Ctrl+Alt+Shift+B'],
       ],
