@@ -1,5 +1,6 @@
 // Moves every check file (docs, sheets, slides named TITLE) to the trash, one at
-// a time from the recent list, and signs the profile out only once none is left.
+// a time from the recent list, and signs the profile out only once none is left
+// (unless run with --keep-login).
 import { launch } from './lib.mjs';
 
 const TITLE = '손빠르미 점검용 (지워도 됨)';
@@ -34,7 +35,10 @@ await page.waitForSelector('[role="main"]', { timeout: 60000 });
 await page.waitForTimeout(5000);
 console.log('in trash:', await rows.count());
 
-if (left === 0) {
+// --keep-login: only tidy up the files and stay signed in for further checks.
+if (process.argv.includes('--keep-login')) {
+  console.log('kept signed in (--keep-login)');
+} else if (left === 0) {
   await page.goto('https://accounts.google.com/Logout', { waitUntil: 'domcontentloaded' });
   await page.waitForTimeout(3000);
   await page.goto('https://myaccount.google.com/', { waitUntil: 'domcontentloaded' });

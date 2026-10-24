@@ -51,6 +51,7 @@
 
   function onMouse(e) {
     if (stopped || e.button !== 0 || !e.isTrusted) return;
+    if (mouseEvent === 'click' && e.detail === 0) return; // keyboard activation of a button
     if (!alive()) return stop();
     const found = site.fromMouse(e, mac);
     if (found) send({ type: 'qh-mouse', action: toAction(found), suppress: !!document.fullscreenElement });
@@ -60,7 +61,9 @@
     if (stopped || !e.isTrusted || e.repeat) return;
     if (!alive()) return stop();
     const found = site.fromKey(e, mac);
-    if (found) send({ type: 'qh-key', action: toAction(found) });
+    // A site may need a moment to tell (Sheets' Shift+Space) and answer later.
+    if (found && typeof found.then === 'function') found.then((later) => later && send({ type: 'qh-key', action: toAction(later) }));
+    else if (found) send({ type: 'qh-key', action: toAction(found) });
   }
 
   window.addEventListener(mouseEvent, onMouse, true);

@@ -7,6 +7,7 @@
   'use strict';
   const QH = (globalThis.QH = globalThis.QH || {});
   const K = QH.keys;
+  const detected = new Map();
   const key = (k, mods) => K.combo(k, mods);
   const go = (k) => K.sequence(key('g'), key(k));
 
@@ -130,7 +131,10 @@
     // The element with the name is sometimes a wrapper of the one clicked.
     for (let depth = 0; control && depth < 4; depth++) {
       const found = describe(control, mac);
-      if (found) return found;
+      if (found) {
+        detected.set(found.id, found.label);
+        return found;
+      }
       control = control.parentElement ? control.parentElement.closest(CONTROL) : null;
     }
     return null;
@@ -141,14 +145,17 @@
 
   function fromKey(e, mac) {
     if (K.isModifierOnly(e)) return null;
+    if (K.isTextEntry(e, mac)) { nextKey.reset(); return null; }
     let c = K.fromEvent(e, mac);
-    if (!K.hasModifier(c) && K.isTyping(e)) return null; // plain letters in a text field are typing
+    if (!K.hasModifier(c) && K.isTyping(e)) { nextKey.reset(); return null; }
     c = nextKey(c, Date.now());
     if (!c) return null;
     const id = K.toId(c);
     if (byCombo[id]) return action(byCombo[id]);
     if (K.hasModifier(c) && !c.then) {
-      return { id: 'gmail:' + id, label: QH.names.pick(COMPOSE_NAMES[id]), fallbackLabel: true, combos: [c] };
+      const seen = detected.get('gmail:' + id);
+      const name = seen || QH.names.pick(COMPOSE_NAMES[id]);
+      return name ? { id: 'gmail:' + id, label: name, fallbackLabel: !seen, combos: [c] } : null;
     }
     return null;
   }

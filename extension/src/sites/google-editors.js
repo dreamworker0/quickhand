@@ -8,6 +8,14 @@
   'use strict';
   const QH = (globalThis.QH = globalThis.QH || {});
   const K = QH.keys;
+  const detected = new Map(); // Only page-discovered or named shortcuts may be recorded.
+  const SHEET_ROWS = '[1-9]\\d*(?:\\s*[-–—~:]\\s*[1-9]\\d*)?';
+  const SHEET_COLUMNS = '[A-Z]{1,3}(?:\\s*[-–—~:]\\s*[A-Z]{1,3})?';
+  // Korean context menus put the selection before the action: "F - I열 삭제".
+  const SHEET_RANGE_PREFIX = new RegExp(`^(?:${SHEET_COLUMNS}\\s*(?=열)|${SHEET_ROWS}\\s*(?=행))`, 'i');
+  const SHEET_DELETE = new RegExp(
+    `^(?:행(?: ${SHEET_ROWS})?|열(?: ${SHEET_COLUMNS})?) 삭제$|^Delete (?:rows?(?: ${SHEET_ROWS})?|columns?(?: ${SHEET_COLUMNS})?)$`, 'i'
+  );
 
   const CONTROL = [
     '.goog-menuitem', '[role="menuitem"]', '[role="menuitemcheckbox"]', '[role="menuitemradio"]',
@@ -93,12 +101,15 @@
         'alt+shift+4': ['왼쪽 테두리', 'Left border'],
         'alt+shift+6': ['테두리 지우기', 'Clear borders'],
         'alt+shift+7': ['바깥쪽 테두리', 'Outer border'],
+        'mod+space': ['열 선택', 'Select column'],
+        'ctrl+space': ['열 선택', 'Select column'], // Mac: Control+Space
+        'shift+space': ['행 선택', 'Select row'],
       },
       // Previous sheet counts as the same action as next sheet.
       keyAlias: { 'alt+arrowup': 'alt+arrowdown' },
       rules: [
         [/(행|열)( \d+개)? 삽입$|^Insert (\d+ )?(rows?|columns?)\b/i, 'Ctrl+Alt+='],
-        [/^(행|열)( \S+)? 삭제$|^Delete (rows?|columns?)\b/i, 'Ctrl+Alt+-'],
+        [SHEET_DELETE, 'Ctrl+Alt+-'],
         [/^행( \S+)? 숨기기$|^Hide rows?\b/i, 'Ctrl+Alt+9'],
         [/^열( \S+)? 숨기기$|^Hide columns?\b/i, 'Ctrl+Alt+0'],
         [/^시트 추가$|^Add sheet$/i, 'Shift+F11'],
@@ -167,7 +178,9 @@
       label = tip.label;
     }
     const combo = K.parse(shortcut, mac);
-    if (combo && K.hasModifier(combo) && label) {
+    // Function keys count with or without Shift (Sheets' Insert › Sheet is
+    // Shift+F11, Note is Shift+F2); a plain Shift+letter would just be typing.
+    if (combo && (K.hasModifier(combo) || /^f\d+$/.test(combo.key)) && label) {
       return { id: app.id + ':' + K.toId(combo), label, combos: [combo] };
     }
     return fromRules(app, control, mac);
@@ -183,8 +196,10 @@
         textOf(control)
     ).label;
     if (!text || text.length > 40) return null;
-    const rule = app.rules.concat(COMMON_RULES).find(([re]) => re.test(text));
-    return rule ? found(app, K.parse(rule[1], mac), text) : null;
+    const actionText = app.id === 'sheets' ? text.replace(SHEET_RANGE_PREFIX, '') : text;
+    const rule = app.rules.concat(COMMON_RULES).find(([re]) => re.test(actionText));
+    // These fallback strings use Windows Ctrl to mean the platform's primary modifier.
+    return rule ? found(app, K.parse(mac ? rule[1].replace(/Ctrl/g, 'Command') : rule[1], mac), text) : null;
   }
 
   // Sheets: clicking a sheet tab at the bottom switches sheets (Alt+↓ / Alt+↑).
@@ -192,15 +207,50 @@
   // active one; remember on mousedown whether it was another sheet.
   let pressedTab = null;
   let pressedTabWasActive = false;
+  // Sheets: a plain click on a column letter selects the column (Ctrl+Space, on
+  // Mac Control+Space), on a row number the row (Shift+Space). Where the press
+  // landed is taken at mousedown; a drag (resizing or moving) is not a select,
+  // and the top-left corner, where both strips meet, selects everything instead.
+  let pressedHeader = null;
   if (location.hostname === 'docs.google.com' && location.pathname.startsWith('/spreadsheets/')) {
     window.addEventListener(
       'mousedown',
       (e) => {
         pressedTab = e.target instanceof Element ? e.target.closest('.docs-sheet-tab') : null;
         pressedTabWasActive = !!pressedTab && pressedTab.classList.contains('docs-sheet-active-tab');
+        pressedHeader = e.button === 0 ? { kind: headerAt(e.clientX, e.clientY), x: e.clientX, y: e.clientY } : null;
       },
       true
     );
+  }
+
+  function headerAt(x, y) {
+    const hit = (sel) => [...document.querySelectorAll(sel)].some((el) => {
+      const r = el.getBoundingClientRect();
+      return r.width > 0 && r.height > 0 && x >= r.left && x < r.right && y >= r.top && y < r.bottom;
+    });
+    const column = hit('.column-headers-background');
+    const row = hit('.row-headers-background');
+    return column === row ? null : column ? 'column' : 'row';
+  }
+
+  function sheetHeader(app, e, mac) {
+    if (app.id !== 'sheets' || !pressedHeader || !pressedHeader.kind) return null;
+    const { kind, x, y } = pressedHeader;
+    pressedHeader = null;
+    if (Math.abs(e.clientX - x) > 4 || Math.abs(e.clientY - y) > 4) return null;
+    return found(app, kind === 'column' ? K.combo('space', mac ? { ctrl: true } : { mod: true }) : K.combo('space', { shift: true }));
+  }
+
+  // Shift+Space selects the row while cells are selected, but types a space in
+  // a cell being edited. Sheets sends the key to different elements depending on
+  // what was done before, so look at the result instead: a moment later the name
+  // box shows a whole row ("3:3") only if the row was selected.
+  function rowSelected() {
+    return new Promise((resolve) => setTimeout(() => {
+      const box = document.querySelector('#t-name-box, .waffle-name-box');
+      resolve(!!box && /^\d+:\d+$/.test(box.value || ''));
+    }, 200));
   }
 
   function sheetTab(app, el, mac) {
@@ -215,28 +265,36 @@
 
   function fromMouse(app, e, mac) {
     if (!(e.target instanceof Element)) return null;
-    const tab = sheetTab(app, e.target, mac);
+    const tab = sheetTab(app, e.target, mac) || sheetHeader(app, e, mac);
     if (tab) return tab;
     let el = e.target.closest(CONTROL);
     // The element with the tooltip is sometimes a wrapper of the one clicked.
     for (let depth = 0; el && depth < 4; depth++) {
       const result = describe(app, el, mac);
-      if (result) return result;
+      if (result) {
+        detected.set(result.id, result.label);
+        return result;
+      }
       el = el.parentElement ? el.parentElement.closest(CONTROL) : null;
     }
     return null;
   }
 
   function fromKey(app, e, mac) {
-    if (K.isModifierOnly(e)) return null;
+    if (K.isModifierOnly(e) || K.isTextEntry(e, mac)) return null;
     const combo = K.fromEvent(e, mac);
     const fnKey = /^f\d+$/.test(combo.key);
-    if (!(K.hasModifier(combo) || fnKey) || (combo.ctrl && combo.alt)) return null; // Ctrl+Alt is AltGr on some layouts
+    if (app.id === 'sheets' && K.toId(combo) === 'shift+space') {
+      // Answered a moment later (see rowSelected); content/main.js waits for it.
+      return rowSelected().then((yes) => (yes ? found(app, combo) : null));
+    }
+    if (!(K.hasModifier(combo) || fnKey)) return null;
     let id = K.toId(combo);
     if (app.keyAlias && app.keyAlias[id]) id = app.keyAlias[id];
-    const name = QH.names.pick(app.names[id] || COMMON_NAMES[id]);
-    if (fnKey && !name) return null; // only function keys that are app shortcuts
-    return { id: app.id + ':' + id, label: name, fallbackLabel: true, combos: [combo] };
+    const seen = detected.get(app.id + ':' + id);
+    const name = seen || QH.names.pick(app.names[id] || COMMON_NAMES[id]);
+    if (!name) return null;
+    return { id: app.id + ':' + id, label: name, fallbackLabel: !seen, combos: [combo] };
   }
 
   // Typing happens inside a same-origin iframe (docs-texteventtarget-iframe today),

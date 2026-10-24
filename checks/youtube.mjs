@@ -27,6 +27,17 @@ await run('영상 음소거 버튼', () => clickPlayer('.ytp-volume-icon, .ytp-m
 await run('영상 자막 버튼', () => clickPlayer('.ytp-subtitles-button'));
 await run('영상 영화관 모드 버튼', () => clickPlayer('.ytp-size-button'));
 await run('영상 K 키', () => page.keyboard.press('k'));
+await run('영상 볼륨 슬라이더', async () => {
+  await page.hover('#movie_player .ytp-mute-button');
+  await page.waitForTimeout(500);
+  const slider = await page.locator('#movie_player .ytp-volume-panel').boundingBox();
+  await page.mouse.click(slider.x + slider.width * 0.6, slider.y + slider.height / 2);
+});
+await run('영상 설명란 챕터 클릭', async () => {
+  await page.locator('#description-inline-expander, #expand').first().click().catch(() => {});
+  await page.waitForTimeout(1000);
+  await page.locator('ytd-macro-markers-list-item-renderer').filter({ visible: true }).nth(1).click();
+});
 await run('영상 전체 화면 버튼', async () => {
   await clickPlayer('.ytp-fullscreen-button');
   await page.waitForTimeout(300);

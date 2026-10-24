@@ -19,7 +19,7 @@
   const RULES = {
     observe: 30, // first actions after install are only watched
     window: 10, // recent uses kept per action
-    learnMinUses: 5,
+    learnMinUses: 10,
     learnRatio: 0.8,
     relapseRatio: 0.5,
     relapseGapMs: DAY,
@@ -52,6 +52,8 @@
   }
 
   function rollDay(state, now) {
+    // States without this field must still respect the gap after their last hint.
+    if (!Number.isFinite(state.lastNewAlertAt)) state.lastNewAlertAt = state.lastAlertAt || 0;
     const today = dayKey(now);
     if (state.day === today) return state;
     state.day = today;
@@ -136,6 +138,7 @@
     rollDay(state, now);
     const a = ensureAction(state, info);
     a.key++;
+    delete state.missedToday[a.id];
     if (!a.firstKeyAt) a.firstKeyAt = now;
     a.todayKey++;
     state.todayKey++;
@@ -210,13 +213,14 @@
       if (kind === 'new') waitingNew(state)[a.id] = now;
       return skip('gap', { waitMs: since + strength.gapMs - now });
     }
-    if (kind !== 'new' && hasWaitingNew(state, now)) return skip('new-waiting');
+    if (strength.gapMs > 0 && kind !== 'new' && hasWaitingNew(state, now)) return skip('new-waiting');
 
     a.lastAlertAt = now;
     state.lastAlertAt = now;
     if (kind === 'new') {
       state.lastNewAlertAt = now;
       a.introducedAt = now;
+      delete state.missedToday[a.id];
       state.newToday.push(a.id);
       delete waitingNew(state)[a.id];
     }
@@ -254,12 +258,15 @@
       missed: actions
         .filter((a) => a.todayMouse > 0 && a.display.length && !a.mutedAt)
         .sort((x, y) => y.todayMouse - x.todayMouse),
-      waiting: Object.keys(state.missedToday).length,
+      waiting: Object.keys(state.missedToday).filter((id) => {
+        const a = state.actions[id];
+        return a && !a.introducedAt && !a.mutedAt && !isLearned(a);
+      }).length,
       // Newest first: when it was learned after a hint, or first pressed by keyboard.
       learned: actions
         .filter(knowsShortcut)
         .sort((x, y) => (y.learnedAt || y.firstKeyAt || 0) - (x.learnedAt || x.firstKeyAt || 0) || y.key - x.key),
-      tracked: actions.filter((a) => a.mouse > 0 || a.introducedAt).sort((x, y) => y.mouse - x.mouse),
+      tracked: actions.filter((a) => a.mouse > 0 || a.key > 0 || a.introducedAt).sort((x, y) => y.mouse - x.mouse || y.key - x.key),
       // Newest first, so the one just muted by mistake is at the top.
       muted: actions.filter((a) => a.mutedAt).sort((x, y) => y.mutedAt - x.mutedAt),
       // Newest first, with the action's name and keys for display.

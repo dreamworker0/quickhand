@@ -33,7 +33,7 @@ test('reads Gmail tooltips: hyphen separators and hidden direction marks', () =>
   assert.equal(keys.toId(keys.parse(tip.shortcut, false)), 'mod+b');
   assert.equal(keys.toId(keys.parse('Ctrl-Shift-7', false)), 'mod+shift+7');
   assert.equal(keys.toId(keys.parse('Ctrl-Shift--, Ctrl-Shift-+', false)), 'mod+shift+-');
-  assert.equal(keys.toId(keys.parse('Ctrl-Shift-+', false)), 'mod+shift++');
+  assert.equal(keys.toId(keys.parse('Ctrl-Shift-+', false)), 'mod+shift+=');
   assert.equal(keys.toId(keys.parse('Ctrl-\\', false)), 'mod+\\');
 });
 
@@ -92,4 +92,26 @@ test('arrow symbols in tooltips match the keys a key press reports', () => {
   assert.equal(keys.toId(clicked), keys.toId(pressed));
   assert.deepEqual(keys.display(clicked, false), ['Alt', '→']);
   assert.equal(keys.toId(keys.parse('Shift+↓', false)), 'shift+arrowdown');
+});
+
+test('comma keys are not mistaken for alternative separators', () => {
+  assert.equal(keys.toId(keys.parse('Ctrl+,', false)), 'mod+,');
+  assert.equal(keys.toId(keys.parse('Ctrl+Shift+,', false)), 'mod+shift+,');
+  assert.equal(keys.toId(keys.parse('Ctrl+Y,Ctrl+Shift+Z', false)), 'mod+y');
+  assert.equal(keys.toId(keys.parse('Ctrl+,, Ctrl+.', false)), 'mod+,');
+  assert.equal(keys.toId(keys.parse('Ctrl-Shift-,', false)), 'mod+shift+,');
+  assert.equal(keys.toId(keys.parse('⌘⇧,', true)), 'mod+shift+,');
+  assert.equal(keys.toId(keys.parse('⌘⇧,, ⌘⇧.', true)), 'mod+shift+,');
+});
+
+test('shifted punctuation printed by the page matches physical keyboard IDs', () => {
+  for (const [text, code, key] of [['Ctrl+Shift+>', 'Period', '>'], ['Ctrl+Shift+<', 'Comma', '<'], ['Ctrl+Shift++', 'Equal', '+']]) {
+    const pressed = keys.fromEvent({ code, key, ctrlKey: true, shiftKey: true }, false);
+    assert.equal(keys.toId(keys.parse(text, false)), keys.toId(pressed));
+  }
+});
+
+test('Home and End are shown with their key names', () => {
+  assert.deepEqual(keys.display(keys.combo('home'), false), ['Home']);
+  assert.deepEqual(keys.display(keys.combo('end'), false), ['End']);
 });

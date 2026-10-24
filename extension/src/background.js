@@ -17,11 +17,14 @@ async function getSettings() {
   return Object.assign({}, DEFAULT_SETTINGS, qh_settings);
 }
 
-async function setSettings(patch) {
-  const settings = Object.assign(await getSettings(), patch);
-  await chrome.storage.sync.set({ qh_settings: settings });
-  await updateBadge(settings);
-  return settings;
+function setSettings(patch) {
+  return serial(async () => {
+    const current = await getSettings();
+    const settings = Object.assign(current, typeof patch === 'function' ? patch(current) : patch);
+    await chrome.storage.sync.set({ qh_settings: settings });
+    await updateBadge(settings);
+    return settings;
+  });
 }
 
 async function getState() {
@@ -158,9 +161,8 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 
 chrome.commands.onCommand.addListener(async (command, tab) => {
   if (command !== 'toggle-alerts') return;
-  const current = await getSettings();
   // Paused or off → turn on (and clear the pause); otherwise turn off.
-  const next = await setSettings({ enabled: isOff(current), pauseUntil: 0 });
+  const next = await setSettings((current) => ({ enabled: isOff(current), pauseUntil: 0 }));
   if (tab && tab.id !== undefined) showCard(tab.id, { variant: 'toast', on: next.enabled });
 });
 

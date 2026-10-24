@@ -32,6 +32,11 @@
   "ytPrev": { "message": "Previous video (playlist)" },
   "ytSpeed": { "message": "Playback speed up / down" },
   "ytSearch": { "message": "Go to search" },
+  "ytChapter": { "message": "Next / previous chapter" },
+  "ytFrame": { "message": "Next / previous frame (while paused)" },
+  "ytStartEnd": { "message": "Start / end of the video" },
+  "ytVolume": { "message": "Volume up / down" },
+  "ytJump": { "message": "Jump in the video (1 = 10% … 9 = 90%, 0 = start)" },
   "ytShortsNext": { "message": "Next Short" },
   "ytShortsPrev": { "message": "Previous Short" },
 

@@ -59,7 +59,7 @@ async function newEditorFile(url) {
 const tip = (start) => shown(page.locator(`[data-tooltip^="${start}"]`));
 const menuItem = (name) => shown(page.locator('.goog-menuitem, [role="menuitem"]', { hasText: name }));
 // Menubar entries by their ids, which stay the same in every UI language.
-const MENUS = { 수정: '#docs-edit-menu', 보기: '#docs-view-menu', 슬라이드: '#punch-slide-menu' };
+const MENUS = { 수정: '#docs-edit-menu', 보기: '#docs-view-menu', 삽입: '#docs-insert-menu', 서식: '#docs-format-menu', 슬라이드: '#punch-slide-menu' };
 const topMenu = (name) => shown(page.locator(MENUS[name]));
 
 if (want('sheets')) {
@@ -86,6 +86,42 @@ if (want('sheets')) {
   await run('시트 시트 추가 버튼', () => shown(page.locator('.docs-sheet-add-button, [aria-label="시트 추가"]')).click());
   // Clicking another sheet's tab switches sheets (Alt+↓ / Alt+↑).
   await run('시트 다른 시트 탭 클릭', () => shown(page.locator('.docs-sheet-tab:not(.docs-sheet-active-tab)')).click());
+  // Menu items whose shown shortcut is a function key with Shift.
+  await run('시트 삽입 메뉴 → 시트 (Shift+F11)', async () => {
+    await topMenu('삽입').click();
+    await menuItem(/시트.*Shift\+F11/).click(); // the text also holds a hidden letter hint, "시트(S)"
+  });
+  await run('시트 삽입 메뉴 → 메모 (Shift+F2)', async () => {
+    await topMenu('삽입').click();
+    await menuItem(/메모.*Shift\+F2/).click();
+  });
+  await page.keyboard.press('Escape');
+  await page.mouse.click(box.x + 80, box.y + 30);
+  // Format › Align › Left: an item inside a submenu.
+  await run('시트 서식 메뉴 → 정렬 → 왼쪽', async () => {
+    await topMenu('서식').click();
+    await menuItem(/^\s*정렬/).hover();
+    await page.waitForTimeout(600);
+    const left = menuItem(/^\s*왼쪽/);
+    await left.click();
+  });
+  // Column letters and row numbers: Ctrl+Space / Shift+Space.
+  const strip = (sel) => page.locator(sel).first().boundingBox();
+  const cols = await strip('.column-headers-background');
+  const rows = await strip('.row-headers-background');
+  await run('시트 열 머리글(B) 클릭', () => page.mouse.click(cols.x + 46 + 100 + 50, cols.y + 10));
+  await run('시트 행 번호(3) 클릭', () => page.mouse.click(rows.x + 20, rows.y + 24 + 21 * 2 + 10));
+  await run('시트 Shift+Space 키 (셀 선택 중)', async () => {
+    await page.mouse.click(box.x + 200, box.y + 80);
+    await page.waitForTimeout(800); // like a person, not instantly after the click
+    await page.keyboard.press('Shift+Space');
+  });
+  await run('시트 Shift+Space 키 (셀에 입력 중, 기록 안 돼야 함)', async () => {
+    await page.mouse.click(box.x + 200, box.y + 100);
+    await page.keyboard.type('ab');
+    await page.keyboard.press('Shift+Space');
+  });
+  await page.keyboard.press('Escape');
   await run('시트 Ctrl+B 키', async () => {
     await page.mouse.click(box.x + 80, box.y + 30);
     await page.keyboard.press('Control+B');

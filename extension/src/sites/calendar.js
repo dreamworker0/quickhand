@@ -78,6 +78,7 @@
   }
 
   function fromKey(e, mac) {
+    if (K.isTextEntry(e, mac)) return null;
     const c = K.fromEvent(e, mac);
     if (K.toId(c) === 'mod+s') return action('save'); // works while editing an event
     if (e.ctrlKey || e.metaKey || e.altKey || e.shiftKey || K.isTyping(e)) return null;

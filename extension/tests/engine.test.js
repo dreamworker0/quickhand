@@ -326,3 +326,65 @@ test('active level hints every click, with no gap between cards', () => {
   assert.equal(engine.recordMouse(state, action('a'), s, START + 4000).show, true); // "Activity"
   assert.equal(engine.recordMouse(state, action('d'), s, START + 6000).kind, 'repeat');
 });
+
+test('learning requires ten uses and at least eight keyboard uses', () => {
+  const state = observedState();
+  clicks(state, 'b', 1, settings({ strength: 'active' }), START);
+  for (let i = 0; i < 8; i++) assert.equal(engine.recordKey(state, action('b'), START + i + 1).learnedNow, false);
+  assert.equal(engine.recordKey(state, action('b'), START + 10).learnedNow, true);
+  const exact = observedState();
+  clicks(exact, 'b', 2, settings({ strength: 'active' }), START);
+  for (let i = 0; i < 7; i++) assert.equal(engine.recordKey(exact, action('b'), START + i + 1).learnedNow, false);
+  assert.equal(engine.recordKey(exact, action('b'), START + 10).learnedNow, true);
+});
+
+test('switching to active does not let waiting new shortcuts block repeats', () => {
+  const state = observedState();
+  clicks(state, 'a', 3, settings(), START);
+  assert.equal(clicks(state, 'b', 3, settings(), START + 1000).reason, 'gap');
+  assert.equal(engine.recordMouse(state, action('a'), settings({ strength: 'active' }), START + 2000).show, true);
+});
+
+test('daily-cap waiting entries disappear when learned or finally introduced', () => {
+  for (const settle of [
+    (state, now) => engine.recordKey(state, action('d'), now),
+    (state, now) => engine.recordMouse(state, action('d'), settings({ strength: 'active' }), now),
+  ]) {
+    const state = observedState();
+    for (const [i, id] of ['a', 'b', 'c', 'd'].entries()) clicks(state, id, 3, settings(), START + i * 2 * MIN);
+    assert.equal(engine.summary(state, START + 10 * MIN).waiting, 1);
+    settle(state, START + 10 * MIN);
+    assert.equal(engine.summary(state, START + 10 * MIN).waiting, 0);
+  }
+});
+
+test('records include keyboard-only actions, even unnamed legacy records', () => {
+  const state = observedState();
+  engine.recordKey(state, { id: 'docs:mod+q', display: [['Ctrl', 'Q']] }, START);
+  assert.equal(engine.summary(state, START).tracked[0].key, 1);
+});
+
+test('missing legacy alert timestamp conservatively preserves the minimum gap', () => {
+  const state = observedState();
+  clicks(state, 'a', 3, settings(), START);
+  delete state.lastNewAlertAt;
+  assert.equal(clicks(state, 'b', 3, settings(), START + 1000).reason, 'gap');
+});
+
+test('midnight resets daily counters and caps, but preserves rolling repeat intervals', () => {
+  const before = new Date(2026, 9, 26, 23, 59, 0).getTime();
+  const after = before + 2 * MIN;
+  const state = observedState(before);
+  const gentle = settings({ strength: 'gentle' });
+  clicks(state, 'a', 5, gentle, before);
+  delete state.waitingNew;
+  delete state.log;
+  const r = engine.recordMouse(state, action('a'), gentle, after);
+  assert.equal(r.reason, 'repeat-wait');
+  assert.equal(state.day, '2026-10-27');
+  assert.equal(state.todayMouse, 1);
+  assert.equal(state.actions.a.todayMouse, 1);
+  assert.deepEqual(state.newToday, []);
+  assert.deepEqual(state.missedToday, {});
+  assert.equal(engine.recordMouse(state, action('a'), gentle, before + 24 * HOUR).show, true);
+});

@@ -25,11 +25,13 @@
 
   const KEY_NAMES = {
     space: 'Space', enter: 'Enter', escape: 'Esc', backspace: 'Backspace', delete: 'Delete',
-    arrowleft: '←', arrowright: '→', arrowup: '↑', arrowdown: '↓', pageup: 'PgUp', pagedown: 'PgDn',
+    arrowleft: '←', arrowright: '→', arrowup: '↑', arrowdown: '↓', pageup: 'PgUp', pagedown: 'PgDn', home: 'Home', end: 'End',
   };
 
   // Arrows printed in tooltips ("추가 정보 (Alt+→)") name the keys events report.
   const KEY_ALIASES = { '←': 'arrowleft', '→': 'arrowright', '↑': 'arrowup', '↓': 'arrowdown' };
+  // Google tooltips use either the shifted glyph or the base key for these keys.
+  const SHIFTED_KEYS = { '>': '.', '<': ',', '+': '=' };
 
   const MODIFIER_KEYS = new Set(['control', 'shift', 'alt', 'meta', 'altgraph', 'capslock', 'hangulmode', 'hanjamode']);
 
@@ -81,7 +83,15 @@
   // True when the key went into a text field, where plain letters are typing.
   function isTyping(e) {
     const el = e.composedPath ? e.composedPath()[0] : e.target;
-    return !!(el && el.closest && el.closest('input, textarea, select, [contenteditable=""], [contenteditable="true"]'));
+    return !!(el && (el.isContentEditable || (el.closest && el.closest('input, textarea, select, [contenteditable=""], [contenteditable="true"], [contenteditable="plaintext-only"]'))));
+  }
+
+  // Character production is not shortcut use, even when modifiers are pressed.
+  function isTextEntry(e, mac) {
+    return !!(e.isComposing || e.keyCode === 229 || e.key === 'Process' || e.key === 'Dead' ||
+      (e.getModifierState && e.getModifierState('AltGraph')) ||
+      (mac && e.altKey && !e.metaKey && !e.ctrlKey && isTyping(e) &&
+        (keyFromEvent(e).length === 1 || keyFromEvent(e) === 'space')));
   }
 
   function toId(c) {
@@ -103,6 +113,10 @@
       }
     }
     if (!c.key && /\+\s*\+\s*$/.test(text)) c.key = '+'; // "Ctrl+Shift++"
+    if (SHIFTED_KEYS[c.key]) {
+      c.key = SHIFTED_KEYS[c.key];
+      c.shift = true;
+    }
     return c.key ? c : null;
   }
 
@@ -112,8 +126,16 @@
   function parse(text, mac) {
     if (!text) return null;
     let s = String(text).replace(BIDI_MARKS, '');
-    s = s.split(/\s*(?:,|\bor\b|또는)\s*/i)[0];
     s = s.replace(/\b(ctrl|control|alt|option|opt|shift|cmd|command|meta)-/gi, '$1+');
+    // Only a comma after a complete combo is an alternative separator. A prefix
+    // of modifiers (Ctrl+Shift+ or ⌘⇧) has no key yet, so its comma is the key.
+    s = s.split(/\s*(?:\bor\b|또는)\s*/i)[0];
+    for (let i = 0; i < s.length; i++) {
+      if (s[i] === ',' && parseStep(s.slice(0, i), mac)) {
+        s = s.slice(0, i);
+        break;
+      }
+    }
     const [first, then] = s.split(/\s+(?:다음|then)\s+/i);
     const c = parseStep(first, mac);
     if (!c) return null;
@@ -153,7 +175,7 @@
   function sequencer(isPrefix, timeoutMs) {
     let pending = null;
     let at = 0;
-    return (c, now) => {
+    const next = (c, now) => {
       if (pending && now - at <= (timeoutMs || 1500)) {
         const first = pending;
         pending = null;
@@ -167,10 +189,12 @@
       }
       return c;
     };
+    next.reset = () => { pending = null; };
+    return next;
   }
 
   QH.keys = {
-    THEN, isMac, combo, sequence, fromEvent, isModifierOnly, isTyping, toId, parse, splitLabel,
+    THEN, isMac, combo, sequence, fromEvent, isModifierOnly, isTyping, isTextEntry, toId, parse, splitLabel,
     hasModifier, display, sequencer,
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = QH.keys;

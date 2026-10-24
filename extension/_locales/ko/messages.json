@@ -32,6 +32,11 @@
   "ytPrev": { "message": "이전 동영상 (재생목록)" },
   "ytSpeed": { "message": "재생 속도 빠르게 / 느리게" },
   "ytSearch": { "message": "검색창으로 이동" },
+  "ytChapter": { "message": "다음·이전 챕터로 이동" },
+  "ytFrame": { "message": "다음·이전 프레임 (일시중지 중)" },
+  "ytStartEnd": { "message": "동영상 처음·끝으로" },
+  "ytVolume": { "message": "볼륨 높이기·낮추기" },
+  "ytJump": { "message": "동영상 구간 이동 (1=10% … 9=90%, 0=처음)" },
   "ytShortsNext": { "message": "다음 쇼츠" },
   "ytShortsPrev": { "message": "이전 쇼츠" },
 

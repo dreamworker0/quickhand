@@ -19,7 +19,18 @@
     search: { msg: 'ytSearch', combos: [key('/')] },
     shortsnext: { msg: 'ytShortsNext', combos: [key('arrowdown')] },
     shortsprev: { msg: 'ytShortsPrev', combos: [key('arrowup')] },
+    // Chapters are Ctrl+←/→ on Windows and Option+←/→ on Mac (see action()).
+    chapter: { msg: 'ytChapter', combos: null },
+    frame: { msg: 'ytFrame', combos: [key('.'), key(',')] },
+    startend: { msg: 'ytStartEnd', combos: [key('home'), key('end')] },
+    volume: { msg: 'ytVolume', combos: [key('arrowup'), key('arrowdown')] },
+    jump: { msg: 'ytJump', combos: [key('0~9')] }, // shown as one "0~9" key
   };
+
+  function chapterCombos() {
+    const mods = QH.keys.isMac() ? { alt: true } : { mod: true };
+    return [QH.keys.combo('arrowright', mods), QH.keys.combo('arrowleft', mods)];
+  }
 
   // Player buttons announce their key in aria-keyshortcuts ("k", "m", "SHIFT+n");
   // class names are the fallback for buttons that don't.
@@ -67,7 +78,7 @@
 
   function action(name) {
     const a = ACTIONS[name];
-    return { id: 'yt:' + name, label: t(a.msg), combos: a.combos };
+    return { id: 'yt:' + name, label: t(a.msg), combos: a.combos || chapterCombos() };
   }
 
   function onWatchPage() {
@@ -90,8 +101,12 @@
     const el = e.target;
     if (el.closest('input[name="search_query"]')) return action('search'); // on every page
     if (onShortsPage()) return fromShortsMouse(el);
-    if (!onWatchPage() || !el.closest('#movie_player, .html5-video-player')) return null;
+    if (!onWatchPage()) return null;
+    // A chapter in the description's chapter list jumps to it (Ctrl+←/→ step through them).
+    if (el.closest('ytd-macro-markers-list-item-renderer')) return action('chapter');
+    if (!el.closest('#movie_player, .html5-video-player')) return null;
     if (el.closest(SPEED_CONTROLS)) return action('speed');
+    if (el.closest('.ytp-volume-panel')) return action('volume'); // the slider beside the speaker
     const button = el.closest('button, .ytp-button');
     if (button) {
       const aria = (button.getAttribute('aria-keyshortcuts') || '').toLowerCase();
@@ -108,13 +123,30 @@
 
   const SHIFT_KEYS = { n: 'next', p: 'prev', '.': 'speed', ',': 'speed' };
 
+  // Keys that act on the player only while it has focus; elsewhere they scroll
+  // the page. On the seek bar ↑/↓ leave the volume alone (measured on the page).
+  const PLAYER_KEYS = { home: 'startend', end: 'startend', arrowup: 'volume', arrowdown: 'volume' };
+
+  function inPlayer(e, k) {
+    const el = e.composedPath ? e.composedPath()[0] : e.target;
+    if (!el || !el.closest || !el.closest('#movie_player')) return false;
+    return !(k.startsWith('arrow') && el.closest('.ytp-progress-bar'));
+  }
+
   function fromKey(e, mac) {
-    if (e.ctrlKey || e.metaKey || e.altKey || QH.keys.isTyping(e)) return null;
+    if (QH.keys.isTextEntry(e, mac) || QH.keys.isTyping(e)) return null;
     const k = QH.keys.fromEvent(e, mac).key;
+    // Chapters: Ctrl+←/→, on Mac Option+←/→.
+    const chapterMod = mac ? e.altKey && !e.ctrlKey && !e.metaKey : e.ctrlKey && !e.altKey && !e.metaKey;
+    if (onWatchPage() && chapterMod && !e.shiftKey && (k === 'arrowleft' || k === 'arrowright')) return action('chapter');
+    if (e.ctrlKey || e.metaKey || e.altKey) return null;
     if (k === '/' && !e.shiftKey) return action('search');
     if (onShortsPage()) return !e.shiftKey && SHORTS_KEYS[k] ? action(SHORTS_KEYS[k]) : null;
     if (!onWatchPage()) return null;
     if (e.shiftKey) return SHIFT_KEYS[k] ? action(SHIFT_KEYS[k]) : null;
+    if (PLAYER_KEYS[k]) return inPlayer(e, k) ? action(PLAYER_KEYS[k]) : null;
+    if (k === '.' || k === ',') return action('frame');
+    if (/^[0-9]$/.test(k)) return action('jump');
     return KEYS[k] ? action(KEYS[k]) : null;
   }
 

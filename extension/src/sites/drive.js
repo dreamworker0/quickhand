@@ -6,6 +6,7 @@
   'use strict';
   const QH = (globalThis.QH = globalThis.QH || {});
   const K = QH.keys;
+  const detected = new Map();
 
   // Names for keyboard-first use, keyed by keys.toId (Windows form; Mac's Control
   // prefixes are mapped onto these by nameFor).
@@ -49,7 +50,7 @@
       'Google Drawings': create + 'D', 'Google 그림': create + 'D',
       'Copy link': 'Ctrl+Alt+L', '링크 복사': 'Ctrl+Alt+L',
     };
-    return keys[label] ? K.parse(keys[label], mac) : null;
+    return keys[label] ? K.parse(mac ? keys[label].replace(/Ctrl/g, 'Command') : keys[label], mac) : null;
   }
 
   function nameFor(id) {
@@ -95,35 +96,42 @@
     let control = el.closest(CONTROL);
     for (let depth = 0; control && depth < 4; depth++) {
       const result = describe(control, mac);
-      if (result) return result;
+      if (result) {
+        detected.set(result.id, result.label);
+        return result;
+      }
       control = control.parentElement ? control.parentElement.closest(CONTROL) : null;
     }
     return null;
   }
 
   // "Alt+C then F" style sequences (Control+C on Mac for the create menu).
-  const nextKey = K.sequencer((c) => !c.mod && !c.shift && ((c.alt && (c.key === 'c' || c.key === 'v')) || (c.ctrl && c.key === 'c')));
+  const nextKey = K.sequencer((c) => !c.mod && !c.shift && (c.alt || c.ctrl) && (c.key === 'c' || c.key === 'v'));
   // "Make a copy" is Ctrl+C then Ctrl+V; copy stays a copy on its own.
   let lastCopyAt = 0;
 
   function fromKey(e, mac) {
     if (K.isModifierOnly(e)) return null;
+    if (K.isTextEntry(e, mac)) { nextKey.reset(); lastCopyAt = 0; return null; }
     let c = K.fromEvent(e, mac);
-    if (!K.hasModifier(c) && K.isTyping(e)) return null; // plain letters in a text field are typing
+    const typing = K.isTyping(e);
+    if (typing) { nextKey.reset(); lastCopyAt = 0; }
+    if (!K.hasModifier(c) && typing) return null;
     const now = Date.now();
     const id0 = K.toId(c);
-    if (id0 === 'mod+c') lastCopyAt = now;
-    if (id0 === 'mod+v' && now - lastCopyAt < 3000) {
+    if (id0 === 'mod+c' && !typing) lastCopyAt = now;
+    if (id0 === 'mod+v' && !typing && lastCopyAt && now - lastCopyAt < 3000) {
       lastCopyAt = 0;
       c = K.sequence(K.combo('c', { mod: true }), c);
     } else {
-      c = nextKey(c, now);
+      c = typing ? c : nextKey(c, now);
       if (!c) return null;
       if (c.then) c.then.alt = c.then.ctrl = false; // the modifier may still be held for the second key
     }
     const id = K.toId(c);
-    const name = nameFor(id);
-    if (name || (K.hasModifier(c) && !c.then)) return { id: 'drive:' + id, label: name, fallbackLabel: true, combos: [c] };
+    const seen = detected.get('drive:' + id);
+    const name = seen || nameFor(id);
+    if (name) return { id: 'drive:' + id, label: name, fallbackLabel: !seen, combos: [c] };
     return null;
   }
 
