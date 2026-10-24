@@ -27,9 +27,19 @@
     @media (prefers-color-scheme: dark) {
       .card { --bg: #1d2b31; --ink: #eef6f5; --quiet: #a9c0c4; --line: #2f444b; --chip: #24363d; }
     }
-    @media (prefers-reduced-motion: reduce) { .card { animation: none; } }
     @keyframes in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
-    img { width: 56px; height: 56px; flex: none; object-fit: contain; }
+    img { width: 56px; height: 56px; flex: none; object-fit: contain; transform-origin: 50% 85%; }
+    /* One short move when the card appears, then still: the mascot pops in, then
+       wiggles (hint) or hops (learned), and the key chips press down twice. */
+    @keyframes pop { 0% { opacity: 0; transform: scale(0.4) rotate(-12deg); } 60% { opacity: 1; transform: scale(1.12) rotate(4deg); } 100% { transform: none; } }
+    @keyframes wiggle { 0%, 100% { transform: none; } 25% { transform: rotate(-13deg); } 50% { transform: rotate(10deg); } 75% { transform: rotate(-5deg); } }
+    @keyframes hop { 0%, 100% { transform: none; } 40% { transform: translateY(-14px) scale(1.05, 0.95); } 70% { transform: translateY(0) scale(0.95, 1.05); } }
+    @keyframes press { 0%, 100% { transform: none; border-bottom-width: 3px; } 50% { transform: translateY(2px); border-bottom-width: 1px; } }
+    .card img { animation: pop 380ms cubic-bezier(0.3, 1.4, 0.5, 1) both; }
+    .card.hint img { animation: pop 380ms cubic-bezier(0.3, 1.4, 0.5, 1) both, wiggle 520ms ease-in-out 420ms; }
+    .card.learned img { animation: pop 380ms cubic-bezier(0.3, 1.4, 0.5, 1) both, hop 320ms ease-out 400ms 2; }
+    .card.hint kbd { animation: press 240ms ease-in-out 950ms 2; }
+    @media (prefers-reduced-motion: reduce) { .card, .card img, .card kbd { animation: none; } }
     .body { min-width: 0; }
     .title { margin: 0; font-size: 12px; color: var(--quiet); }
     .label { margin: 2px 0 6px; font-size: 15px; font-weight: 600; overflow-wrap: anywhere; }
@@ -135,7 +145,7 @@
     const root = host.attachShadow({ mode: 'open' });
     const style = el('style');
     style.textContent = CSS;
-    const card = el('div', 'card');
+    const card = el('div', 'card ' + (msg.variant || 'hint'));
     card.setAttribute('role', 'status');
     card.setAttribute('aria-live', 'polite');
 
