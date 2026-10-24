@@ -69,17 +69,5 @@
       "js": ["src/core/keys.js", "src/core/names.js", "src/content/card.js", "src/sites/drive.js", "src/content/main.js"],
       "run_at": "document_idle"
     }
-  ],
-  "web_accessible_resources": [
-    {
-      "resources": ["assets/mascot/*.png"],
-      "matches": [
-        "https://www.youtube.com/*",
-        "https://docs.google.com/*",
-        "https://mail.google.com/*",
-        "https://calendar.google.com/*",
-        "https://drive.google.com/*"
-      ]
-    }
   ]
 }

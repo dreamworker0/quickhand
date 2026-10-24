@@ -139,18 +139,19 @@
     card.setAttribute('role', 'status');
     card.setAttribute('aria-live', 'polite');
 
+    // The background sends the mascot as image data; without it (or if the page
+    // refuses it) the card simply goes without the picture.
     const img = el('img');
     img.alt = '';
+    img.addEventListener('error', () => img.remove());
+    if (msg.image) img.src = msg.image;
     const body = el('div', 'body');
 
     if (msg.variant === 'toast') {
-      img.src = chrome.runtime.getURL('assets/mascot/main.png');
       body.append(el('p', 'label', t(msg.on ? 'toastOn' : 'toastOff')), el('p', 'sub', t(mac ? 'toastHintMac' : 'toastHintWin')));
     } else if (msg.variant === 'learned') {
-      img.src = chrome.runtime.getURL('assets/mascot/cheer.png');
       body.append(el('p', 'title', t('learnedTitle')), el('p', 'label', msg.label), keysNode(msg.display), el('p', 'sub', t('learnedText')));
     } else {
-      img.src = chrome.runtime.getURL('assets/mascot/hint.png');
       body.append(
         el('p', 'title', t('cardTitle')),
         el('p', 'label', msg.label),
@@ -166,7 +167,7 @@
     close.setAttribute('aria-label', t('cardClose'));
     close.addEventListener('click', hide);
 
-    card.append(img, body, close);
+    card.append(...(msg.image ? [img] : []), body, close);
     card.addEventListener('mouseenter', () => clearTimeout(hideTimer));
     card.addEventListener('mouseleave', scheduleHide);
     root.append(style, card);

@@ -108,6 +108,7 @@ npm run pack                # ../dist/quickhand-<버전>.zip (업로드용, 실�
 cd ../checks
 npm install                 # 처음 한 번 (Playwright)
 node youtube.mjs --headed   # 유튜브 일반 영상·쇼츠 (로그인 필요 없음)
+node reload.mjs             # 유튜브 탭을 연 채로 확장을 새로고침해도 카드와 그림이 오류 없이 뜨는지
 node login.mjs              # 구글 로그인 창: 로그인한 뒤 창을 닫기
 node google.mjs             # 문서·드라이브·Gmail·캘린더 (docs / drive / gmail / calendar 중 일부만 지정 가능)
 ```

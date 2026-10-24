@@ -52,9 +52,28 @@ async function updateBadge(settings) {
   if (off) await chrome.action.setBadgeBackgroundColor({ color: '#173F4F' });
 }
 
+// The card's mascot travels with the message as image data. A page that loads
+// it from the extension's own address is refused after the extension is
+// reloaded while the tab stays open, and that address would also let sites
+// detect the extension.
+const MASCOT = { hint: 'hint', learned: 'cheer', toast: 'main' };
+const pictures = {};
+
+async function picture(name) {
+  if (!pictures[name]) {
+    const res = await fetch(chrome.runtime.getURL(`assets/mascot/${name}.png`));
+    const bytes = new Uint8Array(await res.arrayBuffer());
+    let binary = '';
+    for (let i = 0; i < bytes.length; i += 0x8000) binary += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+    pictures[name] = 'data:image/png;base64,' + btoa(binary);
+  }
+  return pictures[name];
+}
+
 async function showCard(tabId, card) {
+  const image = await picture(MASCOT[card.variant] || 'hint').catch(() => '');
   try {
-    await chrome.tabs.sendMessage(tabId, Object.assign({ type: 'qh-card' }, card), { frameId: 0 });
+    await chrome.tabs.sendMessage(tabId, Object.assign({ type: 'qh-card', image }, card), { frameId: 0 });
   } catch (e) {
     // The tab has no content script (e.g. it was open before the extension loaded).
   }
