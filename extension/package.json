@@ -5,6 +5,7 @@
   "description": "손빠르미(Quickhand) 크롬 확장 프로그램",
   "scripts": {
     "test": "node --test \"tests/*.test.js\"",
-    "assets": "python tools/build_assets.py"
+    "assets": "python tools/build_assets.py",
+    "pack": "node tools/pack.mjs"
   }
 }

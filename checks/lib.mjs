@@ -80,7 +80,7 @@ export async function launch({ headless = true } = {}) {
   });
   // The first install opens the welcome tab; it isn't part of the check.
   for (const p of context.pages()) if (p.url().startsWith('chrome-extension://')) await p.close();
-  return { context, worker };
+  return { context, worker, extensionId: new URL(worker.url()).host };
 }
 
 // The newest decision the extension logged, if it came after `since`.

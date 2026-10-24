@@ -22,7 +22,7 @@
   "background": {
     "service_worker": "src/background.js"
   },
-  "permissions": ["storage", "scripting", "activeTab"],
+  "permissions": ["storage", "scripting"],
   "host_permissions": [
     "https://www.youtube.com/*",
     "https://docs.google.com/*",

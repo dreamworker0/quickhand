@@ -59,7 +59,7 @@ Gmail의 한 글자 단축키(보관 E, 답장 R 등)는 Gmail **설정 → 바�
 ## 폴더 구조
 
 ```
-manifest.json          확장 프로그램 설정 (권한: storage, scripting, activeTab /
+manifest.json          확장 프로그램 설정 (권한: storage, scripting /
                        사이트: 유튜브, Gmail, 구글 캘린더·드라이브·문서·스프레드시트·슬라이드)
 _locales/ko, en        한국어·영어 문구
 src/background.js      기록 저장과 알림 판단 (모든 탭의 기록을 한곳에서 처리)
@@ -88,6 +88,16 @@ tests/                 알림 규칙·단축키 처리 테스트
 npm test               # 알림 규칙·단축키 처리 테스트 (Node 18+)
 npm run assets         # ../mascot 원본에서 아이콘·마스코트 이미지 다시 만들기 (Python + Pillow + Chrome)
 ```
+
+### 크롬 웹스토어 등록 (`../store`)
+
+```bash
+npm run pack                # ../dist/quickhand-<버전>.zip (업로드용, 실행에 필요한 파일만)
+```
+
+등록 화면에 붙여 넣을 설명·권한 사유·개인정보 답변은 `../store/listing.md`, 개인정보처리방침은 `../store/privacy-policy.md`,
+스크린샷과 프로모션 타일은 `../store/`에 있습니다(다시 만들기: `checks` 폴더에서 `node store-shots.mjs`).
+버전을 올릴 때는 `manifest.json`의 `version`을 바꾼 뒤 다시 `npm run pack` 하세요.
 
 ### 실제 사이트 점검 (`../checks`)
 
