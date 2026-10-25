@@ -3,11 +3,9 @@
 import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { ROOT as root, INCLUDE, version as readVersion } from './package-files.mjs';
 
-const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const { version } = JSON.parse(fs.readFileSync(path.join(root, 'manifest.json'), 'utf8'));
-const INCLUDE = ['manifest.json', '_locales', 'assets', 'src'];
+const version = readVersion();
 
 const dist = path.resolve(root, '../dist');
 fs.mkdirSync(dist, { recursive: true });

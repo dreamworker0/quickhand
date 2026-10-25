@@ -7,7 +7,8 @@
   "scripts": {
     "offline": "node offline.mjs",
     "youtube": "node youtube.mjs",
-    "login": "node login.mjs"
+    "login": "node login.mjs",
+    "storyboard": "node storyboard.mjs"
   },
   "devDependencies": {
     "playwright": "^1.56.1"

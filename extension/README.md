@@ -126,6 +126,16 @@ npm run pack                # ../dist/quickhand-<버전>.zip (업로드용, 실�
 스크린샷과 프로모션 타일은 `../store/`에 있습니다(다시 만들기: `checks` 폴더에서 `node store-shots.mjs`).
 버전을 올릴 때는 `manifest.json`의 `version`을 바꾼 뒤 다시 `npm run pack` 하세요.
 
+### 테스터에게 나눠 주기 (`../testers`)
+
+```bash
+npm run pack:testers        # ../dist/손빠르미-테스트판-<버전>.zip (설치 안내.txt + "손빠르미" 폴더)
+```
+
+받은 사람은 압축을 풀고 `chrome://extensions` › 개발자 모드 › "압축해제된 확장 프로그램을 로드합니다"로 "손빠르미" 폴더를 고릅니다.
+안내문 원본은 `../testers/설치 안내.txt`(제목의 `{version}`은 버전으로 바뀜), 카톡으로 보낼 글은 `../testers/카톡 안내.txt`입니다.
+처음 누를 때부터 익힐 때까지의 카드 10장 그림은 `checks` 폴더에서 `npm run storyboard`로 다시 만듭니다(`../dist/손빠르미-10단계.png`).
+
 ### 실제 사이트 점검 (`../checks`)
 
 설치된 크롬을 점검용 프로필로 띄워 손빠르미를 불러오고, 실제 사이트에서 버튼을 눌러 카드가 화면에 보이는지 확인합니다.
@@ -136,6 +146,7 @@ npm run pack                # ../dist/quickhand-<버전>.zip (업로드용, 실�
 cd ../checks
 npm install                 # 처음 한 번 (Playwright)
 node youtube.mjs --headed   # 유튜브 일반 영상·쇼츠 (로그인 필요 없음)
+npm run storyboard          # 새로 설치·보통 강도로 유튜브에서 카드 10단계를 찍어 한 장으로 (로그인 필요 없음)
 npm run offline             # 외부 접속 없이 로컬 모형에서 실제 키·클릭·iframe 검사 (계정 불필요)
 node reload.mjs             # 유튜브 탭을 연 채로 확장을 새로고침해도 카드와 그림이 오류 없이 뜨는지
 node login.mjs              # 구글 로그인 창: 로그인한 뒤 창을 닫기
