@@ -56,8 +56,10 @@
 소셜프리즘 · 문의 ehsheh@gmail.com
 
 손빠르미는 구글이나 유튜브가 만들거나 보증한 프로그램이 아니에요.
-YouTube, Gmail, Google Drive, Google Docs, Google Sheets, Google Slides, Google Calendar는 Google LLC의 상표입니다.
 ```
+
+상세 설명에 서비스 이름을 늘어놓은 상표 문장을 넣지 않습니다. 2026-10-25 심사에서 그 문장이 키워드 스팸(Yellow Argon)으로 거부되었습니다.
+지원 사이트는 '이런 곳에서 작동해요'에 한 번만 적습니다. 상표 문장은 개인정보처리방침에만 둡니다.
 
 **이미지** (`store/` 폴더):
 
