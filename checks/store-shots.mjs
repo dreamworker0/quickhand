@@ -5,7 +5,13 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { launch, EXTENSION } from './lib.mjs';
+
+// A fresh profile every run, so the cards and the popup show only this run (no
+// earlier records, no theater mode remembered by YouTube). The video needs no
+// sign-in, and the signed-in check profile is left alone.
+process.env.QH_PROFILE ||= '.profile-store';
+const { launch, EXTENSION, PROFILE } = await import('./lib.mjs');
+fs.rmSync(PROFILE, { recursive: true, force: true });
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const STORE = path.resolve(here, '../store');
@@ -43,13 +49,22 @@ await page.mouse.move(20, 420); // off the buttons, so no YouTube tooltip shows
 await page.waitForTimeout(800);
 await page.screenshot({ path: path.join(SHOTS, '1-hint-card.png') });
 
-// 2. "Learned!" after switching to the keyboard.
+// 2. "Learned!" after switching to the keyboard. Learning takes 10 recent uses,
+// mostly by key, so press T until the card shows, then once more if needed so
+// theater mode is on again as in shot 1.
 n = await page.evaluate(() => window.__qhCards.length);
-for (let i = 0; i < 6; i++) {
+const learned = (k) => window.__qhCards.slice(k).some((c) => /익혔어요/.test(c.text));
+let presses = 0;
+while (!(await page.evaluate(learned, n))) {
+  if (presses === 14) throw new Error('no "learned" card after 14 presses of T');
+  await page.keyboard.press('t');
+  presses++;
+  await page.waitForTimeout(400);
+}
+if (presses % 2) {
   await page.keyboard.press('t');
   await page.waitForTimeout(400);
 }
-await page.waitForFunction((k) => window.__qhCards.slice(k).some((c) => /익혔어요/.test(c.text)), n, { timeout: 10000 });
 await page.mouse.move(20, 420);
 await page.waitForTimeout(700);
 await page.screenshot({ path: path.join(SHOTS, '2-learned-card.png') });
