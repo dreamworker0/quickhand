@@ -56,12 +56,17 @@ export async function launch({ headless = true } = {}) {
   });
   await context.addInitScript(watchCards);
   let extensionId = null;
+  const isOurs = (w) => w.url().endsWith('/src/background.js');
+  let worker = null;
   if (chrome) {
+    // Loading over the copy the profile already knows starts a new worker and stops
+    // the old one, so wait a moment for the new one instead of grabbing the old.
+    const fresh = context.waitForEvent('serviceworker', { predicate: isOurs, timeout: 5000 }).catch(() => null);
     const cdp = await context.browser().newBrowserCDPSession();
     ({ id: extensionId } = await cdp.send('Extensions.loadUnpacked', { path: EXTENSION }));
+    worker = await fresh;
   }
-  const isOurs = (w) => w.url().endsWith('/src/background.js');
-  let worker = context.serviceWorkers().find(isOurs);
+  if (!worker) worker = context.serviceWorkers().filter(isOurs).pop();
   if (!worker && extensionId) {
     // Already known to this profile, so its worker may be asleep: the popup's
     // first message wakes it.

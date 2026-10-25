@@ -401,7 +401,6 @@
         'alt+a': ['접근성 메뉴', 'Accessibility menu'],
         'mod+alt+shift+k': ['입력 도구 메뉴', 'Input tools menu'],
         'mod+shift+k': ['입력 도구 켜기/끄기', 'Turn input tools on or off'],
-        'mod+enter': ['현재 댓글로 들어가기', 'Enter the current comment'],
         'mod+alt+shift+j': ['댓글 숨기기', 'Hide comments'],
         'mod+space': ['서식 지우기', 'Clear formatting'],
         'mod+shift+j': ['양쪽 맞춤', 'Justify'],
@@ -436,7 +435,9 @@
       plainKeys: ['pageup', 'pagedown'],
       sequences: {
         'mod+alt+u': { a: ['선택 해제', 'Select none'] },
-        'mod+alt+e': { p: ['팝업·셀 테두리 선택으로 이동', 'Move to the popup / cell borders'] },
+        // The help page says Ctrl+Enter for "enter the current comment", but Slides
+        // only answers Ctrl+Alt E, C (as in Docs).
+        'mod+alt+e': { p: ['팝업·셀 테두리 선택으로 이동', 'Move to the popup / cell borders'], c: ['현재 댓글로 들어가기', 'Enter the current comment'] },
         'mod+alt+n': { c: ['다음 댓글', 'Next comment'], w: ['다음 서식 변경', 'Next formatting change'] },
         'mod+alt+p': { c: ['이전 댓글', 'Previous comment'], w: ['이전 서식 변경', 'Previous formatting change'] },
         'mod+alt+a': { f: ['커서 위치 서식 말하기', 'Speak formatting at cursor'] },

@@ -409,6 +409,9 @@ test('Slides: the help page keys are named, with two-step keys and comment lette
   assert.equal(id('PageDown', 'PageDown'), 'slides:pagedown');
   assert.equal(id('KeyN', 'n', { ctrlKey: true, altKey: true }), null);
   assert.equal(id('KeyW', 'w', { ctrlKey: true, altKey: true }), 'slides:mod+alt+n>w');
+  assert.equal(id('KeyE', 'e', { ctrlKey: true, altKey: true }), null);
+  assert.equal(id('KeyC', 'c', { ctrlKey: true, altKey: true }), 'slides:mod+alt+e>c');
+  assert.equal(id('Enter', 'Enter', { ctrlKey: true }), null); // not the comment key in Slides
   class Comment extends Element { closest(sel) { return sel.includes('docos-anchoreddocoview') ? this : null; } }
   assert.equal(site.fromKey(event('KeyR', 'r', { target: new Comment() }), false).id, 'slides:r');
   assert.equal(id('KeyR', 'r'), null);
