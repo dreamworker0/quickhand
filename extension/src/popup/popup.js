@@ -139,6 +139,67 @@ function fillMuted(actions) {
   }
 }
 
+// The feedback form: its preview is exactly what "copy" puts on the clipboard.
+const FEEDBACK_KINDS = ['fbKindBroken', 'fbKindWrong', 'fbKindMissed', 'fbKindSite', 'fbKindOther'];
+let feedbackLog = [];
+
+const chosen = (select) => select.selectedOptions[0].textContent;
+
+function feedbackText() {
+  const env = QH.feedback.environment(navigator.userAgent, chrome.runtime.getManifest().version, chrome.i18n.getUILanguage());
+  const log = $('fb-log').checked
+    ? feedbackLog.map((e) => ({
+      time: clock(e.at, true),
+      site: siteName(e.site),
+      label: e.label,
+      keys: QH.feedback.keysText(e.display, t('cardThen')),
+      input: t(e.input === 'key' ? 'fbInputKey' : 'fbInputMouse'),
+      why: whyText(e),
+    }))
+    : null;
+  return QH.feedback.compose({ kind: chosen($('fb-kind')), site: chosen($('fb-site')), message: $('fb-message').value, env, log }, t);
+}
+
+function updateFeedback() {
+  $('fb-preview').value = feedbackText();
+}
+
+// Copies the text, then opens a new mail to the feedback address; nothing is sent
+// by the extension itself.
+async function sendFeedback() {
+  const text = feedbackText();
+  const status = $('fb-status');
+  $('fb-preview').value = text;
+  try {
+    await navigator.clipboard.writeText(text);
+  } catch (e) {
+    $('fb-preview').select();
+    if (!document.execCommand('copy')) {
+      status.textContent = t('fbCopyFailed');
+      return;
+    }
+  }
+  status.textContent = t('fbCopied', [mac ? '⌘V' : 'Ctrl+V']);
+  chrome.tabs.create({ url: QH.feedback.mailto(t('fbSubject', [chosen($('fb-kind'))]), t('fbPasteHere', [mac ? '⌘V' : 'Ctrl+V'])) });
+}
+
+function initFeedback(tabSite) {
+  const kind = $('fb-kind');
+  for (const key of FEEDBACK_KINDS) kind.append(el('option', null, t(key)));
+  const site = $('fb-site');
+  site.append(el('option', null, t('fbSiteNone')));
+  for (const s of Object.keys(UI.SITE_NAMES)) {
+    const option = el('option', null, siteName(s));
+    option.selected = s === tabSite;
+    site.append(option);
+  }
+  for (const id of ['fb-kind', 'fb-site', 'fb-log']) $(id).addEventListener('change', updateFeedback);
+  $('fb-message').addEventListener('input', updateFeedback);
+  $('fb-send').addEventListener('click', sendFeedback);
+  $('fb-address').textContent = t('fbAddress', [QH.feedback.ADDRESS]);
+  updateFeedback();
+}
+
 function render({ summary, settings }) {
   const now = Date.now();
   const paused = settings.pauseUntil > now;
@@ -170,6 +231,8 @@ function render({ summary, settings }) {
   renderLearned();
 
   fillLog(summary.log);
+  feedbackLog = summary.log;
+  if ($('fb-kind').options.length) updateFeedback();
 
   const strengths = $('strengths');
   strengths.replaceChildren();
@@ -226,25 +289,26 @@ const SUPPORTED = [
   [/^https:\/\/docs\.google\.com\/presentation\//, 'slides'],
 ];
 
+const siteOf = (tab) => (SUPPORTED.find(([re]) => re.test((tab && tab.url) || '')) || [])[1] || null;
+
 function withTimeout(promise, ms) {
   return Promise.race([promise, new Promise((resolve) => setTimeout(() => resolve(null), ms))]);
 }
 
 // Tells the person whether the tab they are looking at is being watched, and
 // offers a reload when it should be but isn't.
-async function showTabStatus(settings) {
+async function showTabStatus(settings, tab) {
   const box = $('tab-status');
-  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-  const match = SUPPORTED.find(([re]) => re.test((tab && tab.url) || ''));
+  const site = siteOf(tab);
   box.replaceChildren();
   box.className = 'tab-status';
   box.hidden = false;
-  if (!match) {
+  if (!site) {
     box.textContent = t('tabUnsupported');
     return;
   }
-  const name = siteName(match[1]);
-  if (settings.disabledSites.includes(match[1])) {
+  const name = siteName(site);
+  if (settings.disabledSites.includes(site)) {
     box.textContent = t('tabSiteOff', [name]);
     return;
   }
@@ -312,9 +376,11 @@ function init() {
     render(await refreshAfter({ type: 'qh-reset' }));
   });
 
-  refreshAfter().then((res) => {
+  const tabQuery = chrome.tabs.query({ active: true, currentWindow: true }).then(([tab]) => tab);
+  tabQuery.then((tab) => initFeedback(siteOf(tab)));
+  Promise.all([refreshAfter(), tabQuery]).then(([res, tab]) => {
     render(res);
-    showTabStatus(res.settings);
+    showTabStatus(res.settings, tab);
   });
 
   // Keeps the numbers current while the popup stays open (kept open with DevTools,

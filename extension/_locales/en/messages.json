@@ -195,5 +195,57 @@
   "welDoneTitle": { "message": "All set!" },
   "welDone": { "message": "Work on YouTube, Gmail or Google Calendar, Drive and Docs as usual." },
   "welClose": { "message": "Close this tab" },
-  "welError": { "message": "Couldn't save your settings. Reload Quickhand at chrome://extensions and try again." }
+  "welError": { "message": "Couldn't save your settings. Reload Quickhand at chrome://extensions and try again." },
+  "popFeedback": { "message": "Send feedback" },
+  "fbHint": { "message": "Tell us by email about a shortcut that doesn't work or anything you'd like. Copy the text below and paste it into the mail. Quickhand never sends anything itself." },
+  "fbKind": { "message": "What is it about?" },
+  "fbKindBroken": { "message": "A shortcut doesn't work" },
+  "fbKindWrong": { "message": "It suggests the wrong shortcut" },
+  "fbKindMissed": { "message": "It doesn't notice a button I click" },
+  "fbKindSite": { "message": "Please add a site" },
+  "fbKindOther": { "message": "Something else" },
+  "fbSite": { "message": "Which site?" },
+  "fbSiteNone": { "message": "None" },
+  "fbMessage": { "message": "Tell us more (what you clicked or pressed, and what happened)" },
+  "fbIncludeLog": { "message": "Add my last 10 actions (action names and hint results only, no addresses or content)" },
+  "fbPreview": { "message": "Text to copy (you can still edit it in the mail)" },
+  "fbCopy": { "message": "Copy and open mail" },
+  "fbCopied": {
+    "message": "Copied. Paste it ($KEY$) into the new mail and send it.",
+    "placeholders": { "key": { "content": "$1" } }
+  },
+  "fbCopyFailed": { "message": "Couldn't copy. Please select the text above and copy it yourself." },
+  "fbAddress": {
+    "message": "If no mail opens, please write to $ADDRESS$.",
+    "placeholders": { "address": { "content": "$1" } }
+  },
+  "fbSubject": {
+    "message": "[Quickhand feedback] $KIND$",
+    "placeholders": { "kind": { "content": "$1" } }
+  },
+  "fbPasteHere": {
+    "message": "Please paste the copied text here ($KEY$).",
+    "placeholders": { "key": { "content": "$1" } }
+  },
+  "fbTitle": { "message": "[Quickhand feedback]" },
+  "fbLineKind": {
+    "message": "Kind: $KIND$",
+    "placeholders": { "kind": { "content": "$1" } }
+  },
+  "fbLineSite": {
+    "message": "Site: $SITE$",
+    "placeholders": { "site": { "content": "$1" } }
+  },
+  "fbLineMessage": { "message": "Details:" },
+  "fbNoMessage": { "message": "(none)" },
+  "fbLineEnv": {
+    "message": "Setup: Quickhand $VERSION$ · Chrome $CHROME$ · $OS$ · UI language $LANG$",
+    "placeholders": {
+      "version": { "content": "$1" }, "chrome": { "content": "$2" }, "os": { "content": "$3" }, "lang": { "content": "$4" }
+    }
+  },
+  "fbLineLog": { "message": "Recent actions (newest first):" },
+  "fbNoLog": { "message": "(none yet)" },
+  "fbInputMouse": { "message": "Mouse" },
+  "fbInputKey": { "message": "Shortcut" }
 }

@@ -79,6 +79,20 @@
     <ul id="muted" class="list muted"></ul>
   </details>
 
+  <details id="feedback" class="block feedback">
+    <summary data-i18n="popFeedback"></summary>
+    <p class="hint" data-i18n="fbHint"></p>
+    <label class="field"><span data-i18n="fbKind"></span><select id="fb-kind"></select></label>
+    <label class="field"><span data-i18n="fbSite"></span><select id="fb-site"></select></label>
+    <label class="field"><span data-i18n="fbMessage"></span><textarea id="fb-message" rows="3"></textarea></label>
+    <label class="switch"><input id="fb-log" type="checkbox" checked><span data-i18n="fbIncludeLog"></span></label>
+    <h3 data-i18n="fbPreview"></h3>
+    <textarea id="fb-preview" class="preview" rows="7" readonly></textarea>
+    <button id="fb-send" class="btn primary" type="button" data-i18n="fbCopy"></button>
+    <p id="fb-status" class="hint" role="status"></p>
+    <p id="fb-address" class="hint"></p>
+  </details>
+
   <details class="block records">
     <summary data-i18n="popRecords"></summary>
     <p class="hint" data-i18n="popRecordsHint"></p>
@@ -90,6 +104,7 @@
   </details>
 
   <script src="../core/keys.js"></script>
+  <script src="../core/feedback.js"></script>
   <script src="../ui/ui.js"></script>
   <script src="popup.js"></script>
 </body>

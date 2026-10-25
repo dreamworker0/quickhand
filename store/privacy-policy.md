@@ -1,6 +1,6 @@
 # 손빠르미 개인정보처리방침
 
-시행일: 2026년 10월 24일
+시행일: 2026년 10월 25일
 
 손빠르미(이하 "확장 프로그램")는 사용자가 마우스로 한 동작에 키보드 단축키가 있으면 그 단축키를 알려 주는 크롬 확장 프로그램입니다. 이 방침은 확장 프로그램이 어떤 정보를 다루고 어떻게 보관하는지 설명합니다.
 
@@ -31,6 +31,8 @@
 
 확장 프로그램은 어떤 정보도 개발자나 제3자의 서버로 보내지 않습니다. 정보를 판매하거나 공유하지 않으며, 광고나 분석 도구를 사용하지 않습니다.
 
+팝업의 **의견 보내기**는 사용자가 고른 의견 종류, 사이트 이름, 직접 적은 말, 버전 정보(손빠르미·크롬 버전, 운영체제, 화면 언어)와, 사용자가 고른 경우 최근 동작 10개를 보여 주고 클립보드에 복사한 뒤 사용자의 메일 프로그램에서 새 메일(받는 사람 ehsheh@gmail.com)을 엽니다. 확장 프로그램이 직접 보내는 것은 없으며, 사용자가 그 내용을 메일에 붙여 넣어 보낼 때만 개발자에게 전달됩니다. 받은 메일은 문제를 고치고 답장하는 데에만 씁니다.
+
 ## 4. 사용 목적
 
 기록은 단축키를 알려 줄 때와 알리지 않을 때를 정하고(예: 이미 익힌 단축키는 알리지 않음), 팝업에서 사용자가 자신의 기록을 볼 수 있게 하는 데에만 사용합니다.
@@ -53,7 +55,7 @@ ehsheh@gmail.com
 
 # Quickhand Privacy Policy
 
-Effective: October 24, 2026
+Effective: October 25, 2026
 
 Quickhand is a Chrome extension that shows the keyboard shortcut for an action you just did with the mouse. It works only on YouTube, Gmail, Google Calendar, Google Drive and Google Docs, Sheets and Slides.
 
@@ -64,6 +66,8 @@ Quickhand is a Chrome extension that shows the keyboard shortcut for an action y
 **Where it is kept:** records stay on your device in Chrome's extension storage. Only your settings may be synced by Chrome to your other devices signed in to the same Google account.
 
 **Sharing:** nothing is sent to the developer or any third party. No data is sold or shared, and no advertising or analytics tools are used.
+
+**Feedback:** the popup's Send feedback shows the kind of feedback, the site, your own words, version details (Quickhand and Chrome versions, operating system, UI language) and, if you choose, your last 10 actions, copies them to the clipboard and opens a new mail to ehsheh@gmail.com in your mail program. The extension sends nothing itself; the developer gets it only if you paste it into the mail and send it, and uses it only to fix problems and reply.
 
 **Your control:** view your records from the toolbar icon › View saved records, and delete them at any time with Delete all records. Removing the extension also removes its stored records.
 

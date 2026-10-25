@@ -195,5 +195,57 @@
   "welDoneTitle": { "message": "준비됐어요!" },
   "welDone": { "message": "이제 유튜브나 Gmail, 구글 캘린더·드라이브·문서에서 평소처럼 일해 보세요." },
   "welClose": { "message": "이 탭 닫기" },
-  "welError": { "message": "설정을 저장하지 못했어요. chrome://extensions에서 손빠르미를 새로고침한 뒤 다시 눌러 주세요." }
+  "welError": { "message": "설정을 저장하지 못했어요. chrome://extensions에서 손빠르미를 새로고침한 뒤 다시 눌러 주세요." },
+  "popFeedback": { "message": "의견 보내기" },
+  "fbHint": { "message": "안 되는 단축키나 바라는 점을 메일로 알려 주세요. 아래 내용을 복사해 메일에 붙여 넣으면 돼요. 손빠르미가 직접 보내는 것은 없어요." },
+  "fbKind": { "message": "어떤 의견인가요?" },
+  "fbKindBroken": { "message": "단축키가 안 돼요" },
+  "fbKindWrong": { "message": "잘못된 단축키를 알려 줘요" },
+  "fbKindMissed": { "message": "누른 버튼을 알아보지 못해요" },
+  "fbKindSite": { "message": "새 사이트를 바라요" },
+  "fbKindOther": { "message": "기타" },
+  "fbSite": { "message": "어느 사이트인가요?" },
+  "fbSiteNone": { "message": "해당 없음" },
+  "fbMessage": { "message": "자세히 적어 주세요 (무엇을 눌렀고 어떻게 됐는지)" },
+  "fbIncludeLog": { "message": "최근 동작 10개 넣기 (동작 이름과 알림 결과만, 주소나 내용은 없어요)" },
+  "fbPreview": { "message": "복사될 내용 (메일에서 더 고칠 수 있어요)" },
+  "fbCopy": { "message": "복사하고 메일 열기" },
+  "fbCopied": {
+    "message": "복사했어요. 열린 메일 본문에 붙여 넣어($KEY$) 보내 주세요.",
+    "placeholders": { "key": { "content": "$1" } }
+  },
+  "fbCopyFailed": { "message": "복사하지 못했어요. 위 내용을 직접 선택해 복사해 주세요." },
+  "fbAddress": {
+    "message": "메일이 열리지 않으면 $ADDRESS$으로 보내 주세요.",
+    "placeholders": { "address": { "content": "$1" } }
+  },
+  "fbSubject": {
+    "message": "[손빠르미 의견] $KIND$",
+    "placeholders": { "kind": { "content": "$1" } }
+  },
+  "fbPasteHere": {
+    "message": "여기에 복사한 내용을 붙여 넣어 주세요 ($KEY$).",
+    "placeholders": { "key": { "content": "$1" } }
+  },
+  "fbTitle": { "message": "[손빠르미 의견]" },
+  "fbLineKind": {
+    "message": "종류: $KIND$",
+    "placeholders": { "kind": { "content": "$1" } }
+  },
+  "fbLineSite": {
+    "message": "사이트: $SITE$",
+    "placeholders": { "site": { "content": "$1" } }
+  },
+  "fbLineMessage": { "message": "적은 말:" },
+  "fbNoMessage": { "message": "(없음)" },
+  "fbLineEnv": {
+    "message": "환경: 손빠르미 $VERSION$ · Chrome $CHROME$ · $OS$ · 화면 언어 $LANG$",
+    "placeholders": {
+      "version": { "content": "$1" }, "chrome": { "content": "$2" }, "os": { "content": "$3" }, "lang": { "content": "$4" }
+    }
+  },
+  "fbLineLog": { "message": "최근 동작 (새것부터):" },
+  "fbNoLog": { "message": "(아직 없음)" },
+  "fbInputMouse": { "message": "마우스" },
+  "fbInputKey": { "message": "단축키" }
 }
