@@ -20,6 +20,7 @@
     window: 10, // recent uses kept per action
     learnMinUses: 10,
     learnRatio: 0.8,
+    knownRatio: 0.5, // used by keyboard before any hint: known while half of recent uses are keys
     relapseRatio: 0.5,
     relapseGapMs: DAY,
     newWaitMs: 10 * 60 * 1000, // a first hint held back by the gap goes before repeats this long
@@ -106,8 +107,11 @@
     return k / a.recent.length;
   }
 
+  // Learned after a hint stays learned (a drift back to the mouse gets a daily
+  // reminder). A shortcut pressed before any hint only counts as known while the
+  // keyboard keeps up: one press of Space doesn't silence play/pause for good.
   function isLearned(a) {
-    return !!(a.learnedAt || a.known);
+    return !!(a.learnedAt || (a.known && keyRatio(a) >= RULES.knownRatio));
   }
 
   function isPaused(settings, now) {

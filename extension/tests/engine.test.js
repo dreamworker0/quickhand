@@ -119,6 +119,29 @@ test('skips shortcuts the person already uses by keyboard', () => {
   assert.equal(engine.recordMouse(state, action('c'), settings({ strength: 'active' }), START).reason, 'learned');
 });
 
+test('a key pressed before any hint stops counting once the mouse takes over', () => {
+  const state = engine.emptyState(START);
+  const s = settings();
+  engine.recordKey(state, action('k'), START);
+  // Half of the recent uses are still the keyboard: known, no hint.
+  assert.equal(engine.recordMouse(state, action('k'), s, START).reason, 'learned');
+  // Mostly the mouse now: hinted like any new shortcut, from the 3rd mouse use.
+  assert.equal(engine.recordMouse(state, action('k'), s, START).reason, 'below-threshold');
+  const r = engine.recordMouse(state, action('k'), s, START);
+  assert.equal(r.show, true);
+  assert.equal(r.kind, 'new');
+});
+
+test('a state where one key press hid a mouse-heavy shortcut hints it again', () => {
+  const state = engine.emptyState(START);
+  const s = settings();
+  engine.recordKey(state, action('k'), START);
+  for (let i = 0; i < 60; i++) engine.recordMouse(state, action('k'), settings({ enabled: false }), START);
+  const r = engine.recordMouse(state, action('k'), s, START + MIN);
+  assert.equal(r.show, true);
+  assert.equal(r.kind, 'new');
+});
+
 test('stays quiet while paused, turned off or in full screen, but still counts', () => {
   const state = engine.emptyState(START);
   const active = settings({ strength: 'active' });
