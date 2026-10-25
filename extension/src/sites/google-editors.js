@@ -642,6 +642,8 @@
   // The keyboard way of a range drag: Shift+arrow, or Ctrl+Shift+arrow to the
   // data's edge. Counted once per range, when the name box then shows one;
   // in a cell being edited it selects text instead and the box stays one cell.
+  // A range shrunk back to one cell is over: the next press starts a new one
+  // (Shift+→ then Shift+← twice selects to the left).
   let rangeCounted = false;
   const ARROWS = ['arrowup', 'arrowdown', 'arrowleft', 'arrowright'];
   function rangeKey(app, combo) {
@@ -649,7 +651,12 @@
       rangeCounted = false;
       return undefined;
     }
-    if (rangeCounted) return null;
+    if (rangeCounted) {
+      return new Promise((resolve) => setTimeout(() => {
+        if (!cellRange(nameBox())) rangeCounted = false;
+        resolve(null);
+      }, 200));
+    }
     rangeCounted = true; // a quick second press waits for this answer
     return new Promise((resolve) => setTimeout(() => {
       const yes = cellRange(nameBox());

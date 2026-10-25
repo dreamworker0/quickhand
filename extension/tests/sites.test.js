@@ -259,6 +259,11 @@ test('Sheets: Shift+arrow to a range counts once; inside a cell being edited it 
   const first = await key('ArrowRight', 'ArrowRight', { shiftKey: true });
   assert.equal(first.id, 'sheets:range');
   assert.equal(await key('ArrowDown', 'ArrowDown', { shiftKey: true }), null); // the same range, widened
+  box.value = 'B2';
+  assert.equal(await key('ArrowLeft', 'ArrowLeft', { shiftKey: true }), null); // shrunk back to one cell
+  box.value = 'A2:B2';
+  assert.equal((await key('ArrowLeft', 'ArrowLeft', { shiftKey: true })).id, 'sheets:range'); // a new range to the left
+  box.value = 'B2:C2';
   assert.equal(key('KeyB', 'b', { ctrlKey: true }).id, 'sheets:mod+b'); // something else, then a new range
   box.value = 'B2:B9';
   assert.equal((await key('ArrowDown', 'ArrowDown', { shiftKey: true, ctrlKey: true })).id, 'sheets:range');
