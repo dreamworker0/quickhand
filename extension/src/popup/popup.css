@@ -13,6 +13,13 @@ body { width: 360px; }
 .status { font-size: 12px; color: var(--quiet); }
 .status.on::before { content: "● "; color: var(--accent); }
 
+/* The on/off button stands out: outlined in the accent while hints are on, filled
+   while they are off or paused, so turning them back on is the obvious next step. */
+#toggle { flex: none; min-width: 64px; padding: 7px 14px; border-width: 2px; font-weight: 700; }
+#toggle.is-on { border-color: var(--accent); color: var(--accent); }
+#toggle.is-off { border-color: var(--accent); background: var(--accent); color: var(--accent-ink); }
+#toggle.is-off:hover { filter: brightness(1.08); }
+
 .tab-status {
   margin: 12px 16px 0;
   padding: 8px 10px;

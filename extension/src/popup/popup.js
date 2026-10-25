@@ -234,6 +234,7 @@ function render(res) {
       ? t('popPausedUntil', [new Date(settings.pauseUntil).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })])
       : t('popStatusOn');
   $('toggle').textContent = on ? t('popTurnOff') : t(paused ? 'popResume' : 'popTurnOn');
+  $('toggle').className = 'btn ' + (on ? 'is-on' : 'is-off');
   $('toggle').onclick = async () => render(await refreshAfter({ type: 'qh-settings', patch: { enabled: !on, pauseUntil: 0 } }));
 
   $('observing').hidden = summary.observeLeft === 0;

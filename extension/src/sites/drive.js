@@ -36,18 +36,35 @@
     'mod+enter': ['새 탭에서 열기', 'Open in new tab'],
     'alt+r': ['정렬 메뉴 열기', 'Open sort menu'],
     '/': ['검색', 'Search'],
+    // Moving around ("Alt+G then …"), checked on the help page and in Drive itself.
+    'alt+g>n': ['탐색 패널로 이동', 'Go to navigation'],
+    'alt+g>f': ['탐색 패널(폴더 목록)로 이동', 'Go to the navigation panel'],
+    'alt+g>i': ['항목 보기로 이동', 'Go to the items view'],
+    'alt+g>c': ['페이지 콘텐츠로 이동', 'Go to the page content'],
+    'alt+g>d': ['세부정보 창으로 이동', 'Go to the details pane'],
+    'alt+g>t': ['앱 상단(Google 바)으로 이동', 'Go to the top of the app'],
+    'alt+g>a': ['다운로드 상태로 이동', 'Go to the download status'],
+    'alt+g>u': ['업로드 상태로 이동', 'Go to the upload status'],
+    'alt+g>k': ['마지막 메시지 표시', 'Show the last message'],
+    'alt+t>q': ['다음 화면 밀도', 'Next visual density'],
+    'shift+space': ['항목 선택/선택 해제', 'Select or deselect the item'],
+    'mod+shift+c': ['항목 제목 복사', 'Copy item titles'],
+    'mod+shift+v': ['바로가기로 붙여넣기', 'Paste as a shortcut'],
+    'alt+n': ['새로 만들기 메뉴', 'New menu'],
+    'shift+f10': ['추가 작업 메뉴', 'More actions menu'],
+    'alt+a': ['추가 작업 메뉴', 'More actions menu'],
+    'alt+shift+a': ['현재 폴더 작업 메뉴', 'Current folder actions menu'],
+    'mod+shift+s': ['설정 메뉴', 'Settings menu'],
   };
 
   // Menu items that don't print their shortcut (keys from Drive's help page).
-  // Mac uses Control+C where Windows uses Alt+C.
+  // Mac uses Control+C where Windows uses Alt+C. Docs, Sheets, Slides and Forms are
+  // left out: the "신규" menu prints the key on their "빈 문서"-style items, and the
+  // same names in right-click "연결 앱" open a file with that app instead of making one.
   function menuKeys(label, mac) {
     const create = mac ? 'Control+C 다음 ' : 'Alt+C 다음 ';
     const keys = {
-      'Google Docs': create + 'T', 'Google 문서': create + 'T',
-      'Google Sheets': create + 'S', 'Google 스프레드시트': create + 'S', 'Google 시트': create + 'S',
-      'Google Slides': create + 'P', 'Google 프레젠테이션': create + 'P', 'Google 슬라이드': create + 'P',
-      'Google Forms': create + 'O', 'Google 설문지': create + 'O',
-      'Google Drawings': create + 'D', 'Google 그림': create + 'D',
+      'Google Drawings': create + 'D', 'Google 그림': create + 'D', 'Google 드로잉': create + 'D',
       'Copy link': 'Ctrl+Alt+L', '링크 복사': 'Ctrl+Alt+L',
     };
     return keys[label] ? K.parse(mac ? keys[label].replace(/Ctrl/g, 'Command') : keys[label], mac) : null;
@@ -105,8 +122,9 @@
     return null;
   }
 
-  // "Alt+C then F" style sequences (Control+C on Mac for the create menu).
-  const nextKey = K.sequencer((c) => !c.mod && !c.shift && (c.alt || c.ctrl) && (c.key === 'c' || c.key === 'v'));
+  // "Alt+C then F" style sequences (Control+C on Mac for the create menu): C creates,
+  // V shows panes, G moves the focus, T changes the density.
+  const nextKey = K.sequencer((c) => !c.mod && !c.shift && (c.alt || c.ctrl) && ['c', 'v', 'g', 't'].includes(c.key));
   // "Make a copy" is Ctrl+C then Ctrl+V; copy stays a copy on its own.
   let lastCopyAt = 0;
 

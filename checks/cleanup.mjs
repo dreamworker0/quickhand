@@ -9,27 +9,32 @@ const { context } = await launch({ headless: false });
 const page = await context.newPage();
 const rows = page.locator('[role="row"]', { hasText: TITLE }).filter({ visible: true });
 
-async function recent() {
-  await page.goto('https://drive.google.com/drive/recent', { waitUntil: 'domcontentloaded' });
+// The recent list has the files; folders (drive-shortcuts.mjs makes one) are in My Drive.
+async function open(list) {
+  await page.goto('https://drive.google.com/drive/' + list, { waitUntil: 'domcontentloaded' });
   await page.waitForSelector('[role="row"]', { timeout: 60000 });
   await page.waitForTimeout(4000);
 }
 
-await recent();
-for (let i = 0; i < 25 && (await rows.count()); i++) {
-  try {
-    await rows.first().click();
-    await page.keyboard.press('Delete');
-    // Drive asks "휴지통으로 이동하시겠습니까?"; this only moves the file to the trash.
-    await page.getByRole('button', { name: '휴지통으로 이동', exact: true }).filter({ visible: true }).first().click({ timeout: 5000 });
-    await page.waitForTimeout(2500);
-  } catch (e) {
-    console.log('retrying after:', e.message.split('\n')[0]);
+let left = 0;
+for (const list of ['recent', 'my-drive']) {
+  await open(list);
+  for (let i = 0; i < 25 && (await rows.count()); i++) {
+    try {
+      await rows.first().click();
+      await page.keyboard.press('Delete');
+      // Drive asks "휴지통으로 이동하시겠습니까?" for some items; this only moves them to the trash.
+      const confirm = page.getByRole('button', { name: '휴지통으로 이동', exact: true }).filter({ visible: true }).first();
+      await confirm.click({ timeout: 5000 }).catch(() => {});
+      await page.waitForTimeout(2500);
+    } catch (e) {
+      console.log('retrying after:', e.message.split('\n')[0]);
+    }
+    await open(list); // the list redraws after each move; start from a fresh one
   }
-  await recent(); // the list redraws after each move; start from a fresh one
+  left += await rows.count();
 }
 
-const left = await rows.count();
 console.log('left outside the trash:', left);
 await page.goto('https://drive.google.com/drive/trash', { waitUntil: 'domcontentloaded' });
 await page.waitForSelector('[role="main"]', { timeout: 60000 });

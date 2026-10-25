@@ -82,6 +82,40 @@ test('Gmail and Drive normal two-step shortcuts still work', () => {
   assert.equal(drive.fromKey(event('KeyF', 'f', { altKey: true }), false).id, 'drive:alt+c>f');
 });
 
+test('Drive: the help page keys found missing in the real-site check are named', () => {
+  const { site } = siteEnv('drive');
+  const id = (code, key, mods) => { const r = site.fromKey(event(code, key, mods), false); return r && r.id; };
+  assert.equal(id('KeyG', 'g', { altKey: true }), null);
+  assert.equal(id('KeyF', 'f', { altKey: true }), 'drive:alt+g>f'); // Alt still held for the second key
+  assert.equal(id('KeyG', 'g', { altKey: true }), null);
+  assert.equal(id('KeyK', 'k'), 'drive:alt+g>k');
+  assert.equal(id('KeyT', 't', { altKey: true }), null);
+  assert.equal(id('KeyQ', 'q'), 'drive:alt+t>q');
+  assert.equal(id('Space', ' ', { shiftKey: true }), 'drive:shift+space');
+  assert.equal(id('KeyC', 'c', { ctrlKey: true, shiftKey: true }), 'drive:mod+shift+c');
+  assert.equal(id('KeyV', 'v', { ctrlKey: true, shiftKey: true }), 'drive:mod+shift+v');
+  assert.equal(id('KeyN', 'n', { altKey: true }), 'drive:alt+n');
+  assert.equal(id('F10', 'F10', { shiftKey: true }), 'drive:shift+f10');
+  assert.equal(id('KeyA', 'a', { altKey: true, shiftKey: true }), 'drive:alt+shift+a');
+  assert.equal(id('KeyS', 's', { ctrlKey: true, shiftKey: true }), 'drive:mod+shift+s');
+  // Mac: Control+T then Q, Control+N
+  const mac = (code, key, mods) => { const r = site.fromKey(event(code, key, mods), true); return r && r.label; };
+  assert.equal(mac('KeyT', 't', { ctrlKey: true }), null);
+  assert.ok(mac('KeyQ', 'q'));
+  assert.ok(mac('KeyN', 'n', { ctrlKey: true }));
+});
+
+test('Drive: "Google 문서" in the right-click "연결 앱" menu is not the create shortcut', () => {
+  const { site } = siteEnv('drive');
+  class MenuItem extends Element {
+    constructor(text) { super({ control: true, role: 'menuitem' }); this.text = text; }
+    querySelectorAll() { return [{ childElementCount: 0, textContent: this.text }]; }
+  }
+  const menuitem = (text) => new MenuItem(text);
+  assert.equal(site.fromMouse({ target: menuitem('Google 문서') }, false), null);
+  assert.equal(site.fromMouse({ target: menuitem('Google 드로잉') }, false).id, 'drive:alt+c>d');
+});
+
 test('Gmail and Drive preserve names learned from page shortcut labels', () => {
   for (const id of ['gmail', 'drive']) {
     const { site } = siteEnv(id);

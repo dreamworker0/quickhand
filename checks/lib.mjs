@@ -2,6 +2,7 @@
 // brings up a card that can actually be seen.
 import { chromium } from 'playwright';
 import { fileURLToPath } from 'node:url';
+import { createRequire } from 'node:module';
 import path from 'node:path';
 import fs from 'node:fs';
 
@@ -38,21 +39,39 @@ function watchCards() {
   }).observe(document, { childList: true, subtree: true });
 }
 
+// Chrome fetches a 4 GB on-device AI model into a fresh profile; the checks never use
+// it. Playwright passes one --disable-features list and a second one would replace it,
+// so its list is taken and these are added to it (left as is if that ever fails).
+const NO_MODEL = ['OptimizationGuideModelDownloading', 'OptimizationHintsFetching', 'OptimizationTargetPrediction', 'OptimizationHints'];
+function featureSwitch() {
+  try {
+    const require = createRequire(import.meta.url);
+    const dir = path.dirname(require.resolve('playwright-core/package.json'));
+    const { chromiumSwitches } = require(path.join(dir, 'lib/server/chromium/chromiumSwitches.js'));
+    const own = chromiumSwitches(undefined, BROWSER).find((a) => a.startsWith('--disable-features='));
+    return own ? { ignore: [own], args: [own + ',' + NO_MODEL.join(',')] } : { ignore: [], args: [] };
+  } catch (e) {
+    return { ignore: [], args: [] };
+  }
+}
+
 // Google Chrome (137+) ignores --load-extension; it loads an unpacked extension
 // through the DevTools protocol instead, once started with
 // --enable-unsafe-extension-debugging. Edge still takes the flag.
 export async function launch({ headless = true } = {}) {
   fs.mkdirSync(RESULTS, { recursive: true });
   const chrome = BROWSER === 'chrome';
+  const features = featureSwitch();
   const context = await chromium.launchPersistentContext(PROFILE, {
     channel: BROWSER,
     headless,
     viewport: { width: 1280, height: 800 },
     locale: 'ko-KR',
-    ignoreDefaultArgs: ['--disable-extensions'],
-    args: chrome
-      ? ['--enable-unsafe-extension-debugging']
-      : [`--disable-extensions-except=${EXTENSION}`, `--load-extension=${EXTENSION}`],
+    ignoreDefaultArgs: ['--disable-extensions', ...features.ignore],
+    args: [
+      ...(chrome ? ['--enable-unsafe-extension-debugging'] : [`--disable-extensions-except=${EXTENSION}`, `--load-extension=${EXTENSION}`]),
+      ...features.args,
+    ],
   });
   await context.addInitScript(watchCards);
   let extensionId = null;
