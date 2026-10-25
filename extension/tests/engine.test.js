@@ -423,3 +423,43 @@ test('midnight resets daily counters and caps, but preserves rolling repeat inte
   assert.deepEqual(state.missedToday, {});
   assert.equal(engine.recordMouse(state, action('a'), gentle, before + 24 * HOUR).show, true);
 });
+
+test('practising a hinted shortcut reports how many keyboard uses are left', () => {
+  const state = engine.emptyState(START);
+  clicks(state, 'b', 3, settings(), START); // hinted on the 3rd click
+  const steps = [];
+  for (let i = 0; i < 8; i++) {
+    const r = engine.recordKey(state, action('b'), START + MIN);
+    steps.push(r.learnedNow ? 'learned' : `${r.done}/${r.left}`);
+  }
+  assert.deepEqual(steps, ['1/7', '2/6', '3/5', '4/4', '5/3', '6/2', '7/1', 'learned']);
+  assert.equal(engine.recordKey(state, action('b'), START + MIN).left, undefined);
+});
+
+test('no practice progress for shortcuts never hinted or muted', () => {
+  const state = engine.emptyState(START);
+  assert.equal(engine.recordKey(state, action('c'), START).left, undefined);
+  clicks(state, 'b', 3, settings(), START);
+  engine.setMuted(state, 'b', true, START);
+  assert.equal(engine.recordKey(state, action('b'), START).left, undefined);
+});
+
+test('a streak of shortcuts is cheered at 5, 10, 20, 30, 50 and every 50 after', () => {
+  const state = engine.emptyState(START);
+  const cheered = [];
+  for (let i = 1; i <= 150; i++) {
+    const r = engine.recordKey(state, action('c'), START);
+    if (r.combo) cheered.push(r.combo);
+  }
+  assert.deepEqual(cheered, [5, 10, 20, 30, 50, 100, 150]);
+});
+
+test('a mouse action or a new day ends the streak', () => {
+  const state = engine.emptyState(START);
+  for (let i = 0; i < 4; i++) engine.recordKey(state, action('c'), START);
+  engine.recordMouse(state, action('c'), settings(), START);
+  for (let i = 0; i < 4; i++) assert.equal(engine.recordKey(state, action('c'), START).combo, undefined);
+  assert.equal(engine.recordKey(state, action('c'), START).combo, 5);
+  for (let i = 0; i < 4; i++) engine.recordKey(state, action('c'), START);
+  assert.equal(engine.recordKey(state, action('c'), START + 24 * HOUR).combo, undefined);
+});

@@ -39,3 +39,30 @@ test('the first recognized click after install sends the watching card once', as
   assert.deepEqual(bg.cards.map((c) => [c.variant, c.label, c.need]), [['intro', '재생 / 일시정지', 3]]);
   assert.equal(bg.storage.local.qh_state.introShown, true);
 });
+
+test('practising a hinted shortcut sends a cheer unless cheers are turned off', async () => {
+  const bg = backgroundEnv();
+  const sender = { tab: { id: 7 } };
+  const action = { id: 'yt:playpause', site: 'youtube', label: '재생 / 일시정지', display: [['K']] };
+  for (let i = 0; i < 3; i++) await bg.request({ type: 'qh-mouse', action }, sender);
+  await bg.request({ type: 'qh-key', action }, sender);
+  await new Promise((resolve) => setImmediate(resolve));
+  const praise = bg.cards.filter((c) => c.variant === 'praise');
+  assert.deepEqual(praise.map((c) => [c.id, c.done, c.left]), [['yt:playpause', 1, 7]]);
+
+  await bg.request({ type: 'qh-settings', patch: { praise: false } });
+  await bg.request({ type: 'qh-key', action }, sender);
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.equal(bg.cards.filter((c) => c.variant === 'praise').length, 1);
+});
+
+test('no cheers while hints are turned off', async () => {
+  const bg = backgroundEnv();
+  const sender = { tab: { id: 7 } };
+  await bg.request({ type: 'qh-settings', patch: { enabled: false } });
+  const action = { id: 'docs:mod+c', site: 'docs', label: '복사', display: [['Ctrl', 'C']] };
+  for (let i = 0; i < 5; i++) await bg.request({ type: 'qh-key', action }, sender);
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.equal(bg.cards.length, 0);
+  assert.equal(bg.storage.local.qh_state.combo, 5);
+});

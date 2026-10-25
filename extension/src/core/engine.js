@@ -27,6 +27,13 @@
     logSize: 10, // recent decisions kept for the popup
   };
 
+  // Shortcuts in a row without the mouse that earn a cheer; every 50 after the last.
+  const COMBO_STEPS = [5, 10, 20, 30, 50];
+
+  function comboMilestone(n) {
+    return COMBO_STEPS.includes(n) || (n > 50 && n % 50 === 0);
+  }
+
   const pad = (n) => String(n).padStart(2, '0');
 
   function dayKey(now) {
@@ -39,6 +46,7 @@
       version: 1,
       day: dayKey(now),
       introShown: false,
+      combo: 0,
       lastAlertAt: 0,
       lastNewAlertAt: 0,
       newToday: [],
@@ -62,6 +70,7 @@
     state.waitingNew = {};
     state.todayMouse = 0;
     state.todayKey = 0;
+    state.combo = 0;
     for (const a of Object.values(state.actions)) {
       a.todayMouse = 0;
       a.todayKey = 0;
@@ -111,6 +120,16 @@
   // Learned after a hint stays learned (a drift back to the mouse gets a daily
   // reminder). A shortcut pressed before any hint only counts as known while the
   // keyboard keeps up: one press of Space doesn't silence play/pause for good.
+  // Keyboard uses still needed before a hinted shortcut counts as learned.
+  function usesToLearn(a) {
+    let recent = a.recent;
+    for (let n = 1; n <= RULES.window; n++) {
+      recent = (recent + 'k').slice(-RULES.window);
+      if (recent.length >= RULES.learnMinUses && keyRatio({ recent }) >= RULES.learnRatio) return n;
+    }
+    return RULES.window;
+  }
+
   function isLearned(a) {
     return !!(a.learnedAt || (a.known && keyRatio(a) >= RULES.knownRatio));
   }
@@ -145,6 +164,7 @@
     if (!a.firstKeyAt) a.firstKeyAt = now;
     a.todayKey++;
     state.todayKey++;
+    state.combo = (state.combo || 0) + 1;
     pushRecent(a, 'k');
     // Used by keyboard before we ever suggested it: the person already knows it.
     if (!a.introducedAt && !a.learnedAt) a.known = true;
@@ -154,7 +174,14 @@
       learnedNow = true;
     }
     remember(state, a, now, { input: 'key', outcome: learnedNow ? 'learned-now' : 'key' });
-    return { learnedNow, action: a };
+    const result = { learnedNow, action: a };
+    // Practising a shortcut we hinted (and weren't asked to drop): how far along it is.
+    if (a.introducedAt && !a.learnedAt && !a.mutedAt) {
+      result.done = Math.round(keyRatio(a) * a.recent.length);
+      result.left = usesToLearn(a);
+    }
+    if (comboMilestone(state.combo)) result.combo = state.combo;
+    return result;
   }
 
   // The last few decisions and why, so the popup can answer "why no hint?". Only
@@ -186,6 +213,7 @@
     a.mouse++;
     a.todayMouse++;
     state.todayMouse++;
+    state.combo = 0;
     pushRecent(a, 'm');
 
     const strength = STRENGTHS[settings.strength] || STRENGTHS.normal;

@@ -21,6 +21,16 @@
     "message": "같은 동작을 마우스로 $COUNT$번째 하면 단축키를 알려 드려요.",
     "placeholders": { "count": { "content": "$1" } }
   },
+  "praiseTitle": { "message": "좋아요!" },
+  "praiseCombo": {
+    "message": "🔥 콤보 $COUNT$!",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "praiseLeft": {
+    "message": "$COUNT$번 더 쓰면 익힌 단축키가 돼요.",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "praiseComboText": { "message": "마우스 없이 단축키를 연달아 쓰고 있어요." },
   "toastOn": { "message": "알림을 켰어요" },
   "toastOff": { "message": "알림을 껐어요" },
   "toastHintWin": { "message": "Alt+Shift+P로 다시 켜고 끌 수 있어요." },
@@ -98,6 +108,8 @@
   },
   "popSettings": { "message": "설정" },
   "popStrength": { "message": "알림 강도" },
+  "popPraiseTitle": { "message": "칭찬 효과" },
+  "popPraise": { "message": "단축키를 쓰면 칭찬하고, 연달아 쓰면 축하해요" },
   "strengthGentle": { "message": "조금씩" },
   "strengthNormal": { "message": "보통" },
   "strengthActive": { "message": "적극적으로" },

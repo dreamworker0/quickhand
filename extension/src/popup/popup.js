@@ -268,6 +268,8 @@ function render(res) {
     strengths.append(label);
   }
 
+  $('praise').checked = settings.praise !== false;
+
   for (const box of document.querySelectorAll('[data-site]')) {
     box.checked = !settings.disabledSites.includes(box.dataset.site);
   }
@@ -370,6 +372,8 @@ function init() {
       render(await refreshAfter({ type: 'qh-settings', patch: { pauseUntil: until } }));
     });
   }
+
+  $('praise').addEventListener('change', () => send({ type: 'qh-settings', patch: { praise: $('praise').checked } }));
 
   for (const box of document.querySelectorAll('[data-site]')) {
     box.addEventListener('change', async () => {

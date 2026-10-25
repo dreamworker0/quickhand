@@ -9,6 +9,8 @@
   const t = (key, subs) => chrome.i18n.getMessage(key, subs) || key;
   const mac = globalThis.QH && globalThis.QH.keys ? globalThis.QH.keys.isMac() : false;
   const SHOW_MS = 5000;
+  const PRAISE_MS = 2200; // a cheer is a moment, not something to read
+  const SPARKS = ['#2a9d8f', '#e9c46a', '#f4a261', '#e76f51', '#8ecae6'];
 
   const CSS = `
     :host { all: initial; }
@@ -39,7 +41,21 @@
     .card.hint img { animation: pop 380ms cubic-bezier(0.3, 1.4, 0.5, 1) both, wiggle 520ms ease-in-out 420ms; }
     .card.learned img { animation: pop 380ms cubic-bezier(0.3, 1.4, 0.5, 1) both, hop 320ms ease-out 400ms 2; }
     .card.hint kbd { animation: press 240ms ease-in-out 950ms 2; }
-    @media (prefers-reduced-motion: reduce) { .card, .card img, .card kbd { animation: none; } }
+    .card.praise img { animation: pop 380ms cubic-bezier(0.3, 1.4, 0.5, 1) both, hop 320ms ease-out 400ms 2; }
+    .card.praise kbd { animation: press 240ms ease-in-out 200ms 1; }
+    /* Sparks fly out from the mascot once; more of them, further, for a streak. */
+    .burst { position: absolute; left: 40px; top: 50%; width: 0; height: 0; pointer-events: none; }
+    .burst i { position: absolute; left: -3px; top: -3px; width: 6px; height: 6px; border-radius: 50%; background: var(--c); opacity: 0; animation: fly 750ms ease-out var(--d) both; }
+    @keyframes fly { 0% { opacity: 1; transform: none; } 100% { opacity: 0; transform: translate(var(--x), var(--y)) scale(0.3); } }
+    .card.praise .title { font-size: 16px; font-weight: 700; color: var(--accent); }
+    .card.praise .label { margin: 2px 0 4px; font-size: 13px; }
+    .card.combo .title { font-size: 19px; color: #e76f51; }
+    .card.combo { animation: in 180ms ease-out, cheer 520ms ease-out 120ms; }
+    @keyframes cheer { 0%, 100% { transform: none; } 35% { transform: scale(1.07); } 65% { transform: scale(0.98); } }
+    .dots { display: flex; gap: 3px; margin-top: 6px; }
+    .dots i { width: 8px; height: 8px; border-radius: 50%; background: var(--line); }
+    .dots i.on { background: var(--accent); }
+    @media (prefers-reduced-motion: reduce) { .card, .card img, .card kbd { animation: none; } .burst { display: none; } }
     .body { min-width: 0; }
     .title { margin: 0; font-size: 12px; color: var(--quiet); }
     .label { margin: 2px 0 6px; font-size: 15px; font-weight: 600; overflow-wrap: anywhere; }
@@ -68,6 +84,7 @@
 
   let host = null;
   let hideTimer = 0;
+  let current = null; // the card on screen: { variant, id }
 
   function el(tag, cls, text) {
     const node = document.createElement(tag);
@@ -104,6 +121,7 @@
     clearTimeout(hideTimer);
     if (host) host.remove();
     host = null;
+    current = null;
   }
 
   // In full screen only the full-screen element is drawn, so the card has to sit
@@ -118,7 +136,29 @@
 
   function scheduleHide() {
     clearTimeout(hideTimer);
-    hideTimer = setTimeout(hide, SHOW_MS);
+    hideTimer = setTimeout(hide, current && current.variant === 'praise' ? PRAISE_MS : SHOW_MS);
+  }
+
+  function burst(count, reach) {
+    const wrap = el('div', 'burst');
+    for (let i = 0; i < count; i++) {
+      const angle = (i / count) * 2 * Math.PI;
+      const dist = reach + (i % 3) * 12;
+      const spark = el('i');
+      spark.style.setProperty('--x', Math.round(Math.cos(angle) * dist) + 'px');
+      spark.style.setProperty('--y', Math.round(Math.sin(angle) * dist) + 'px');
+      spark.style.setProperty('--c', SPARKS[i % SPARKS.length]);
+      spark.style.setProperty('--d', i * 12 + 'ms');
+      wrap.append(spark);
+    }
+    return wrap;
+  }
+
+  // Practice progress: filled dots for keyboard uses so far, empty ones still to go.
+  function dots(done, left) {
+    const wrap = el('div', 'dots');
+    for (let i = 0; i < done + left; i++) wrap.append(el('i', i < done ? 'on' : ''));
+    return wrap;
   }
 
   // Stops hints for this one shortcut; the popup lists it so it can be turned back on.
@@ -140,12 +180,15 @@
   }
 
   function show(msg) {
+    // A cheer never pushes aside a hint for something else or the "learned" card.
+    if (msg.variant === 'praise' && current && (current.variant === 'learned' || (current.variant === 'hint' && current.id !== msg.id))) return;
     hide();
+    current = { variant: msg.variant || 'hint', id: msg.id };
     host = document.createElement('quickhand-card');
     const root = host.attachShadow({ mode: 'open' });
     const style = el('style');
     style.textContent = CSS;
-    const card = el('div', 'card ' + (msg.variant || 'hint'));
+    const card = el('div', 'card ' + (msg.variant || 'hint') + (msg.combo ? ' combo' : ''));
     card.setAttribute('role', 'status');
     card.setAttribute('aria-live', 'polite');
 
@@ -162,6 +205,10 @@
     } else if (msg.variant === 'intro') {
       // Once after install: the click was recognized, the hint comes later.
       body.append(el('p', 'title', t('introTitle')), el('p', 'label', msg.label), el('p', 'sub', t('introText', [String(msg.need)])));
+    } else if (msg.variant === 'praise') {
+      body.append(el('p', 'title', msg.combo ? t('praiseCombo', [String(msg.combo)]) : t('praiseTitle')), el('p', 'label', msg.label), keysNode(msg.display));
+      if (msg.left) body.append(dots(msg.done || 0, msg.left), el('p', 'sub', t('praiseLeft', [String(msg.left)])));
+      else body.append(el('p', 'sub', t('praiseComboText')));
     } else if (msg.variant === 'learned') {
       body.append(el('p', 'title', t('learnedTitle')), el('p', 'label', msg.label), keysNode(msg.display), el('p', 'sub', t('learnedText')));
     } else {
@@ -181,6 +228,7 @@
     close.addEventListener('click', hide);
 
     card.append(...(msg.image ? [img] : []), body, close);
+    if (msg.variant === 'praise') card.append(msg.combo ? burst(16, 56) : burst(8, 34));
     card.addEventListener('mouseenter', () => clearTimeout(hideTimer));
     card.addEventListener('mouseleave', scheduleHide);
     root.append(style, card);

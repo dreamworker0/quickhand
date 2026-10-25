@@ -10,6 +10,7 @@ const DEFAULT_SETTINGS = {
   pauseUntil: 0,
   disabledSites: [],
   onboarded: false,
+  praise: true, // cheer shortcut use: practice progress and streaks
 };
 
 async function getSettings() {
@@ -59,7 +60,7 @@ async function updateBadge(settings) {
 // it from the extension's own address is refused after the extension is
 // reloaded while the tab stays open, and that address would also let sites
 // detect the extension.
-const MASCOT = { hint: 'hint', learned: 'cheer', toast: 'main', intro: 'main' };
+const MASCOT = { hint: 'hint', learned: 'cheer', toast: 'main', intro: 'main', praise: 'cheer' };
 const pictures = {};
 
 async function picture(name) {
@@ -114,8 +115,19 @@ async function handle(msg, sender) {
         const state = await getState();
         const result = engine.recordKey(state, msg.action, Date.now());
         await saveState(state);
-        if (result.learnedNow && !isOff(settings) && tabId !== null) {
+        if (isOff(settings) || tabId === null) return { ok: true };
+        if (result.learnedNow) {
           showCard(tabId, { variant: 'learned', label: result.action.label, display: result.action.display });
+        } else if (settings.praise && (result.left || result.combo)) {
+          showCard(tabId, {
+            variant: 'praise',
+            id: result.action.id,
+            label: result.action.label,
+            display: result.action.display,
+            done: result.done,
+            left: result.left,
+            combo: result.combo,
+          });
         }
         return { ok: true };
       });

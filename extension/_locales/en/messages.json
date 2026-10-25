@@ -21,6 +21,16 @@
     "message": "Do this with the mouse $COUNT$ times and I'll show you its shortcut.",
     "placeholders": { "count": { "content": "$1" } }
   },
+  "praiseTitle": { "message": "Nice!" },
+  "praiseCombo": {
+    "message": "🔥 Combo $COUNT$!",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "praiseLeft": {
+    "message": "$COUNT$ more and it's learned.",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "praiseComboText": { "message": "Shortcut after shortcut, no mouse." },
   "toastOn": { "message": "Hints are on" },
   "toastOff": { "message": "Hints are off" },
   "toastHintWin": { "message": "Press Alt+Shift+P to turn them on or off." },
@@ -98,6 +108,8 @@
   },
   "popSettings": { "message": "Settings" },
   "popStrength": { "message": "Hint level" },
+  "popPraiseTitle": { "message": "Cheers" },
+  "popPraise": { "message": "Cheer when I use shortcuts and celebrate streaks" },
   "strengthGentle": { "message": "Gentle" },
   "strengthNormal": { "message": "Normal" },
   "strengthActive": { "message": "Active" },
