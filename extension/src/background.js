@@ -60,7 +60,7 @@ async function updateBadge(settings) {
 // it from the extension's own address is refused after the extension is
 // reloaded while the tab stays open, and that address would also let sites
 // detect the extension.
-const MASCOT = { hint: 'hint', learned: 'cheer', toast: 'main', intro: 'main', praise: 'praise' };
+const MASCOT = { hint: 'hint', learned: 'praise', toast: 'main', intro: 'main', praise: 'praise' };
 const pictures = {};
 
 async function picture(name) {

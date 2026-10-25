@@ -69,7 +69,18 @@
     .card.praise .dots i.on { background: #d48806; }
     .card.praise.combo .dots i { background: rgba(255, 255, 255, 0.35); }
     .card.praise.combo .dots i.on { background: #ffffff; }
-    .card.praise .close:hover, .card.praise .close:focus-visible { background: rgba(255, 255, 255, 0.35); }
+    /* Learning a shortcut is the biggest moment: the brand teal, largest title, most sparks. */
+    .card.learned {
+      --ink: #ffffff; --quiet: #e3fbf7; --line: rgba(255, 255, 255, 0.55); --chip: rgba(255, 255, 255, 0.22); --accent: #ffffff;
+      background: linear-gradient(135deg, #4fd1b5 0%, #2a9d8f 50%, #1b7268 100%);
+      border: 0; border-radius: 18px;
+      box-shadow: 0 12px 36px rgba(42, 157, 143, 0.5);
+      animation: rise 300ms cubic-bezier(0.3, 1.5, 0.5, 1), cheer 520ms ease-out 260ms;
+    }
+    .card.learned .title { font-size: 23px; font-weight: 800; color: #ffffff; text-shadow: 0 1px 2px rgba(10, 60, 55, 0.35); }
+    .card.learned .label { margin: 1px 0 5px; }
+    .card.praise .close:hover, .card.praise .close:focus-visible,
+    .card.learned .close:hover, .card.learned .close:focus-visible { background: rgba(255, 255, 255, 0.35); }
     @keyframes rise { from { opacity: 0; transform: translateY(24px) scale(0.8); } to { opacity: 1; transform: none; } }
     @keyframes cheer { 0%, 100% { transform: none; } 35% { transform: scale(1.07); } 65% { transform: scale(0.98); } }
     .dots { display: flex; gap: 3px; margin-top: 6px; }
@@ -249,6 +260,7 @@
 
     card.append(...(msg.image ? [img] : []), body, close);
     if (msg.variant === 'praise') card.append(msg.combo ? burst(24, 80) : burst(12, 46));
+    if (msg.variant === 'learned') card.append(burst(30, 96));
     card.addEventListener('mouseenter', () => clearTimeout(hideTimer));
     card.addEventListener('mouseleave', scheduleHide);
     root.append(style, card);

@@ -14,7 +14,7 @@
   "cardMute": { "message": "이 단축키는 그만 알리기" },
   "cardMuted": { "message": "이 단축키는 이제 알리지 않을게요." },
   "cardMutedHint": { "message": "툴바 아이콘 → 설정에서 다시 켤 수 있어요." },
-  "learnedTitle": { "message": "익혔어요!" },
+  "learnedTitle": { "message": "🎉 익혔어요!" },
   "learnedText": { "message": "이제 이 단축키는 따로 알려 드리지 않을게요." },
   "introTitle": { "message": "손빠르미가 작동 중이에요" },
   "introText": {

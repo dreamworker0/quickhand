@@ -14,7 +14,7 @@
   "cardMute": { "message": "Stop hinting this shortcut" },
   "cardMuted": { "message": "I won't hint this shortcut anymore." },
   "cardMutedHint": { "message": "Turn it back on from the toolbar icon → Settings." },
-  "learnedTitle": { "message": "You've got it!" },
+  "learnedTitle": { "message": "🎉 You've got it!" },
   "learnedText": { "message": "I won't remind you about this one anymore." },
   "introTitle": { "message": "Quickhand is on" },
   "introText": {
