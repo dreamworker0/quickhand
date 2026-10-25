@@ -400,3 +400,16 @@ test('Sheets: a menu item lying over the column letters is not a column select',
   const { click } = sheetsWithHeaders();
   assert.notEqual(click(300, 150, 300, 150, true)?.id, 'sheets:mod+space');
 });
+
+test('Slides: the help page keys are named, with two-step keys and comment letters', () => {
+  const { site } = siteEnv('slides');
+  const id = (code, key, mods) => { const r = site.fromKey(event(code, key, mods), false); return r && r.id; };
+  assert.equal(id('ArrowRight', 'ArrowRight', { altKey: true }), 'slides:alt+arrowright');
+  assert.equal(id('Digit9', '9', { ctrlKey: true, altKey: true }), 'slides:mod+alt+9');
+  assert.equal(id('PageDown', 'PageDown'), 'slides:pagedown');
+  assert.equal(id('KeyN', 'n', { ctrlKey: true, altKey: true }), null);
+  assert.equal(id('KeyW', 'w', { ctrlKey: true, altKey: true }), 'slides:mod+alt+n>w');
+  class Comment extends Element { closest(sel) { return sel.includes('docos-anchoreddocoview') ? this : null; } }
+  assert.equal(site.fromKey(event('KeyR', 'r', { target: new Comment() }), false).id, 'slides:r');
+  assert.equal(id('KeyR', 'r'), null);
+});
