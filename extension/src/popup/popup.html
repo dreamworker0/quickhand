@@ -52,6 +52,30 @@
     <ul id="log" class="list log-list"></ul>
   </details>
 
+  <details id="feedback" class="block feedback">
+    <summary data-i18n="popFeedback"></summary>
+    <p class="hint" data-i18n="fbHint"></p>
+    <label class="field"><span data-i18n="fbKind"></span><select id="fb-kind"></select></label>
+    <label class="field"><span data-i18n="fbSite"></span><select id="fb-site"></select></label>
+    <label class="field"><span data-i18n="fbMessage"></span><textarea id="fb-message" rows="3"></textarea></label>
+    <label class="switch"><input id="fb-log" type="checkbox" checked><span data-i18n="fbIncludeLog"></span></label>
+    <h3 data-i18n="fbPreview"></h3>
+    <textarea id="fb-preview" class="preview" rows="7" readonly></textarea>
+    <button id="fb-send" class="btn primary" type="button" data-i18n="fbCopy"></button>
+    <p id="fb-status" class="hint" role="status"></p>
+    <p id="fb-address" class="hint"></p>
+  </details>
+
+  <details class="block records">
+    <summary data-i18n="popRecords"></summary>
+    <p class="hint" data-i18n="popRecordsHint"></p>
+    <table>
+      <thead><tr><th data-i18n="popColAction"></th><th data-i18n="popColMouse"></th><th data-i18n="popColKey"></th></tr></thead>
+      <tbody id="records"></tbody>
+    </table>
+    <button id="reset" class="btn danger" type="button" data-i18n="popReset"></button>
+  </details>
+
   <details class="block settings">
     <summary data-i18n="popSettings"></summary>
 
@@ -77,30 +101,6 @@
 
     <h3 data-i18n="popMuted"></h3>
     <ul id="muted" class="list muted"></ul>
-  </details>
-
-  <details id="feedback" class="block feedback">
-    <summary data-i18n="popFeedback"></summary>
-    <p class="hint" data-i18n="fbHint"></p>
-    <label class="field"><span data-i18n="fbKind"></span><select id="fb-kind"></select></label>
-    <label class="field"><span data-i18n="fbSite"></span><select id="fb-site"></select></label>
-    <label class="field"><span data-i18n="fbMessage"></span><textarea id="fb-message" rows="3"></textarea></label>
-    <label class="switch"><input id="fb-log" type="checkbox" checked><span data-i18n="fbIncludeLog"></span></label>
-    <h3 data-i18n="fbPreview"></h3>
-    <textarea id="fb-preview" class="preview" rows="7" readonly></textarea>
-    <button id="fb-send" class="btn primary" type="button" data-i18n="fbCopy"></button>
-    <p id="fb-status" class="hint" role="status"></p>
-    <p id="fb-address" class="hint"></p>
-  </details>
-
-  <details class="block records">
-    <summary data-i18n="popRecords"></summary>
-    <p class="hint" data-i18n="popRecordsHint"></p>
-    <table>
-      <thead><tr><th data-i18n="popColAction"></th><th data-i18n="popColMouse"></th><th data-i18n="popColKey"></th></tr></thead>
-      <tbody id="records"></tbody>
-    </table>
-    <button id="reset" class="btn danger" type="button" data-i18n="popReset"></button>
   </details>
 
   <script src="../core/keys.js"></script>
