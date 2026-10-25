@@ -155,6 +155,9 @@ npm run offline             # 외부 접속 없이 로컬 모형에서 실제 �
 node reload.mjs             # 유튜브 탭을 연 채로 확장을 새로고침해도 카드와 그림이 오류 없이 뜨는지
 node login.mjs              # 구글 로그인 창: 로그인한 뒤 창을 닫기
 node google.mjs             # 문서·드라이브·Gmail·캘린더 (docs / drive / gmail / calendar 중 일부만 지정 가능)
+npm run sheets-scenarios    # 시트 실사용 흐름 28가지(범위 끌기·Shift+클릭·머리글·채우기 핸들·Shift/Ctrl+Shift+방향키·편집 중)를
+                            # 시험 문서에서 해 보고 기대와 맞는지 표로 (로그인 필요, results/sheets-scenarios.json)
+node cleanup.mjs --keep-login  # 점검용 시험 문서를 모두 휴지통으로 (--keep-login 없으면 로그아웃까지 함)
 ```
 
 `google.mjs`는 "손빠르미 점검용 (지워도 됨)" 문서를 새로 만들어 그 문서만 고치고, Gmail에서는 메일을 바꾸지 않는 버튼만 누릅니다.
