@@ -246,6 +246,14 @@ test('Sheets: dragging across cells to a range hints Shift+arrow, to the edge Ct
   assert.deepEqual((await drag(300, 300, 310, 600, 'B2:B20')).combos[0].key, 'arrowdown');
   box.value = 'B2';
   assert.equal(drag(300, 300, 300, 300, 'B2'), null); // a plain click on a cell
+  box.value = 'B2';
+  const shiftClick = (x, y, after) => {
+    const target = new In('#waffle-grid-container');
+    listeners.mousedown({ target, button: 0, clientX: x, clientY: y, shiftKey: true });
+    box.value = after;
+    return site.fromMouse({ target, button: 0, clientX: x, clientY: y, shiftKey: true }, false);
+  };
+  assert.equal((await shiftClick(500, 600, 'B2:E30')).id, 'sheets:range'); // Shift+click on a far cell
   box.value = 'B2:D4';
   assert.equal(await drag(300, 300, 500, 400, 'E6:G8'), null); // moving the same-sized block
   box.value = 'B2';
@@ -259,6 +267,9 @@ test('Sheets: Shift+arrow to a range counts once; inside a cell being edited it 
   const first = await key('ArrowRight', 'ArrowRight', { shiftKey: true });
   assert.equal(first.id, 'sheets:range');
   assert.equal(await key('ArrowDown', 'ArrowDown', { shiftKey: true }), null); // the same range, widened
+  box.value = 'B2:C40';
+  assert.equal((await key('ArrowDown', 'ArrowDown', { shiftKey: true, ctrlKey: true })).id, 'sheets:range'); // to the edge: its own shortcut
+  assert.equal(await key('ArrowRight', 'ArrowRight', { shiftKey: true, ctrlKey: true }), null);
   box.value = 'B2';
   assert.equal(await key('ArrowLeft', 'ArrowLeft', { shiftKey: true }), null); // shrunk back to one cell
   box.value = 'A2:B2';

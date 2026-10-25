@@ -539,7 +539,7 @@
         const inGrid = e.target instanceof Element && !!e.target.closest('#waffle-grid-container') &&
           !e.target.closest('.autofill-handle, .autofill-cover, input, textarea');
         pressedCell = pressedHeader && !pressedHeader.kind && inGrid ? { x: e.clientX, y: e.clientY, box: pressedHeader.box } : null;
-        rangeCounted = false;
+        rangeCounted = {};
       },
       true
     );
@@ -612,17 +612,18 @@
     return { id: app.id + ':range', label: QH.names.pick(['범위 선택', 'Select a range']), combos };
   }
 
-  // A drag across cells that leaves a new range in the name box is a range
-  // select: Shift+arrow in the drag's main direction, to the data's edge with
-  // Ctrl (⌘ on Mac) as well. Moving cells keeps the range's size somewhere else.
+  // A drag across cells, or a Shift+click on a far cell, that leaves a new range
+  // in the name box is a range select: Shift+arrow in the drag's main direction
+  // (down for a Shift+click), to the data's edge with Ctrl (⌘ on Mac) as well.
+  // Moving cells keeps the range's size somewhere else.
   function sheetRange(app, e) {
     if (app.id !== 'sheets' || !pressedCell) return null;
     const { x, y, box } = pressedCell;
     pressedCell = null;
     const dx = Math.abs(e.clientX - x);
     const dy = Math.abs(e.clientY - y);
-    if (dx <= 4 && dy <= 4) return null;
-    const dir = dx >= dy ? 'arrowright' : 'arrowdown';
+    if (dx <= 4 && dy <= 4 && !e.shiftKey) return null;
+    const dir = dx > dy ? 'arrowright' : 'arrowdown';
     return new Promise((resolve) => setTimeout(() => {
       const after = nameBox();
       const yes = cellRange(after) && after !== box && !(cellRange(box) && sameSize(box, after));
@@ -643,24 +644,26 @@
   // data's edge. Counted once per range, when the name box then shows one;
   // in a cell being edited it selects text instead and the box stays one cell.
   // A range shrunk back to one cell is over: the next press starts a new one
-  // (Shift+→ then Shift+← twice selects to the left).
-  let rangeCounted = false;
+  // (Shift+→ then Shift+← twice selects to the left). Shift+arrow and
+  // Ctrl+Shift+arrow are two shortcuts, so each counts once in the same range.
+  let rangeCounted = {}; // { step, edge } already counted in this range
   const ARROWS = ['arrowup', 'arrowdown', 'arrowleft', 'arrowright'];
   function rangeKey(app, combo) {
     if (!(combo.shift && ARROWS.includes(combo.key) && !combo.alt && !combo.ctrl)) {
-      rangeCounted = false;
+      rangeCounted = {};
       return undefined;
     }
-    if (rangeCounted) {
+    const kind = combo.mod ? 'edge' : 'step';
+    if (rangeCounted[kind]) {
       return new Promise((resolve) => setTimeout(() => {
-        if (!cellRange(nameBox())) rangeCounted = false;
+        if (!cellRange(nameBox())) rangeCounted = {};
         resolve(null);
       }, 200));
     }
-    rangeCounted = true; // a quick second press waits for this answer
+    rangeCounted[kind] = true; // a quick second press waits for this answer
     return new Promise((resolve) => setTimeout(() => {
       const yes = cellRange(nameBox());
-      if (!yes) rangeCounted = false;
+      if (!yes) rangeCounted = {};
       resolve(yes ? rangeAction(app, [combo]) : null);
     }, 200));
   }
