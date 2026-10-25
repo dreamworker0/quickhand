@@ -11,6 +11,8 @@
   const SHOW_MS = 5000;
   const PRAISE_MS = 2200; // a cheer is a moment, not something to read
   const SPARKS = ['#2a9d8f', '#e9c46a', '#f4a261', '#e76f51', '#8ecae6'];
+  // The cheer gold: [top-left, bottom-right] at the first practice use and when learned.
+  const GOLD = [['#fff8dc', '#ffeaa8'], ['#ffd25e', '#ffa91e']];
 
   const CSS = `
     :host { all: initial; }
@@ -47,40 +49,26 @@
     .burst { position: absolute; left: 40px; top: 50%; width: 0; height: 0; pointer-events: none; }
     .burst i { position: absolute; left: -4px; top: -4px; width: 8px; height: 8px; border-radius: 50%; background: var(--c); opacity: 0; animation: fly 750ms ease-out var(--d) both; }
     @keyframes fly { 0% { opacity: 1; transform: none; } 100% { opacity: 0; transform: translate(var(--x), var(--y)) scale(0.3); } }
-    /* Cheers look nothing like the calm white hint: a warm gold card that bounces
-       up, and a fiery one for a streak. Same colours in light and dark pages. */
-    .card.praise {
-      --ink: #5a3b00; --quiet: #7a5512; --line: #f0c24e; --chip: #fffaf0; --accent: #e09f1f;
-      background: linear-gradient(135deg, #fff7d6 0%, #ffe48f 100%);
+    /* Cheers share one warm gold that deepens with practice: pale at the first
+       "Nice!", deepest at "Learned!". A streak keeps the same card and adds a
+       badge, a bounce and more sparks. Same colours in light and dark pages. */
+    .card.praise, .card.learned {
+      --ink: #4a3000; --quiet: #6f4e10; --line: #e9b949; --chip: #fffaf0; --accent: #c77800;
+      background: linear-gradient(135deg, var(--from, #fff8dc) 0%, var(--to, #ffeaa8) 100%);
       border: 0; border-radius: 18px;
-      box-shadow: 0 10px 30px rgba(224, 159, 31, 0.4);
+      box-shadow: 0 10px 30px rgba(214, 140, 0, 0.38);
       animation: rise 300ms cubic-bezier(0.3, 1.5, 0.5, 1);
     }
-    .card.praise .title { font-size: 19px; font-weight: 800; color: #b26a00; letter-spacing: -0.2px; }
-    .card.praise .label { margin: 1px 0 5px; font-size: 13px; }
-    .card.praise.combo {
-      --ink: #ffffff; --quiet: #fff1e6; --line: rgba(255, 255, 255, 0.55); --chip: rgba(255, 255, 255, 0.22); --accent: #ffffff;
-      background: linear-gradient(135deg, #ffb347 0%, #ff7a3d 45%, #e8452c 100%);
-      box-shadow: 0 12px 36px rgba(232, 69, 44, 0.45);
-      animation: rise 300ms cubic-bezier(0.3, 1.5, 0.5, 1), cheer 520ms ease-out 260ms;
-    }
-    .card.praise.combo .title { font-size: 23px; color: #ffffff; text-shadow: 0 1px 2px rgba(120, 30, 0, 0.35); }
-    .card.praise .dots i { background: rgba(178, 106, 0, 0.18); }
-    .card.praise .dots i.on { background: #d48806; }
-    .card.praise.combo .dots i { background: rgba(255, 255, 255, 0.35); }
-    .card.praise.combo .dots i.on { background: #ffffff; }
-    /* Learning a shortcut is the biggest moment: the brand teal, largest title, most sparks. */
-    .card.learned {
-      --ink: #ffffff; --quiet: #e3fbf7; --line: rgba(255, 255, 255, 0.55); --chip: rgba(255, 255, 255, 0.22); --accent: #ffffff;
-      background: linear-gradient(135deg, #4fd1b5 0%, #2a9d8f 50%, #1b7268 100%);
-      border: 0; border-radius: 18px;
-      box-shadow: 0 12px 36px rgba(42, 157, 143, 0.5);
-      animation: rise 300ms cubic-bezier(0.3, 1.5, 0.5, 1), cheer 520ms ease-out 260ms;
-    }
-    .card.learned .title { font-size: 23px; font-weight: 800; color: #ffffff; text-shadow: 0 1px 2px rgba(10, 60, 55, 0.35); }
-    .card.learned .label { margin: 1px 0 5px; }
+    .card.praise .title, .card.learned .title { font-size: 19px; font-weight: 800; color: #a35f00; letter-spacing: -0.2px; }
+    .card.praise .label, .card.learned .label { margin: 1px 0 5px; font-size: 13px; }
+    .card.combo, .card.learned { animation: rise 300ms cubic-bezier(0.3, 1.5, 0.5, 1), cheer 520ms ease-out 260ms; }
+    .card.learned { box-shadow: 0 12px 36px rgba(214, 120, 0, 0.5); }
+    .card.learned .title { font-size: 23px; color: #7a3d00; }
+    .badge { display: inline-block; margin-left: 8px; padding: 2px 9px; border-radius: 999px; background: #e8590c; color: #ffffff; font-size: 13px; font-weight: 800; vertical-align: 2px; }
+    .card.praise .dots i { background: rgba(163, 95, 0, 0.18); }
+    .card.praise .dots i.on { background: #c77800; }
     .card.praise .close:hover, .card.praise .close:focus-visible,
-    .card.learned .close:hover, .card.learned .close:focus-visible { background: rgba(255, 255, 255, 0.35); }
+    .card.learned .close:hover, .card.learned .close:focus-visible { background: rgba(255, 255, 255, 0.45); }
     @keyframes rise { from { opacity: 0; transform: translateY(24px) scale(0.8); } to { opacity: 1; transform: none; } }
     @keyframes cheer { 0%, 100% { transform: none; } 35% { transform: scale(1.07); } 65% { transform: scale(0.98); } }
     .dots { display: flex; gap: 3px; margin-top: 6px; }
@@ -185,6 +173,17 @@
     return wrap;
   }
 
+  function mix(a, b, f) {
+    const c = (hex, i) => parseInt(hex.slice(1 + i * 2, 3 + i * 2), 16);
+    return '#' + [0, 1, 2].map((i) => Math.round(c(a, i) + (c(b, i) - c(a, i)) * f).toString(16).padStart(2, '0')).join('');
+  }
+
+  // f: 0 for the first cheer, 1 for "learned"; the card's gold deepens in between.
+  function gold(card, f) {
+    card.style.setProperty('--from', mix(GOLD[0][0], GOLD[1][0], f));
+    card.style.setProperty('--to', mix(GOLD[0][1], GOLD[1][1], f));
+  }
+
   // Practice progress: filled dots for keyboard uses so far, empty ones still to go.
   function dots(done, left) {
     const wrap = el('div', 'dots');
@@ -237,7 +236,9 @@
       // Once after install: the click was recognized, the hint comes later.
       body.append(el('p', 'title', t('introTitle')), el('p', 'label', msg.label), el('p', 'sub', t('introText', [String(msg.need)])));
     } else if (msg.variant === 'praise') {
-      body.append(el('p', 'title', msg.combo ? t('praiseCombo', [String(msg.combo)]) : t('praiseTitle')), el('p', 'label', msg.label), keysNode(msg.display));
+      const title = el('p', 'title', t('praiseTitle'));
+      if (msg.combo) title.append(el('span', 'badge', t('praiseCombo', [String(msg.combo)])));
+      body.append(title, el('p', 'label', msg.label), keysNode(msg.display));
       if (msg.left) body.append(dots(msg.done || 0, msg.left), el('p', 'sub', t('praiseLeft', [String(msg.left)])));
       else body.append(el('p', 'sub', t('praiseComboText')));
     } else if (msg.variant === 'learned') {
@@ -259,8 +260,15 @@
     close.addEventListener('click', hide);
 
     card.append(...(msg.image ? [img] : []), body, close);
-    if (msg.variant === 'praise') card.append(msg.combo ? burst(24, 80) : burst(12, 46));
-    if (msg.variant === 'learned') card.append(burst(30, 96));
+    if (msg.variant === 'praise') {
+      // Practice fills the gold up to 80%; learning it takes the last step.
+      gold(card, msg.left ? (0.8 * (msg.done || 0)) / ((msg.done || 0) + msg.left) : 0.5);
+      card.append(msg.combo ? burst(24, 80) : burst(12, 46));
+    }
+    if (msg.variant === 'learned') {
+      gold(card, 1);
+      card.append(burst(30, 96));
+    }
     card.addEventListener('mouseenter', () => clearTimeout(hideTimer));
     card.addEventListener('mouseleave', scheduleHide);
     root.append(style, card);
