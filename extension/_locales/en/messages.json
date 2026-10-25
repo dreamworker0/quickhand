@@ -197,7 +197,7 @@
   "welClose": { "message": "Close this tab" },
   "welError": { "message": "Couldn't save your settings. Reload Quickhand at chrome://extensions and try again." },
   "popFeedback": { "message": "Send feedback" },
-  "fbHint": { "message": "Tell us by email about a shortcut that doesn't work or anything you'd like. Copy the text below and paste it into Gmail's compose window. Quickhand never sends anything itself." },
+  "fbHint": { "message": "Tell us by email about a shortcut that doesn't work or anything you'd like. Gmail's compose window opens with the text below filled in; check it and send it yourself. Quickhand never sends anything itself." },
   "fbKind": { "message": "What is it about?" },
   "fbKindBroken": { "message": "A shortcut doesn't work" },
   "fbKindWrong": { "message": "It suggests the wrong shortcut" },
@@ -208,23 +208,24 @@
   "fbSiteNone": { "message": "None" },
   "fbMessage": { "message": "Tell us more (what you clicked or pressed, and what happened)" },
   "fbIncludeLog": { "message": "Add my last 10 actions (action names and hint results only, no addresses or content)" },
-  "fbPreview": { "message": "Text to copy (you can still edit it before sending)" },
-  "fbCopy": { "message": "Copy and write in Gmail" },
-  "fbCopied": {
-    "message": "Copied. Paste it ($KEY$) into the Gmail compose window in the new tab and send it.",
+  "fbPreview": { "message": "Text to send (you can still edit it before sending)" },
+  "fbCopy": { "message": "Open Gmail compose" },
+  "fbFilled": { "message": "The Gmail compose window in the new tab has the text filled in. Check it and send it. (It's also copied.)" },
+  "fbFilledShort": {
+    "message": "The recent actions were too long, so the compose window opened without them. Paste ($KEY$) the copied full text into the body.",
     "placeholders": { "key": { "content": "$1" } }
   },
-  "fbCopyFailed": { "message": "Couldn't copy. Please select the text above and copy it yourself." },
+  "fbCopyFailed": { "message": "(Copying didn't work.)" },
   "fbAddress": {
-    "message": "If you don't use Gmail, please send the copied text to $ADDRESS$.",
+    "message": "If you don't use Gmail, please paste the copied text into a mail to $ADDRESS$.",
     "placeholders": { "address": { "content": "$1" } }
   },
   "fbSubject": {
     "message": "[Quickhand feedback] $KIND$",
     "placeholders": { "kind": { "content": "$1" } }
   },
-  "fbPasteHere": {
-    "message": "Please paste the copied text here ($KEY$).",
+  "fbLogPaste": {
+    "message": "(The recent actions were too long to fit here. Please paste the copied full text: $KEY$)",
     "placeholders": { "key": { "content": "$1" } }
   },
   "fbTitle": { "message": "[Quickhand feedback]" },

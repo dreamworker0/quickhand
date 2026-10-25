@@ -145,9 +145,9 @@ let feedbackLog = [];
 
 const chosen = (select) => select.selectedOptions[0].textContent;
 
-function feedbackText() {
+function feedbackText(withLog = $('fb-log').checked) {
   const env = QH.feedback.environment(navigator.userAgent, chrome.runtime.getManifest().version, chrome.i18n.getUILanguage());
-  const log = $('fb-log').checked
+  const log = withLog
     ? feedbackLog.map((e) => ({
       time: clock(e.at, true),
       site: siteName(e.site),
@@ -164,23 +164,33 @@ function updateFeedback() {
   $('fb-preview').value = feedbackText();
 }
 
-// Copies the text, then opens Gmail's compose window to the feedback address;
-// nothing is sent by the extension itself.
-async function sendFeedback() {
-  const text = feedbackText();
-  const status = $('fb-status');
-  $('fb-preview').value = text;
+// Opens Gmail's compose window to the feedback address with the text in its body,
+// and copies the text too (for another mail, or when the body had to be cut).
+// Nothing is sent by the extension itself.
+async function copyText(text) {
   try {
     await navigator.clipboard.writeText(text);
+    return true;
   } catch (e) {
     $('fb-preview').select();
-    if (!document.execCommand('copy')) {
-      status.textContent = t('fbCopyFailed');
-      return;
-    }
+    return document.execCommand('copy');
   }
-  status.textContent = t('fbCopied', [mac ? '⌘V' : 'Ctrl+V']);
-  chrome.tabs.create({ url: QH.feedback.composeUrl(t('fbSubject', [chosen($('fb-kind'))]), t('fbPasteHere', [mac ? '⌘V' : 'Ctrl+V'])) });
+}
+
+async function sendFeedback() {
+  const text = feedbackText();
+  const paste = mac ? '⌘V' : 'Ctrl+V';
+  $('fb-preview').value = text;
+  const copied = await copyText(text);
+  const subject = t('fbSubject', [chosen($('fb-kind'))]);
+  let url = QH.feedback.composeUrl(subject, text);
+  let note = 'fbFilled';
+  if (url.length > QH.feedback.MAX_URL) {
+    url = QH.feedback.composeUrl(subject, feedbackText(false) + '\n\n' + t('fbLogPaste', [paste]));
+    note = 'fbFilledShort';
+  }
+  $('fb-status').textContent = t(note, [paste]) + (copied ? '' : ' ' + t('fbCopyFailed'));
+  chrome.tabs.create({ url });
 }
 
 function initFeedback(tabSite) {

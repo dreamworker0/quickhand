@@ -53,15 +53,19 @@
     return lines.join('\n');
   }
 
-  // Gmail's compose window in a new tab. A mailto: link shows only its own address
-  // in a tab when Chrome has no mail handler set, so the web page is opened instead.
-  // Only the address, subject and a fixed "paste here" line ride in the link; the
-  // copied text (with any recent actions) is pasted by the person.
-  function composeUrl(subject, pasteHere) {
+  // Gmail's compose window in a new tab, with the text already in its body. A mailto:
+  // link shows only its own address in a tab when Chrome has no mail handler set, so
+  // the web page is opened instead. The text rides in the address, so it also lands
+  // in the browser's history; it holds only what the person saw in the preview.
+  function composeUrl(subject, body) {
     const q = (v) => encodeURIComponent(v);
-    return 'https://mail.google.com/mail/?view=cm&fs=1&to=' + q(ADDRESS) + '&su=' + q(subject) + (pasteHere ? '&body=' + q(pasteHere) : '');
+    return 'https://mail.google.com/mail/?view=cm&fs=1&to=' + q(ADDRESS) + '&su=' + q(subject) + (body ? '&body=' + q(body) : '');
   }
 
-  QH.feedback = { ADDRESS, environment, keysText, compose, composeUrl };
+  // Longer addresses risk being refused by Gmail; then the body goes without the
+  // recent actions, which stay on the clipboard to paste.
+  const MAX_URL = 8000;
+
+  QH.feedback = { ADDRESS, MAX_URL, environment, keysText, compose, composeUrl };
   if (typeof module !== 'undefined' && module.exports) module.exports = QH.feedback;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

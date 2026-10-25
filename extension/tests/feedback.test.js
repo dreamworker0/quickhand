@@ -46,10 +46,22 @@ test('leaves the recent actions out when not chosen, and says when there are non
   assert.ok(feedback.compose(Object.assign({}, parts, { log: [] }), t).endsWith('fbLineLog\nfbNoLog'));
 });
 
-test('the Gmail compose link carries only the address, subject and fixed "paste here" line', () => {
-  const link = feedback.composeUrl('[손빠르미 의견] 단축키가 안 돼요', '여기에 붙여 넣어 주세요');
+test('the Gmail compose link fills the address, subject and the whole text', () => {
+  const body = '[손빠르미 의견]\n\n종류: 단축키가 안 돼요\n사이트: 구글 슬라이드 & 문서';
+  const link = feedback.composeUrl('[손빠르미 의견] 단축키가 안 돼요', body);
   assert.equal(link, 'https://mail.google.com/mail/?view=cm&fs=1&to=ehsheh%40gmail.com'
     + '&su=' + encodeURIComponent('[손빠르미 의견] 단축키가 안 돼요')
-    + '&body=' + encodeURIComponent('여기에 붙여 넣어 주세요'));
+    + '&body=' + encodeURIComponent(body));
+  assert.equal(new URL(link).searchParams.get('body'), body); // line breaks and "&" survive
   assert.ok(!feedback.composeUrl('x').includes('body='));
+});
+
+test('a typical text with 10 recent actions fits the length Gmail takes', () => {
+  const t = (key, subs) => (subs ? key + ' ' + subs.join(' ') : key);
+  const log = Array.from({ length: 10 }, () => ({
+    time: '오후 2:57:59', site: '구글 슬라이드', label: '현재 댓글로 들어가기', keys: 'Ctrl+Alt+E 다음 C', input: '마우스',
+    why: '이미 단축키로 잘 쓰고 계셔서 알리지 않았어요.',
+  }));
+  const text = feedback.compose({ kind: '단축키가 안 돼요', site: '구글 슬라이드', message: '댓글 칸에 들어가지 않아요', env: { version: '0.1.0', chrome: '155', os: 'Windows', language: 'ko-KR' }, log }, t);
+  assert.ok(feedback.composeUrl('[손빠르미 의견] 단축키가 안 돼요', text).length <= feedback.MAX_URL);
 });
