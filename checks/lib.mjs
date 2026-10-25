@@ -2,17 +2,23 @@
 // brings up a card that can actually be seen.
 import { chromium } from 'playwright';
 import { fileURLToPath } from 'node:url';
-import { createRequire } from 'node:module';
 import path from 'node:path';
 import fs from 'node:fs';
+import os from 'node:os';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 export const EXTENSION = path.resolve(here, '../extension');
 // The installed Google Chrome by default; QH_BROWSER=msedge uses Edge instead.
 export const BROWSER = process.env.QH_BROWSER || 'chrome';
+// The check profiles live outside the project, next to other programs' data
+// (%LOCALAPPDATA%\Quickhand\checks on Windows): Chrome fills a profile with caches and
+// downloads, such as its 4 GB on-device AI model.
 // QH_PROFILE=.profile-calendar gives a check its own profile, so two checks can run at
 // once (Chrome locks a profile to one window). Copy a signed-in .profile to start one.
-export const PROFILE = path.join(here, process.env.QH_PROFILE || (BROWSER === 'chrome' ? '.profile' : `.profile-${BROWSER}`));
+export const PROFILES = process.env.LOCALAPPDATA
+  ? path.join(process.env.LOCALAPPDATA, 'Quickhand', 'checks')
+  : path.join(os.homedir(), '.quickhand-checks');
+export const PROFILE = path.resolve(PROFILES, process.env.QH_PROFILE || (BROWSER === 'chrome' ? '.profile' : `.profile-${BROWSER}`));
 export const RESULTS = path.join(here, 'results');
 
 // Runs in every page before its own scripts: keeps each card that appears, with
@@ -39,39 +45,21 @@ function watchCards() {
   }).observe(document, { childList: true, subtree: true });
 }
 
-// Chrome fetches a 4 GB on-device AI model into a fresh profile; the checks never use
-// it. Playwright passes one --disable-features list and a second one would replace it,
-// so its list is taken and these are added to it (left as is if that ever fails).
-const NO_MODEL = ['OptimizationGuideModelDownloading', 'OptimizationHintsFetching', 'OptimizationTargetPrediction', 'OptimizationHints'];
-function featureSwitch() {
-  try {
-    const require = createRequire(import.meta.url);
-    const dir = path.dirname(require.resolve('playwright-core/package.json'));
-    const { chromiumSwitches } = require(path.join(dir, 'lib/server/chromium/chromiumSwitches.js'));
-    const own = chromiumSwitches(undefined, BROWSER).find((a) => a.startsWith('--disable-features='));
-    return own ? { ignore: [own], args: [own + ',' + NO_MODEL.join(',')] } : { ignore: [], args: [] };
-  } catch (e) {
-    return { ignore: [], args: [] };
-  }
-}
-
 // Google Chrome (137+) ignores --load-extension; it loads an unpacked extension
 // through the DevTools protocol instead, once started with
 // --enable-unsafe-extension-debugging. Edge still takes the flag.
 export async function launch({ headless = true } = {}) {
   fs.mkdirSync(RESULTS, { recursive: true });
   const chrome = BROWSER === 'chrome';
-  const features = featureSwitch();
   const context = await chromium.launchPersistentContext(PROFILE, {
     channel: BROWSER,
     headless,
     viewport: { width: 1280, height: 800 },
     locale: 'ko-KR',
-    ignoreDefaultArgs: ['--disable-extensions', ...features.ignore],
-    args: [
-      ...(chrome ? ['--enable-unsafe-extension-debugging'] : [`--disable-extensions-except=${EXTENSION}`, `--load-extension=${EXTENSION}`]),
-      ...features.args,
-    ],
+    ignoreDefaultArgs: ['--disable-extensions'],
+    args: chrome
+      ? ['--enable-unsafe-extension-debugging']
+      : [`--disable-extensions-except=${EXTENSION}`, `--load-extension=${EXTENSION}`],
   });
   await context.addInitScript(watchCards);
   let extensionId = null;
