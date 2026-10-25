@@ -193,7 +193,7 @@
   "welToggleMac": { "message": "알림은 Option+Shift+P로 언제든 켜고 끌 수 있어요." },
   "welStart": { "message": "시작하기" },
   "welDoneTitle": { "message": "준비됐어요!" },
-  "welDone": { "message": "이제 유튜브나 Gmail, 구글 캘린더·드라이브·문서에서 평소처럼 일해 보세요." },
+  "welDone": { "message": "이제 유튜브나 Gmail, 구글 캘린더·드라이브·문서·시트·슬라이드에서 평소처럼 일해 보세요." },
   "welClose": { "message": "이 탭 닫기" },
   "welError": { "message": "설정을 저장하지 못했어요. chrome://extensions에서 손빠르미를 새로고침한 뒤 다시 눌러 주세요." },
   "popFeedback": { "message": "의견 보내기" },

@@ -193,7 +193,7 @@
   "welToggleMac": { "message": "Press Option+Shift+P any time to turn hints on or off." },
   "welStart": { "message": "Get started" },
   "welDoneTitle": { "message": "All set!" },
-  "welDone": { "message": "Work on YouTube, Gmail or Google Calendar, Drive and Docs as usual." },
+  "welDone": { "message": "Work on YouTube, Gmail or Google Calendar, Drive, Docs, Sheets and Slides as usual." },
   "welClose": { "message": "Close this tab" },
   "welError": { "message": "Couldn't save your settings. Reload Quickhand at chrome://extensions and try again." },
   "popFeedback": { "message": "Send feedback" },
