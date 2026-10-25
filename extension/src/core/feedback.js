@@ -53,12 +53,15 @@
     return lines.join('\n');
   }
 
-  // Only the subject and a fixed "paste here" line ride in the link; the copied
-  // text (with any recent actions) is pasted by the person.
-  function mailto(subject, pasteHere) {
-    return 'mailto:' + ADDRESS + '?subject=' + encodeURIComponent(subject) + (pasteHere ? '&body=' + encodeURIComponent(pasteHere) : '');
+  // Gmail's compose window in a new tab. A mailto: link shows only its own address
+  // in a tab when Chrome has no mail handler set, so the web page is opened instead.
+  // Only the address, subject and a fixed "paste here" line ride in the link; the
+  // copied text (with any recent actions) is pasted by the person.
+  function composeUrl(subject, pasteHere) {
+    const q = (v) => encodeURIComponent(v);
+    return 'https://mail.google.com/mail/?view=cm&fs=1&to=' + q(ADDRESS) + '&su=' + q(subject) + (pasteHere ? '&body=' + q(pasteHere) : '');
   }
 
-  QH.feedback = { ADDRESS, environment, keysText, compose, mailto };
+  QH.feedback = { ADDRESS, environment, keysText, compose, composeUrl };
   if (typeof module !== 'undefined' && module.exports) module.exports = QH.feedback;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

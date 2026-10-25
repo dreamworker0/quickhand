@@ -46,9 +46,10 @@ test('leaves the recent actions out when not chosen, and says when there are non
   assert.ok(feedback.compose(Object.assign({}, parts, { log: [] }), t).endsWith('fbLineLog\nfbNoLog'));
 });
 
-test('the mail link carries only the subject and the fixed "paste here" line', () => {
-  const link = feedback.mailto('[손빠르미 의견] 단축키가 안 돼요', '여기에 붙여 넣어 주세요');
-  assert.equal(link, 'mailto:ehsheh@gmail.com?subject=' + encodeURIComponent('[손빠르미 의견] 단축키가 안 돼요')
+test('the Gmail compose link carries only the address, subject and fixed "paste here" line', () => {
+  const link = feedback.composeUrl('[손빠르미 의견] 단축키가 안 돼요', '여기에 붙여 넣어 주세요');
+  assert.equal(link, 'https://mail.google.com/mail/?view=cm&fs=1&to=ehsheh%40gmail.com'
+    + '&su=' + encodeURIComponent('[손빠르미 의견] 단축키가 안 돼요')
     + '&body=' + encodeURIComponent('여기에 붙여 넣어 주세요'));
-  assert.ok(!feedback.mailto('x').includes('body='));
+  assert.ok(!feedback.composeUrl('x').includes('body='));
 });

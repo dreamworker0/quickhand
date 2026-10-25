@@ -164,8 +164,8 @@ function updateFeedback() {
   $('fb-preview').value = feedbackText();
 }
 
-// Copies the text, then opens a new mail to the feedback address; nothing is sent
-// by the extension itself.
+// Copies the text, then opens Gmail's compose window to the feedback address;
+// nothing is sent by the extension itself.
 async function sendFeedback() {
   const text = feedbackText();
   const status = $('fb-status');
@@ -180,7 +180,7 @@ async function sendFeedback() {
     }
   }
   status.textContent = t('fbCopied', [mac ? '⌘V' : 'Ctrl+V']);
-  chrome.tabs.create({ url: QH.feedback.mailto(t('fbSubject', [chosen($('fb-kind'))]), t('fbPasteHere', [mac ? '⌘V' : 'Ctrl+V'])) });
+  chrome.tabs.create({ url: QH.feedback.composeUrl(t('fbSubject', [chosen($('fb-kind'))]), t('fbPasteHere', [mac ? '⌘V' : 'Ctrl+V'])) });
 }
 
 function initFeedback(tabSite) {

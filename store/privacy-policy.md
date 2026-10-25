@@ -31,7 +31,7 @@
 
 확장 프로그램은 어떤 정보도 개발자나 제3자의 서버로 보내지 않습니다. 정보를 판매하거나 공유하지 않으며, 광고나 분석 도구를 사용하지 않습니다.
 
-팝업의 **의견 보내기**는 사용자가 고른 의견 종류, 사이트 이름, 직접 적은 말, 버전 정보(손빠르미·크롬 버전, 운영체제, 화면 언어)와, 사용자가 고른 경우 최근 동작 10개를 보여 주고 클립보드에 복사한 뒤 사용자의 메일 프로그램에서 새 메일(받는 사람 ehsheh@gmail.com)을 엽니다. 확장 프로그램이 직접 보내는 것은 없으며, 사용자가 그 내용을 메일에 붙여 넣어 보낼 때만 개발자에게 전달됩니다. 받은 메일은 문제를 고치고 답장하는 데에만 씁니다.
+팝업의 **의견 보내기**는 사용자가 고른 의견 종류, 사이트 이름, 직접 적은 말, 버전 정보(손빠르미·크롬 버전, 운영체제, 화면 언어)와, 사용자가 고른 경우 최근 동작 10개를 보여 주고 클립보드에 복사한 뒤 새 탭에 Gmail 편지쓰기 창(받는 사람 ehsheh@gmail.com)을 엽니다. 편지쓰기 창을 여는 주소에는 받는 사람, 제목, "붙여 넣어 주세요" 문구만 들어갑니다. 확장 프로그램이 직접 보내는 것은 없으며, 사용자가 그 내용을 메일에 붙여 넣어 보낼 때만 개발자에게 전달됩니다. 받은 메일은 문제를 고치고 답장하는 데에만 씁니다.
 
 ## 4. 사용 목적
 
@@ -67,7 +67,7 @@ Quickhand is a Chrome extension that shows the keyboard shortcut for an action y
 
 **Sharing:** nothing is sent to the developer or any third party. No data is sold or shared, and no advertising or analytics tools are used.
 
-**Feedback:** the popup's Send feedback shows the kind of feedback, the site, your own words, version details (Quickhand and Chrome versions, operating system, UI language) and, if you choose, your last 10 actions, copies them to the clipboard and opens a new mail to ehsheh@gmail.com in your mail program. The extension sends nothing itself; the developer gets it only if you paste it into the mail and send it, and uses it only to fix problems and reply.
+**Feedback:** the popup's Send feedback shows the kind of feedback, the site, your own words, version details (Quickhand and Chrome versions, operating system, UI language) and, if you choose, your last 10 actions, copies them to the clipboard and opens Gmail's compose window to ehsheh@gmail.com in a new tab. The address that opens it carries only the recipient, the subject and a "paste here" line. The extension sends nothing itself; the developer gets it only if you paste it into the mail and send it, and uses it only to fix problems and reply.
 
 **Your control:** view your records from the toolbar icon › View saved records, and delete them at any time with Delete all records. Removing the extension also removes its stored records.
 
