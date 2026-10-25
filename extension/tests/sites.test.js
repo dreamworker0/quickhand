@@ -144,8 +144,9 @@ function sheetsWithHeaders(platform = 'Win32') {
   const rect = (left, top, width, height) => ({ getBoundingClientRect: () => ({ left, top, right: left + width, bottom: top + height, width, height }) });
   env.ctx.document.querySelectorAll = (sel) =>
     sel === '.column-headers-background' ? [rect(0, 142, 1088, 24)] : sel === '.row-headers-background' ? [rect(0, 142, 46, 708)] : [];
-  const click = (x, y, upX = x, upY = y) => {
-    const target = new Element({ control: true });
+  // The header strip is drawn, not a button; `onMenu` puts a menu item over it instead.
+  const click = (x, y, upX = x, upY = y, onMenu = false) => {
+    const target = new Element({ control: onMenu });
     env.listeners.mousedown({ target, button: 0, clientX: x, clientY: y });
     return env.site.fromMouse({ target, button: 0, clientX: upX, clientY: upY }, platform === 'MacIntel');
   };
@@ -357,4 +358,45 @@ test('Docs menus: a two-step key printed as "Ctrl+Alt+O Ctrl+Alt+U" matches pres
   assert.equal(clicked.id, 'docs:mod+alt+o>u');
   site.fromKey(event('KeyO', 'o', { ctrlKey: true, altKey: true }), false);
   assert.equal(site.fromKey(event('KeyU', 'u', { ctrlKey: true, altKey: true }), false).id, clicked.id);
+});
+
+test('Sheets: clicking the file name box is not the sheet rename shortcut', () => {
+  const { site } = siteEnv('sheets');
+  class Title extends Element {
+    constructor(...a) { super(...a); this.classList = { contains: (c) => c === 'docs-title-input' }; }
+    closest() { return this; }
+  }
+  assert.equal(site.fromMouse({ target: new Title({ control: true, 'data-tooltip': '이름 바꾸기' }) }, false), null);
+  assert.equal(site.fromMouse({ target: new Element({ control: true }, '이름 바꾸기') }, false)?.id, 'sheets:alt+1');
+});
+
+test("Sheets: the rest of the help page is counted, including two-step comment keys", () => {
+  const { site } = siteEnv('sheets');
+  const id = (code, key, mods) => { const r = site.fromKey(event(code, key, mods), false); return r && r.id; };
+  assert.equal(id('Space', ' ', { ctrlKey: true, shiftKey: true }), 'sheets:mod+shift+space');
+  assert.equal(id('F4', 'F4'), 'sheets:f4');
+  assert.equal(id('Home', 'Home', { ctrlKey: true }), 'sheets:mod+home');
+  assert.equal(id('End', 'End'), 'sheets:end');
+  assert.equal(id('Backquote', '`', { ctrlKey: true }), 'sheets:mod+`');
+  assert.equal(id('KeyS', 's', { altKey: true, shiftKey: true }), 'sheets:alt+shift+s');
+  assert.equal(id('KeyN', 'n', { ctrlKey: true, altKey: true }), null);
+  assert.equal(id('KeyC', 'c', { ctrlKey: true, altKey: true }), 'sheets:mod+alt+n>c');
+});
+
+test('Sheets: Format › Number items (which show a sample, not a key) hint Ctrl+Shift+1~6', () => {
+  const { site } = siteEnv('sheets');
+  const part = (text) => ({ textContent: text });
+  class Item extends Element {
+    constructor(label, sample) { super({ control: true }); this.parts = { '.goog-menuitem-accel': part(sample), '.goog-menuitem-label': part(label) }; }
+    querySelector(sel) { return this.parts[sel] || null; }
+  }
+  const id = (label, sample) => site.fromMouse({ target: new Item(label, sample) }, false)?.id;
+  assert.equal(id('통화', '₩1,000.12'), 'sheets:mod+shift+4');
+  assert.equal(id('퍼센트', '10.12%'), 'sheets:mod+shift+5');
+  assert.equal(id('회계', '₩ (1,000.12)'), undefined); // no key for this one
+});
+
+test('Sheets: a menu item lying over the column letters is not a column select', () => {
+  const { click } = sheetsWithHeaders();
+  assert.notEqual(click(300, 150, 300, 150, true)?.id, 'sheets:mod+space');
 });

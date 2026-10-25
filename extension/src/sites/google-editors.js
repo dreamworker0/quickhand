@@ -239,9 +239,88 @@
         'mod+space': ['열 선택', 'Select column'],
         'ctrl+space': ['열 선택', 'Select column'], // Mac: Control+Space
         'shift+space': ['행 선택', 'Select row'],
+        // The rest of Sheets' help page (support.google.com/docs/answer/181110).
+        'mod+shift+space': ['모두 선택', 'Select all'],
+        'mod+enter': ['범위 채우기', 'Fill range'],
+        // In the grid these jump to the edge of the data; in the formula bar they resize it.
+        'mod+arrowup': ['데이터 위쪽 끝으로 (수식 입력줄에선 크기 조정)', 'Up to the edge of the data'],
+        'mod+arrowdown': ['데이터 아래쪽 끝으로 (수식 입력줄에선 크기 조정)', 'Down to the edge of the data'],
+        'f4': ['재실행 (수식 입력 중엔 참조 전환)', 'Redo (in a formula: toggle references)'],
+        'mod+o': ['열기', 'Open'],
+        'mod+s': ['저장', 'Save'],
+        'mod+shift+f': ['컨트롤 숨기기', 'Hide the menus'],
+        'mod+shift+k': ['입력 도구 켜기/끄기', 'Turn input tools on or off'],
+        'mod+alt+shift+k': ['입력 도구 선택', 'Choose input tools'],
+        'alt+/': ['메뉴 검색', 'Search the menus'],
+        'mod+alt+t': ['범위를 표로 변환', 'Convert to table'],
+        'mod+shift+7': ['바깥쪽 테두리', 'Outer border'],
+        'mod+alt+shift+;': ['날짜 및 시간 넣기', 'Insert date and time'],
+        'mod+shift+2': ['시간 형식', 'Time format'],
+        'mod+shift+3': ['날짜 형식', 'Date format'],
+        'mod+shift+6': ['지수 형식', 'Scientific format'],
+        'mod+home': ['시트의 처음으로', 'Start of the sheet'],
+        'mod+end': ['시트의 끝으로', 'End of the sheet'],
+        'home': ['행의 처음으로', 'Start of the row'],
+        'end': ['행의 끝으로', 'End of the row'],
+        'mod+backspace': ['활성 셀로 스크롤', 'Scroll to the active cell'],
+        'alt+enter': ['링크 열기', 'Open link'],
+        'mod+alt+.': ['측면 패널로 이동', 'Move to the side panel'],
+        'mod+alt+,': ['측면 패널로 이동', 'Move to the side panel'],
+        'mod+alt+shift+m': ['스프레드시트 밖으로 이동', 'Move focus out of the spreadsheet'],
+        'alt+shift+q': ['빠른 요약으로 이동', 'Move to quick sum'],
+        'mod+alt+r': ['필터 메뉴 열기', 'Open the filter menu'],
+        'shift+escape': ['그림 편집기 닫기', 'Close the drawing editor'],
+        'mod+alt+m': ['댓글 넣기', 'Insert comment'],
+        'alt+f': ['파일 메뉴', 'File menu'],
+        'alt+e': ['수정 메뉴', 'Edit menu'],
+        'alt+v': ['보기 메뉴', 'View menu'],
+        'alt+i': ['삽입 메뉴', 'Insert menu'],
+        'alt+o': ['서식 메뉴', 'Format menu'],
+        'alt+d': ['데이터 메뉴', 'Data menu'],
+        'alt+t': ['도구 메뉴', 'Tools menu'],
+        'alt+m': ['양식 메뉴', 'Form menu'],
+        'alt+n': ['확장 프로그램 메뉴', 'Extensions menu'],
+        'alt+h': ['도움말 메뉴', 'Help menu'],
+        'alt+a': ['접근성 메뉴', 'Accessibility menu'],
+        'alt+shift+s': ['시트 메뉴', 'Sheet menu'],
+        'mod+shift+\\': ['컨텍스트 메뉴', 'Context menu'],
+        'shift+f10': ['컨텍스트 메뉴', 'Context menu'],
+        'mod+alt+\\': ['표 열 메뉴', 'Table column menu'],
+        'alt+shift+arrowright': ['행·열 그룹화', 'Group rows or columns'],
+        'alt+shift+arrowleft': ['행·열 그룹 해제', 'Ungroup rows or columns'],
+        'alt+shift+arrowdown': ['그룹 펼치기', 'Expand the group'],
+        'alt+shift+arrowup': ['그룹 접기', 'Collapse the group'],
+        'mod+`': ['모든 수식 표시', 'Show all formulas'],
+        'mod+shift+enter': ['배열 수식 넣기', 'Insert array formula'],
+        'mod+e': ['배열 수식 접기·범위 선택 전환', 'Collapse array formula / toggle range selection'],
+        'shift+f1': ['수식 도움말 표시/숨기기', 'Show or hide formula help'],
+        'f1': ['수식 도움말', 'Formula help'],
+        'f9': ['수식 결과 미리보기', 'Preview formula results'],
+        'f2': ['수식 범위 선택 전환', 'Toggle range selection in a formula'],
+        'mod+alt+z': ['스크린 리더 지원 켜기/끄기', 'Turn screen reader support on or off'],
+        'mod+alt+h': ['점자 지원 켜기/끄기', 'Turn braille support on or off'],
+        'mod+alt+shift+c': ['열 읽기', 'Speak column'],
+        'mod+alt+shift+r': ['행 읽기', 'Speak row'],
+        // Single letters while a comment is selected (see COMMENT_KEYS).
+        r: ['댓글에 답글', 'Reply to the comment'],
+        j: ['다음 댓글', 'Next comment'],
+        k: ['이전 댓글', 'Previous comment'],
+        e: ['댓글 해결', 'Resolve the comment'],
+        u: ['댓글에서 나가기', 'Leave the comment'],
       },
       // Previous sheet counts as the same action as next sheet.
       keyAlias: { 'alt+arrowup': 'alt+arrowdown' },
+      plainKeys: ['home', 'end'],
+      numberFormats: {
+        숫자: 'Ctrl+Shift+1', Number: 'Ctrl+Shift+1', 시간: 'Ctrl+Shift+2', Time: 'Ctrl+Shift+2',
+        날짜: 'Ctrl+Shift+3', Date: 'Ctrl+Shift+3', 통화: 'Ctrl+Shift+4', Currency: 'Ctrl+Shift+4',
+        퍼센트: 'Ctrl+Shift+5', Percent: 'Ctrl+Shift+5', 지수: 'Ctrl+Shift+6', Scientific: 'Ctrl+Shift+6',
+      },
+      sequences: {
+        'mod+alt+e': { p: ['팝업으로 이동', 'Move focus to the popup'], c: ['현재 댓글로 들어가기', 'Enter the current comment'] },
+        'mod+alt+n': { c: ['다음 댓글', 'Next comment'] },
+        'mod+alt+p': { c: ['이전 댓글', 'Previous comment'] },
+      },
       rules: [
         [/(행|열)( \d+개)? 삽입$|^Insert (\d+ )?(rows?|columns?)\b/i, 'Ctrl+Alt+='],
         [SHEET_DELETE, 'Ctrl+Alt+-'],
@@ -322,6 +401,11 @@
     if (combo && (K.hasModifier(combo) || /^f\d+$/.test(combo.key)) && label) {
       return { id: app.id + ':' + K.toId(combo), label, combos: [combo] };
     }
+    // Sheets' Format › Number items show a sample ("1,000.12", "10.12%") where other
+    // items show their key; the help page gives Ctrl+Shift+1~6 for six of them.
+    if (app.numberFormats && accel && /\d/.test(shortcut) && app.numberFormats[label]) {
+      return found(app, K.parse(mac ? app.numberFormats[label].replace(/Ctrl/g, 'Command') : app.numberFormats[label], mac), label);
+    }
     return fromRules(app, control, mac);
   }
 
@@ -357,7 +441,9 @@
       (e) => {
         pressedTab = e.target instanceof Element ? e.target.closest('.docs-sheet-tab') : null;
         pressedTabWasActive = !!pressedTab && pressedTab.classList.contains('docs-sheet-active-tab');
-        pressedHeader = e.button === 0 ? { kind: headerAt(e.clientX, e.clientY), x: e.clientX, y: e.clientY } : null;
+        // A menu or button lying over the header strip is not the header.
+        const onControl = e.target instanceof Element && !!e.target.closest(CONTROL);
+        pressedHeader = e.button === 0 && !onControl ? { kind: headerAt(e.clientX, e.clientY), x: e.clientX, y: e.clientY } : null;
       },
       true
     );
@@ -384,11 +470,13 @@
   // Shift+Space selects the row while cells are selected, but types a space in
   // a cell being edited. Sheets sends the key to different elements depending on
   // what was done before, so look at the result instead: a moment later the name
-  // box shows a whole row ("3:3") only if the row was selected.
+  // box shows a whole row ("3:3"), or the row's filled part ("A3:C3") inside data,
+  // only if the row was selected.
   function rowSelected() {
     return new Promise((resolve) => setTimeout(() => {
       const box = document.querySelector('#t-name-box, .waffle-name-box');
-      resolve(!!box && /^\d+:\d+$/.test(box.value || ''));
+      const m = /^[A-Z]*(\d+):[A-Z]*(\d+)$/.exec((box && box.value) || '');
+      resolve(!!m && m[1] === m[2]);
     }, 200));
   }
 
@@ -404,6 +492,9 @@
 
   function fromMouse(app, e, mac) {
     if (!(e.target instanceof Element)) return null;
+    // The file name box is titled "이름 바꾸기" (rename the file), not the sheet's Alt+1.
+    const title = e.target.closest('.docs-title-widget, .docs-title-input');
+    if (title && (title.classList.contains('docs-title-widget') || title.classList.contains('docs-title-input'))) return null;
     const tab = sheetTab(app, e.target, mac) || sheetHeader(app, e, mac);
     if (tab) return tab;
     let el = e.target.closest(CONTROL);
@@ -468,8 +559,8 @@
       if (step !== undefined) return step;
     }
     let id = K.toId(combo);
-    // Docs: a selected comment (not its text box) takes single letters as shortcuts.
-    const commentKey = app.id === 'docs' && COMMENT_KEYS.includes(id) && !K.isTyping(e) &&
+    // Docs and Sheets: a selected comment (not its text box) takes single letters as shortcuts.
+    const commentKey = (app.id === 'docs' || app.id === 'sheets') && COMMENT_KEYS.includes(id) && !K.isTyping(e) &&
       e.target instanceof Element && !!e.target.closest('.docos-anchoreddocoview, .docos-docoview-active');
     if (!(K.hasModifier(combo) || fnKey || commentKey || (app.plainKeys && app.plainKeys.includes(id)))) return null;
     if (app.keyAlias && app.keyAlias[id]) id = app.keyAlias[id];

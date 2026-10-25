@@ -9,7 +9,9 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 export const EXTENSION = path.resolve(here, '../extension');
 // The installed Google Chrome by default; QH_BROWSER=msedge uses Edge instead.
 export const BROWSER = process.env.QH_BROWSER || 'chrome';
-export const PROFILE = path.join(here, BROWSER === 'chrome' ? '.profile' : `.profile-${BROWSER}`);
+// QH_PROFILE=.profile-calendar gives a check its own profile, so two checks can run at
+// once (Chrome locks a profile to one window). Copy a signed-in .profile to start one.
+export const PROFILE = path.join(here, process.env.QH_PROFILE || (BROWSER === 'chrome' ? '.profile' : `.profile-${BROWSER}`));
 export const RESULTS = path.join(here, 'results');
 
 // Runs in every page before its own scripts: keeps each card that appears, with

@@ -80,10 +80,12 @@ src/sites/youtube.js   유튜브 플레이어 버튼·키 감지 (쇼츠: 재생
                        J/L 카드로 안내. 점검: checks/youtube-shortcuts.mjs
 src/sites/google-editors.js  구글 문서·시트·슬라이드 툴바·메뉴 감지 (화면에 표시된 단축키를 그대로 읽음.
                        시트: 열 머리글 클릭은 Ctrl+Space, 행 번호 클릭은 Shift+Space로 알리고, Shift+Space 키는
-                       잠시 뒤 이름 상자에 행 전체("3:3")가 선택됐을 때만 단축키 사용으로 셈.
+                       잠시 뒤 이름 상자에 한 행("3:3" 또는 데이터 칸 "A3:C3")이 선택됐을 때만 단축키 사용으로 셈.
+                       도움말의 시트 단축키를 모두 셈(두 단계 댓글 키, 댓글 안 R·J·K·E·U 포함). 서식 › 숫자 메뉴는
+                       Ctrl+Shift+1~6 카드. 점검: checks/sheets-shortcuts.mjs(키, --from=번호), checks/editor-mouse.mjs sheets
                        문서: 도움말의 단축키를 마우스 동작만 빼고 모두 셈. "Ctrl+Alt+N, H" 같은 두 단계 키는
                        두 번째 키를 Ctrl+Alt와 함께 눌러도, 따로 눌러도 셈. 댓글이 선택됐을 때 R·J·K·E·U도 셈.
-                       점검: checks/docs-shortcuts.mjs(키, --part2·--part3), checks/docs-mouse.mjs(메뉴·툴바 카드))
+                       점검: checks/docs-shortcuts.mjs(키, --part2·--part3), checks/editor-mouse.mjs docs(메뉴·툴바 카드))
 src/content/main.js    페이지에서 클릭·키 입력을 받아 background로 전달, 팝업의 작동 확인(버튼 점검 포함)에 응답
 src/content/card.js    오른쪽 아래 알림 카드
 src/popup, src/welcome 팝업(오늘 기록, 익힌 단축키, 최근 동작과 이유, 설정)과 첫 설치 안내
