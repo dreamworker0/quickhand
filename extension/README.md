@@ -157,6 +157,8 @@ node login.mjs              # 구글 로그인 창: 로그인한 뒤 창을 닫�
 node google.mjs             # 문서·드라이브·Gmail·캘린더 (docs / drive / gmail / calendar 중 일부만 지정 가능)
 npm run sheets-scenarios    # 시트 실사용 흐름 28가지(범위 끌기·Shift+클릭·머리글·채우기 핸들·Shift/Ctrl+Shift+방향키·편집 중)를
                             # 시험 문서에서 해 보고 기대와 맞는지 표로 (로그인 필요, results/sheets-scenarios.json)
+npm run gmail-scenarios     # Gmail 목록에서 고르지 않고 E·#·Shift+U 등을 누르면 세지 않고, X로 고르거나 대화를 열면 세는지
+                            # 시험 메일 한 통으로 13가지 확인 (로그인 필요, 끝나면 휴지통으로, results/gmail-scenarios.json)
 node cleanup.mjs --keep-login  # 점검용 시험 문서를 모두 휴지통으로 (--keep-login 없으면 로그아웃까지 함)
 ```
 

@@ -186,6 +186,14 @@
     return null;
   }
 
+  // Keys that change conversations do nothing in the list until one is ticked
+  // (Gmail says "No conversations selected"); in an open conversation they act on it.
+  const ON_CONVERSATIONS = new Set(['archive', 'spam', 'remove', 'read', 'unread', 'snooze', 'tasks', 'move', 'label', 'mute', 'important', 'notImportant', 'archiveNewer', 'archiveOlder']);
+  function hasConversation() {
+    if (/\/[A-Za-z0-9]{16,}$/.test(location.hash)) return true; // "#inbox/FMfcgz…"
+    return [...document.querySelectorAll('tr.zA [role="checkbox"][aria-checked="true"]')].some((box) => box.getClientRects().length);
+  }
+
   // "g then i" (go to) and "* then a" (select).
   const nextKey = K.sequencer((c) => !K.hasModifier(c) && ((!c.shift && c.key === 'g') || (c.shift && c.key === '8')));
 
@@ -197,7 +205,7 @@
     c = nextKey(c, Date.now());
     if (!c) return null;
     const id = K.toId(c);
-    if (byCombo[id]) return action(byCombo[id]);
+    if (byCombo[id]) return ON_CONVERSATIONS.has(byCombo[id]) && !hasConversation() ? null : action(byCombo[id]);
     // Enter opens the conversation under the list cursor, which is not a focus: the
     // key then goes to the page itself. On a focused button it just presses it.
     if (id === 'enter' && e.target instanceof Element && (e.target.closest('tr.zA') || e.target.tagName === 'BODY')) return action('open');

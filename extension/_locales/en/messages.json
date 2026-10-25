@@ -112,7 +112,7 @@
   "popSettings": { "message": "Settings" },
   "popStrength": { "message": "Hint level" },
   "popPraiseTitle": { "message": "Cheers" },
-  "popPraise": { "message": "Cheer when I use shortcuts and celebrate streaks" },
+  "popPraise": { "message": "Cheer when I use shortcuts and celebrate streaks. Turn off to see only the hints." },
   "strengthGentle": { "message": "Gentle" },
   "strengthNormal": { "message": "Normal" },
   "strengthActive": { "message": "Active" },

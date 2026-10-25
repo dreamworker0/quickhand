@@ -378,8 +378,29 @@ test('YouTube: the volume slider hints ↑/↓, the timeline J/L and a chapter i
   assert.equal(click(new In('ytd-macro-markers-list-item-renderer')), 'yt:chapter');
 });
 
+test('Gmail: keys that change conversations count only when one is open or ticked', () => {
+  const { site, ctx } = siteEnv('gmail');
+  const id = (code, key, patch) => { const r = site.fromKey(event(code, key, patch), false); return r && r.id; };
+  const keys = [['KeyE', 'e', 'archive'], ['Digit3', '#', 'remove', { shiftKey: true }], ['KeyU', 'U', 'unread', { shiftKey: true }], ['KeyM', 'm', 'mute'], ['Minus', '-', 'notImportant'], ['KeyV', 'v', 'move']];
+  // The list with nothing ticked: Gmail answers "No conversations selected".
+  for (const [code, key, , mods] of keys) assert.equal(id(code, key, mods), null, key);
+  assert.equal(id('KeyS', 's'), 'gmail:star'); // not gated
+  // A ticked row (hidden lists of other views do not count).
+  const box = (shown) => ({ getClientRects: () => (shown ? [{}] : []) });
+  ctx.document.querySelectorAll = (sel) => (sel.includes('aria-checked="true"') ? [box(false)] : []);
+  assert.equal(id('KeyE', 'e'), null);
+  ctx.document.querySelectorAll = (sel) => (sel.includes('aria-checked="true"') ? [box(false), box(true)] : []);
+  for (const [code, key, name, mods] of keys) assert.equal(id(code, key, mods), 'gmail:' + name, key);
+  // An open conversation.
+  ctx.document.querySelectorAll = () => [];
+  ctx.location.hash = '#label/%EC%97%85%EB%AC%B4/FMfcgzQXJWDsKlmBhQZHJTrzvNZsxwlL';
+  for (const [code, key, name, mods] of keys) assert.equal(id(code, key, mods), 'gmail:' + name, key);
+  ctx.location.hash = '#search/hello';
+  assert.equal(id('KeyE', 'e'), null);
+});
+
 test("Gmail: every key on Gmail's help page that changes something is counted", () => {
-  const { site } = siteEnv('gmail');
+  const { site, ctx } = siteEnv('gmail');
   const id = (code, key, patch) => { const r = site.fromKey(event(code, key, patch), false); return r && r.id; };
   const shift = { shiftKey: true };
   const ctrl = { ctrlKey: true };
@@ -391,8 +412,10 @@ test("Gmail: every key on Gmail's help page that changes something is counted", 
   const body = new Element(); body.tagName = 'BODY';
   assert.equal(id('Enter', 'Enter', { target: body }), 'gmail:open'); // the list cursor is not a focus
   assert.equal(id('Enter', 'Enter'), null); // Enter on a button just presses it
+  ctx.location.hash = '#inbox/FMfcgzQXJWDsKlmBhQZHJTrzvNZsxwlL'; // an open conversation
   assert.equal(id('BracketRight', ']'), 'gmail:archiveOlder');
   assert.equal(id('BracketLeft', '['), 'gmail:archiveNewer');
+  ctx.location.hash = '#inbox';
   assert.equal(id('Comma', ','), 'gmail:toolbar');
   assert.equal(id('Backquote', '`'), 'gmail:nextSection');
   assert.equal(id('Backquote', '~', shift), 'gmail:prevSection');
