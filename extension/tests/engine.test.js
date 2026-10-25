@@ -29,6 +29,30 @@ test('hints from the very first click after install', () => {
   assert.equal(engine.recordMouse(state, action('b'), settings({ strength: 'active' }), START).show, true);
 });
 
+test('the first click that is too early for a hint says once that it is watching', () => {
+  const state = engine.emptyState(START);
+  const first = engine.recordMouse(state, action('b'), settings(), START);
+  assert.equal(first.show, false);
+  assert.equal(first.intro, true);
+  assert.equal(first.need, 3);
+  assert.equal(engine.recordMouse(state, action('i'), settings(), START).intro, undefined);
+  // The log still says why no hint came.
+  assert.equal(engine.summary(state, START).log[1].outcome, 'below-threshold');
+});
+
+test('no watching note when the first click already brings a hint', () => {
+  const state = engine.emptyState(START);
+  assert.equal(engine.recordMouse(state, action('b'), settings({ strength: 'active' }), START).show, true);
+  assert.equal(engine.recordMouse(state, action('i'), settings(), START).intro, undefined);
+});
+
+test('the watching note waits while hints are off or in full screen', () => {
+  const state = engine.emptyState(START);
+  assert.equal(engine.recordMouse(state, action('b'), settings({ enabled: false }), START).intro, undefined);
+  assert.equal(engine.recordMouse(state, action('b'), settings(), START, { suppress: true }).intro, undefined);
+  assert.equal(engine.recordMouse(state, action('i'), settings(), START).intro, true);
+});
+
 test('normal level hints from the 3rd mouse use', () => {
   const state = engine.emptyState(START);
   assert.equal(clicks(state, 'b', 2, settings(), START).reason, 'below-threshold');

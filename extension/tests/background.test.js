@@ -28,3 +28,14 @@ test('concurrent action records survive a worker restart', async () => {
   await restarted.request(msg);
   assert.equal(bg.storage.local.qh_state.actions[msg.action.id].key, 21);
 });
+
+test('the first recognized click after install sends the watching card once', async () => {
+  const bg = backgroundEnv();
+  const sender = { tab: { id: 7 } };
+  const click = (id, label) => bg.request({ type: 'qh-mouse', action: { id, site: 'youtube', label, display: [['K']] } }, sender);
+  await click('yt:playpause', '재생 / 일시정지');
+  await click('yt:mute', '음소거');
+  await new Promise((resolve) => setImmediate(resolve)); // cards go out after the reply
+  assert.deepEqual(bg.cards.map((c) => [c.variant, c.label, c.need]), [['intro', '재생 / 일시정지', 3]]);
+  assert.equal(bg.storage.local.qh_state.introShown, true);
+});

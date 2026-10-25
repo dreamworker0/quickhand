@@ -59,7 +59,7 @@ async function updateBadge(settings) {
 // it from the extension's own address is refused after the extension is
 // reloaded while the tab stays open, and that address would also let sites
 // detect the extension.
-const MASCOT = { hint: 'hint', learned: 'cheer', toast: 'main' };
+const MASCOT = { hint: 'hint', learned: 'cheer', toast: 'main', intro: 'main' };
 const pictures = {};
 
 async function picture(name) {
@@ -101,6 +101,8 @@ async function handle(msg, sender) {
             label: result.action.label,
             display: result.action.display,
           });
+        } else if (result.intro && tabId !== null) {
+          showCard(tabId, { variant: 'intro', label: result.action.label, need: result.need });
         }
         await updateBadge(settings);
         return { ok: true };

@@ -38,6 +38,7 @@
     return {
       version: 1,
       day: dayKey(now),
+      introShown: false,
       lastAlertAt: 0,
       lastNewAlertAt: 0,
       newToday: [],
@@ -166,7 +167,14 @@
 
   function recordMouse(state, info, settings, now, context) {
     const result = judgeMouse(state, info, settings, now, context);
-    const entry = { input: 'mouse', outcome: result.show ? result.kind : result.reason };
+    // The first recognized click usually comes before any hint is due, so a new
+    // install would look broken; say once that it is watching. A first click that
+    // already brings up a hint needs no such note.
+    if (!state.introShown && (result.show || result.reason === 'below-threshold')) {
+      state.introShown = true;
+      if (!result.show) result.intro = true;
+    }
+    const entry ={ input: 'mouse', outcome: result.show ? result.kind : result.reason };
     for (const k of ['waitMs', 'count', 'need', 'left']) if (result[k] !== undefined) entry[k] = result[k];
     remember(state, result.action, now, entry);
     return result;

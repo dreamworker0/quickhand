@@ -48,8 +48,10 @@ function event(code, key, patch = {}) {
     target: new Element(), isTrusted: true, repeat: false, ...patch };
 }
 
+// cards: messages the worker sent to tabs (without mascot data, which needs fetch).
 function backgroundEnv(storage = {}) {
   let listener, command;
+  const cards = [];
   const area = (name) => ({
     async get(key) { const value = structuredClone(storage[name]?.[key]); await Promise.resolve(); return { [key]: value }; },
     async set(values) { storage[name] = { ...storage[name], ...structuredClone(values) }; },
@@ -60,13 +62,14 @@ function backgroundEnv(storage = {}) {
       action: { setBadgeText: async () => {}, setBadgeBackgroundColor: async () => {} },
       runtime: { onMessage: { addListener: (fn) => { listener = fn; } }, onInstalled: { addListener() {} }, onStartup: { addListener() {} } },
       commands: { onCommand: { addListener: (fn) => { command = fn; } } },
+      tabs: { sendMessage: async (tabId, msg) => { cards.push(msg); } },
     },
   });
   ctx.self = ctx;
   ctx.importScripts = (file) => vm.runInContext(source(file), ctx);
   vm.runInContext(source('background.js'), ctx);
-  return { storage, command: () => command('toggle-alerts', null),
-    request: (msg) => new Promise((resolve) => listener(msg, {}, resolve)) };
+  return { storage, cards, command: () => command('toggle-alerts', null),
+    request: (msg, sender = {}) => new Promise((resolve) => listener(msg, sender, resolve)) };
 }
 
 module.exports = { siteEnv, backgroundEnv, Element, event };

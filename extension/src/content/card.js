@@ -6,7 +6,7 @@
   if (window !== window.top || globalThis.__quickhandCard) return;
   globalThis.__quickhandCard = true; // the background may inject us again into an open tab
 
-  const t = (key) => chrome.i18n.getMessage(key) || key;
+  const t = (key, subs) => chrome.i18n.getMessage(key, subs) || key;
   const mac = globalThis.QH && globalThis.QH.keys ? globalThis.QH.keys.isMac() : false;
   const SHOW_MS = 5000;
 
@@ -159,6 +159,9 @@
 
     if (msg.variant === 'toast') {
       body.append(el('p', 'label', t(msg.on ? 'toastOn' : 'toastOff')), el('p', 'sub', t(mac ? 'toastHintMac' : 'toastHintWin')));
+    } else if (msg.variant === 'intro') {
+      // Once after install: the click was recognized, the hint comes later.
+      body.append(el('p', 'title', t('introTitle')), el('p', 'label', msg.label), el('p', 'sub', t('introText', [String(msg.need)])));
     } else if (msg.variant === 'learned') {
       body.append(el('p', 'title', t('learnedTitle')), el('p', 'label', msg.label), keysNode(msg.display), el('p', 'sub', t('learnedText')));
     } else {
