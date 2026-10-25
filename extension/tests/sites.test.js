@@ -175,14 +175,20 @@ test('a shown Shift+letter is still not taken for a shortcut (that is typing)', 
 function sheetsWithHeaders(platform = 'Win32') {
   const env = siteEnv('sheets');
   env.ctx.navigator.platform = platform;
+  env.ctx.setTimeout = (fn) => fn();
+  // The name box: set `env.box.value` before the press, `env.box.next` for after it.
+  env.box = { value: 'B4', next: null };
+  env.ctx.document.querySelector = (sel) => (sel.includes('name-box') ? { value: env.box.value } : null);
   const rect = (left, top, width, height) => ({ getBoundingClientRect: () => ({ left, top, right: left + width, bottom: top + height, width, height }) });
   env.ctx.document.querySelectorAll = (sel) =>
     sel === '.column-headers-background' ? [rect(0, 142, 1088, 24)] : sel === '.row-headers-background' ? [rect(0, 142, 46, 708)] : [];
   // The header strip is drawn, not a button; `onMenu` puts a menu item over it instead.
-  const click = (x, y, upX = x, upY = y, onMenu = false) => {
+  const click = (x, y, upX = x, upY = y, onMenu = false, shiftKey = false) => {
     const target = new Element({ control: onMenu });
     env.listeners.mousedown({ target, button: 0, clientX: x, clientY: y });
-    return env.site.fromMouse({ target, button: 0, clientX: upX, clientY: upY }, platform === 'MacIntel');
+    if (env.box.next !== null) env.box.value = env.box.next;
+    env.box.next = null;
+    return env.site.fromMouse({ target, button: 0, clientX: upX, clientY: upY, shiftKey }, platform === 'MacIntel');
   };
   return { ...env, click };
 }
@@ -197,11 +203,38 @@ test('Sheets: clicking a column letter hints Ctrl+Space, a row number Shift+Spac
   assert.equal(row.label, '행 선택');
 });
 
-test('Sheets: dragging a header (resize or move) and the top-left corner are not column/row selects', () => {
-  const { click } = sheetsWithHeaders();
-  assert.equal(click(300, 150, 340, 150), null);
+test('Sheets: dragging a header (resize or move) and the top-left corner are not column/row selects', async () => {
+  const { click, box } = sheetsWithHeaders();
+  assert.equal(await click(300, 150, 340, 150), null); // resize: the name box stays as it was
+  box.value = 'C:F';
+  box.next = 'H:K';
+  assert.equal(await click(300, 150, 500, 150), null); // moving four selected columns
   assert.equal(click(20, 150), null);
   assert.equal(click(500, 500), null);
+});
+
+test('Sheets: dragging along the letters (or Shift+click) to several columns hints Ctrl+Space, then Shift+→', async () => {
+  const { click, box } = sheetsWithHeaders();
+  box.next = 'C:F';
+  const columns = await click(300, 150, 600, 150);
+  assert.equal(columns.id, 'sheets:mod+space>shift+arrowright');
+  assert.equal(columns.label, '여러 열 선택');
+  box.value = 'C:C';
+  box.next = 'C:E';
+  assert.equal((await click(500, 150, 500, 150, false, true)).id, 'sheets:mod+space>shift+arrowright');
+  box.next = '3:7';
+  const rows = await click(20, 300, 20, 500);
+  assert.equal(rows.id, 'sheets:shift+space>shift+arrowdown');
+  assert.equal(rows.label, '여러 행 선택');
+});
+
+test('Sheets: Ctrl+Space then Shift+→ counts as selecting several columns, once', async () => {
+  const { site } = sheetsWithHeaders();
+  const key = (code, k, patch) => site.fromKey(event(code, k, patch), false);
+  assert.equal(key('Space', ' ', { ctrlKey: true }).id, 'sheets:mod+space');
+  assert.equal(key('ArrowRight', 'ArrowRight', { shiftKey: true }).id, 'sheets:mod+space>shift+arrowright');
+  assert.equal(key('ArrowRight', 'ArrowRight', { shiftKey: true }), null); // widening further
+  assert.equal(key('ArrowRight', 'ArrowRight', { shiftKey: true }), null);
 });
 
 test('Sheets: Shift+Space counts as row select only when a whole row ends up selected', async () => {

@@ -239,6 +239,10 @@
         'mod+space': ['열 선택', 'Select column'],
         'ctrl+space': ['열 선택', 'Select column'], // Mac: Control+Space
         'shift+space': ['행 선택', 'Select row'],
+        // A column (row) selected, then widened: the keyboard way of dragging along the header.
+        'mod+space>shift+arrowright': ['여러 열 선택', 'Select several columns'],
+        'ctrl+space>shift+arrowright': ['여러 열 선택', 'Select several columns'],
+        'shift+space>shift+arrowdown': ['여러 행 선택', 'Select several rows'],
         // The rest of Sheets' help page (support.google.com/docs/answer/181110).
         'mod+shift+space': ['모두 선택', 'Select all'],
         'mod+enter': ['범위 채우기', 'Fill range'],
@@ -516,8 +520,9 @@
   let pressedTabWasActive = false;
   // Sheets: a plain click on a column letter selects the column (Ctrl+Space, on
   // Mac Control+Space), on a row number the row (Shift+Space). Where the press
-  // landed is taken at mousedown; a drag (resizing or moving) is not a select,
-  // and the top-left corner, where both strips meet, selects everything instead.
+  // landed is taken at mousedown, with the name box as it was then; the top-left
+  // corner, where both strips meet, selects everything instead. A drag or a
+  // Shift+click along the header may select several (see severalLines).
   let pressedHeader = null;
   if (location.hostname === 'docs.google.com' && location.pathname.startsWith('/spreadsheets/')) {
     window.addEventListener(
@@ -527,7 +532,7 @@
         pressedTabWasActive = !!pressedTab && pressedTab.classList.contains('docs-sheet-active-tab');
         // A menu or button lying over the header strip is not the header.
         const onControl = e.target instanceof Element && !!e.target.closest(CONTROL);
-        pressedHeader = e.button === 0 && !onControl ? { kind: headerAt(e.clientX, e.clientY), x: e.clientX, y: e.clientY } : null;
+        pressedHeader = e.button === 0 && !onControl ? { kind: headerAt(e.clientX, e.clientY), x: e.clientX, y: e.clientY, box: nameBox() } : null;
       },
       true
     );
@@ -543,12 +548,63 @@
     return column === row ? null : column ? 'column' : 'row';
   }
 
+  function nameBox() {
+    const box = document.querySelector('#t-name-box, .waffle-name-box');
+    return (box && box.value) || '';
+  }
+
+  // Whole columns ("C:F") or rows ("3:7") in the name box, with how many.
+  function lineRange(value) {
+    const col = (letters) => [...letters].reduce((n, ch) => n * 26 + ch.charCodeAt(0) - 64, 0);
+    let m = /^([A-Z]+):([A-Z]+)$/.exec(value);
+    if (m) return { kind: 'column', count: Math.abs(col(m[2]) - col(m[1])) + 1 };
+    m = /^(\d+):(\d+)$/.exec(value);
+    if (m) return { kind: 'row', count: Math.abs(m[2] - m[1]) + 1 };
+    return null;
+  }
+
+  function lineSelect(kind, mac) {
+    return kind === 'column' ? K.combo('space', mac ? { ctrl: true } : { mod: true }) : K.combo('space', { shift: true });
+  }
+
+  function severalLinesKeys(kind, mac) {
+    return K.sequence(lineSelect(kind, mac), K.combo(kind === 'column' ? 'arrowright' : 'arrowdown', { shift: true }));
+  }
+
   function sheetHeader(app, e, mac) {
     if (app.id !== 'sheets' || !pressedHeader || !pressedHeader.kind) return null;
-    const { kind, x, y } = pressedHeader;
+    const { kind, x, y, box } = pressedHeader;
     pressedHeader = null;
-    if (Math.abs(e.clientX - x) > 4 || Math.abs(e.clientY - y) > 4) return null;
-    return found(app, kind === 'column' ? K.combo('space', mac ? { ctrl: true } : { mod: true }) : K.combo('space', { shift: true }));
+    const dragged = Math.abs(e.clientX - x) > 4 || Math.abs(e.clientY - y) > 4;
+    if (!dragged && !e.shiftKey) return found(app, lineSelect(kind, mac));
+    return severalLines(app, kind, box, mac);
+  }
+
+  // A drag along the header or a Shift+click there may select several columns
+  // or rows; Sheets shows the range in the name box a moment later. Resizing
+  // leaves the box as it was, and moving a selected block keeps its size in a
+  // new place, so only a new range of two or more counts.
+  function severalLines(app, kind, before, mac) {
+    return new Promise((resolve) => setTimeout(() => {
+      const after = nameBox();
+      const now = lineRange(after);
+      const was = lineRange(before);
+      const moved = was && now && was.kind === now.kind && was.count === now.count && was.count > 1;
+      const yes = now && now.kind === kind && now.count > 1 && after !== before && !moved;
+      resolve(yes ? found(app, severalLinesKeys(kind, mac)) : null);
+    }, 200));
+  }
+
+  // The keyboard way: Ctrl+Space (rows: Shift+Space), then Shift+→/← (↓/↑) soon
+  // after. Only the first widening step counts, not each further press.
+  let lineSelected = null; // { kind, at }
+  const WIDEN_MS = 5000;
+  function widened(app, combo, mac) {
+    const sel = lineSelected;
+    lineSelected = null;
+    if (!sel || Date.now() - sel.at > WIDEN_MS || !combo.shift || K.hasModifier(combo)) return null;
+    const keys = sel.kind === 'column' ? ['arrowright', 'arrowleft'] : ['arrowdown', 'arrowup'];
+    return keys.includes(combo.key) ? found(app, severalLinesKeys(sel.kind, mac)) : null;
   }
 
   // Shift+Space selects the row while cells are selected, but types a space in
@@ -558,8 +614,7 @@
   // only if the row was selected.
   function rowSelected() {
     return new Promise((resolve) => setTimeout(() => {
-      const box = document.querySelector('#t-name-box, .waffle-name-box');
-      const m = /^[A-Z]*(\d+):[A-Z]*(\d+)$/.exec((box && box.value) || '');
+      const m = /^[A-Z]*(\d+):[A-Z]*(\d+)$/.exec(nameBox());
       resolve(!!m && m[1] === m[2]);
     }, 200));
   }
@@ -634,9 +689,17 @@
     if (K.isModifierOnly(e) || K.isTextEntry(e, mac)) return null;
     const combo = K.fromEvent(e, mac);
     const fnKey = /^f\d+$/.test(combo.key);
-    if (app.id === 'sheets' && K.toId(combo) === 'shift+space') {
-      // Answered a moment later (see rowSelected); content/main.js waits for it.
-      return rowSelected().then((yes) => (yes ? found(app, combo) : null));
+    if (app.id === 'sheets') {
+      const wider = widened(app, combo, mac);
+      if (wider) return wider;
+      if (K.toId(combo) === 'shift+space') {
+        // Answered a moment later (see rowSelected); content/main.js waits for it.
+        return rowSelected().then((yes) => {
+          if (yes) lineSelected = { kind: 'row', at: Date.now() };
+          return yes ? found(app, combo) : null;
+        });
+      }
+      if (K.toId(combo) === K.toId(lineSelect('column', mac))) lineSelected = { kind: 'column', at: Date.now() };
     }
     if (app.sequences) {
       const step = sequenceStep(app, combo);
