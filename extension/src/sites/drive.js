@@ -15,7 +15,7 @@
     'alt+c>u': ['파일 업로드', 'File upload'],
     'alt+c>i': ['폴더 업로드', 'Folder upload'],
     'alt+c>t': ['새 Google 문서', 'New Google Doc'],
-    'alt+c>s': ['새 Google 스프레드시트', 'New Google Sheet'],
+    'alt+c>s': ['새 Google 시트', 'New Google Sheet'],
     'alt+c>p': ['새 Google 프레젠테이션', 'New Google Slides'],
     'alt+c>o': ['새 Google 설문지', 'New Google Form'],
     'alt+c>d': ['새 Google 그림', 'New Google Drawing'],
@@ -44,7 +44,7 @@
     const create = mac ? 'Control+C 다음 ' : 'Alt+C 다음 ';
     const keys = {
       'Google Docs': create + 'T', 'Google 문서': create + 'T',
-      'Google Sheets': create + 'S', 'Google 스프레드시트': create + 'S',
+      'Google Sheets': create + 'S', 'Google 스프레드시트': create + 'S', 'Google 시트': create + 'S',
       'Google Slides': create + 'P', 'Google 프레젠테이션': create + 'P', 'Google 슬라이드': create + 'P',
       'Google Forms': create + 'O', 'Google 설문지': create + 'O',
       'Google Drawings': create + 'D', 'Google 그림': create + 'D',

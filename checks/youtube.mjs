@@ -33,6 +33,12 @@ await run('영상 볼륨 슬라이더', async () => {
   const slider = await page.locator('#movie_player .ytp-volume-panel').boundingBox();
   await page.mouse.click(slider.x + slider.width * 0.6, slider.y + slider.height / 2);
 });
+await run('영상 진행 막대 클릭', async () => {
+  await page.hover('#movie_player');
+  await page.waitForTimeout(300);
+  const bar = await page.locator('#movie_player .ytp-progress-bar').boundingBox();
+  await page.mouse.click(bar.x + bar.width * 0.3, bar.y + bar.height / 2);
+});
 await run('영상 설명란 챕터 클릭', async () => {
   await page.locator('#description-inline-expander, #expand').first().click().catch(() => {});
   await page.waitForTimeout(1000);

@@ -33,7 +33,7 @@ function siteEnv(id) {
   const ctx = vm.createContext({
     window, Element, location: { hostname: editor ? 'docs.google.com' : id === 'youtube' ? 'www.youtube.com' : id + '.google.com', pathname, hash: '#inbox' },
     document: { fullscreenElement: null, querySelectorAll: () => [] },
-    navigator: { platform: 'Win32' }, setInterval() {},
+    navigator: { platform: 'Win32' }, setInterval() {}, setTimeout,
     chrome: { i18n: { getMessage: (k) => k, getUILanguage: () => 'ko' }, runtime: {
       id: 'offline-test', sendMessage: async (msg) => { messages.push(msg); }, onMessage: { addListener() {} },
     } },

@@ -238,9 +238,123 @@ test('YouTube on Mac: chapters are Option+←/→', () => {
   assert.equal(site.fromKey(event('ArrowRight', 'ArrowRight', { ctrlKey: true }), true), null);
 });
 
-test('YouTube: the volume slider hints ↑/↓ and a chapter in the list hints Ctrl+←/→', () => {
+test('YouTube: the volume slider hints ↑/↓, the timeline J/L and a chapter in the list Ctrl+←/→', () => {
   const { site } = siteEnv('youtube');
   const click = (el) => { const r = site.fromMouse({ target: el }, false); return r && r.id; };
   assert.equal(click(new In('#movie_player', '.html5-video-player', '.ytp-volume-panel')), 'yt:volume');
+  assert.equal(click(new In('#movie_player', '.html5-video-player', '.ytp-progress-bar-container', '.ytp-progress-bar')), 'yt:seek');
   assert.equal(click(new In('ytd-macro-markers-list-item-renderer')), 'yt:chapter');
+});
+
+test("Gmail: every key on Gmail's help page that changes something is counted", () => {
+  const { site } = siteEnv('gmail');
+  const id = (code, key, patch) => { const r = site.fromKey(event(code, key, patch), false); return r && r.id; };
+  const shift = { shiftKey: true };
+  const ctrl = { ctrlKey: true };
+  const ctrlShift = { ctrlKey: true, shiftKey: true };
+  assert.equal(id('KeyN', 'n'), 'gmail:nextMessage');
+  assert.equal(id('KeyP', 'p'), 'gmail:prevMessage');
+  assert.equal(id('KeyO', 'o'), 'gmail:open');
+  assert.equal(id('Enter', 'Enter', { target: new In('tr.zA') }), 'gmail:open');
+  const body = new Element(); body.tagName = 'BODY';
+  assert.equal(id('Enter', 'Enter', { target: body }), 'gmail:open'); // the list cursor is not a focus
+  assert.equal(id('Enter', 'Enter'), null); // Enter on a button just presses it
+  assert.equal(id('BracketRight', ']'), 'gmail:archiveOlder');
+  assert.equal(id('BracketLeft', '['), 'gmail:archiveNewer');
+  assert.equal(id('Comma', ','), 'gmail:toolbar');
+  assert.equal(id('Backquote', '`'), 'gmail:nextSection');
+  assert.equal(id('Backquote', '~', shift), 'gmail:prevSection');
+  assert.equal(id('KeyD', 'd'), 'gmail:composeTab');
+  assert.equal(id('KeyQ', 'q'), 'gmail:chatSearch');
+  assert.equal(id('Slash', '?', shift), 'gmail:help');
+  assert.equal(id('Semicolon', ':', shift), 'gmail:collapseAll');
+  assert.equal(id('Minus', '_', shift), 'gmail:unreadFrom');
+  assert.equal(id('KeyN', 'N', shift), 'gmail:refresh');
+  assert.equal(id('KeyR', 'R', shift), 'gmail:replyWindow');
+  assert.equal(id('KeyA', 'A', shift), 'gmail:replyAllWindow');
+  assert.equal(id('KeyF', 'F', shift), 'gmail:forwardWindow');
+  assert.equal(id('Period', '.', { ctrlKey: true, altKey: true }), 'gmail:sidebarNext');
+  assert.equal(id('Comma', ',', { ctrlKey: true, altKey: true }), 'gmail:sidebarPrev');
+  for (const [k, name] of [['KeyK', 'goTasks'], ['KeyL', 'goLabel']]) {
+    assert.equal(id('KeyG', 'g'), null);
+    assert.equal(id(k, k.slice(3).toLowerCase()), 'gmail:' + name);
+  }
+  for (const [k, name] of [['KeyN', 'selectNone'], ['KeyR', 'selectRead'], ['KeyU', 'selectUnread'], ['KeyS', 'selectStarred'], ['KeyT', 'selectUnstarred']]) {
+    assert.equal(id('Digit8', '*', shift), null);
+    assert.equal(id(k, k.slice(3).toLowerCase()), 'gmail:' + name);
+  }
+  // Compose window keys, named even before their button was ever clicked.
+  for (const [code, key, mods, combo] of [
+    ['Digit5', '%', ctrlShift, 'mod+shift+5'], ['Digit6', '^', ctrlShift, 'mod+shift+6'], ['Minus', '_', ctrlShift, 'mod+shift+-'],
+    ['Equal', '+', ctrlShift, 'mod+shift+='], ['BracketLeft', '[', ctrl, 'mod+['], ['BracketRight', ']', ctrl, 'mod+]'],
+    ['KeyL', 'L', ctrlShift, 'mod+shift+l'], ['KeyE', 'E', ctrlShift, 'mod+shift+e'], ['KeyR', 'R', ctrlShift, 'mod+shift+r'],
+    ['KeyF', 'F', ctrlShift, 'mod+shift+f'], ['KeyM', 'm', ctrl, 'mod+m'], ['Period', '.', ctrl, 'mod+.'], ['Comma', ',', ctrl, 'mod+,'],
+  ]) {
+    const found = site.fromKey(event(code, key, { ...mods, target: new Element({ typing: true }) }), false);
+    assert.equal(found?.id, 'gmail:' + combo, combo);
+    assert.ok(found.label, combo);
+  }
+});
+
+test('Gmail: clicking a row star or importance marker hints s and + / -', () => {
+  const { site } = siteEnv('gmail');
+  class Row extends Element { closest(sel) { return sel === 'tr.zA' || sel.includes('[role="button"]') || sel.includes('[role="switch"]') ? this : null; } }
+  const click = (attrs) => { const r = site.fromMouse({ target: new Row(attrs) }, false); return r && r.id; };
+  assert.equal(click({ role: 'button', 'aria-label': '별표 없음' }), 'gmail:star');
+  assert.equal(click({ role: 'button', 'aria-label': '별표표시됨' }), 'gmail:star');
+  assert.equal(click({ role: 'switch', 'aria-label': 'Google 매직에 따르면 중요한 메일입니다.' }), 'gmail:notImportant');
+  assert.equal(click({ role: 'switch', 'aria-label': '중요하지 않은 메일입니다. 중요 메일로 표시하려면 클릭하세요.' }), 'gmail:important');
+});
+
+test("Docs: two-step keys count with the second key held or on its own", () => {
+  const { site } = siteEnv('docs');
+  const press = (code, key, mods = {}) => site.fromKey(event(code, key, mods), false);
+  const ca = { ctrlKey: true, altKey: true };
+  assert.equal(press('KeyN', 'n', ca), null);
+  assert.equal(press('KeyH', 'h', ca).id, 'docs:mod+alt+n>h');
+  assert.equal(press('KeyN', 'n', ca), null);
+  const loose = press('KeyH', 'h');
+  assert.equal(loose.id, 'docs:mod+alt+n>h');
+  assert.equal(loose.label, '다음 제목');
+  assert.equal(press('KeyT', 't', { ...ca, shiftKey: true }), null);
+  assert.equal(press('KeyM', 'm', { ...ca, shiftKey: true }).id, 'docs:mod+alt+shift+t>m');
+  // Ctrl+Alt+X right after Ctrl+Alt+A is "speak selection", not spelling.
+  press('KeyA', 'a', ca);
+  assert.equal(press('KeyX', 'x', ca).id, 'docs:mod+alt+a>x');
+  assert.equal(press('KeyX', 'x', ca).id, 'docs:mod+alt+x');
+});
+
+test('Docs: the rest of the help page is named, plus Shift selection and page keys', () => {
+  const { site } = siteEnv('docs');
+  const id = (code, key, mods) => { const r = site.fromKey(event(code, key, mods), false); return r && r.id; };
+  assert.equal(id('KeyO', 'o', { ctrlKey: true }), 'docs:mod+o');
+  assert.equal(id('Period', '.', { ctrlKey: true }), 'docs:mod+.');
+  assert.equal(id('KeyX', 'x', { ctrlKey: true, altKey: true, shiftKey: true }), 'docs:mod+alt+shift+x');
+  assert.equal(id('ArrowRight', 'ArrowRight', { shiftKey: true }), 'docs:shift+arrowright');
+  assert.equal(id('PageDown', 'PageDown'), 'docs:pagedown');
+  assert.equal(id('KeyF', 'f', { altKey: true }), 'docs:alt+f');
+  assert.equal(id('ArrowRight', 'ArrowRight'), null); // plain arrows are just moving
+});
+
+test('Docs: Ctrl+Alt+Shift+A alone is comment history, answered once no second key comes', async () => {
+  const { site } = siteEnv('docs');
+  const later = site.fromKey(event('KeyA', 'A', { ctrlKey: true, altKey: true, shiftKey: true }), false);
+  assert.equal(typeof later.then, 'function');
+  assert.equal((await later).id, 'docs:mod+alt+shift+a');
+});
+
+test('Docs: R, J, K, E, U count only while a comment (not its text box) is selected', () => {
+  const { site } = siteEnv('docs');
+  class Comment extends Element { closest(sel) { return sel.includes('docos-anchoreddocoview') ? this : null; } }
+  assert.equal(site.fromKey(event('KeyE', 'e', { target: new Comment() }), false).id, 'docs:e');
+  assert.equal(site.fromKey(event('KeyE', 'e'), false), null); // typing in the document
+  assert.equal(site.fromKey(event('KeyE', 'e', { target: new Element({ typing: true }) }), false), null);
+});
+
+test('Docs menus: a two-step key printed as "Ctrl+Alt+O Ctrl+Alt+U" matches pressing O, then U', () => {
+  const { site } = siteEnv('docs');
+  const clicked = site.fromMouse({ target: new Element({ control: true, 'aria-label': '제안된 수정 사항 검토 (Ctrl+Alt+O Ctrl+Alt+U)' }) }, false);
+  assert.equal(clicked.id, 'docs:mod+alt+o>u');
+  site.fromKey(event('KeyO', 'o', { ctrlKey: true, altKey: true }), false);
+  assert.equal(site.fromKey(event('KeyU', 'u', { ctrlKey: true, altKey: true }), false).id, clicked.id);
 });

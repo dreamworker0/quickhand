@@ -56,7 +56,7 @@
     "message": "$SITE$ 알림은 설정에서 꺼 두었어요.",
     "placeholders": { "site": { "content": "$1" } }
   },
-  "tabUnsupported": { "message": "이 사이트는 아직 지원하지 않아요. 유튜브, Gmail, 구글 캘린더·드라이브·문서·스프레드시트·슬라이드에서 작동해요." },
+  "tabUnsupported": { "message": "이 사이트는 아직 지원하지 않아요. 유튜브, Gmail, 구글 캘린더·드라이브·문서·시트·슬라이드에서 작동해요." },
   "popTurnOn": { "message": "켜기" },
   "popTurnOff": { "message": "끄기" },
   "popObserving": {
@@ -115,7 +115,7 @@
   "siteCalendar": { "message": "구글 캘린더" },
   "siteDrive": { "message": "구글 드라이브" },
   "siteDocs": { "message": "구글 문서" },
-  "siteSheets": { "message": "구글 스프레드시트" },
+  "siteSheets": { "message": "구글 시트" },
   "siteSlides": { "message": "구글 슬라이드" },
   "popLog": { "message": "알림이 안 떴나요? 최근 동작 보기" },
   "popLogHint": { "message": "최근 동작 10개와, 알림을 띄우거나 띄우지 않은 이유예요." },
@@ -188,7 +188,7 @@
   "welNoRec3": { "message": "방문한 주소" },
   "welStore": { "message": "기록은 이 기기에만 저장되고 어디로도 보내지 않아요. 설정만 크롬 동기화로 다른 기기와 맞춰져요. 언제든 아이콘을 눌러 기록을 보거나 지울 수 있어요." },
   "welStrength": { "message": "알림 강도를 골라 주세요" },
-  "welSites": { "message": "지금은 유튜브, Gmail, 구글 캘린더·드라이브·문서·스프레드시트·슬라이드에서 작동해요." },
+  "welSites": { "message": "지금은 유튜브, Gmail, 구글 캘린더·드라이브·문서·시트·슬라이드에서 작동해요." },
   "welToggleWin": { "message": "알림은 Alt+Shift+P로 언제든 켜고 끌 수 있어요." },
   "welToggleMac": { "message": "알림은 Option+Shift+P로 언제든 켜고 끌 수 있어요." },
   "welStart": { "message": "시작하기" },

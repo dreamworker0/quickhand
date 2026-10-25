@@ -136,7 +136,12 @@
         break;
       }
     }
-    const [first, then] = s.split(/\s+(?:다음|then)\s+/i);
+    let [first, then] = s.split(/\s+(?:다음|then)\s+/i);
+    // Docs menus print a two-step key as two combos side by side: "Ctrl+Alt+O Ctrl+Alt+U".
+    if (!then) {
+      const pair = first.match(/^(.*\S)\s+((?:ctrl|control|alt|option|opt|shift|cmd|command|meta|[⌘⌥⇧⌃])\s*\+?.*)$/i);
+      if (pair && parseStep(pair[1], mac) && parseStep(pair[2], mac)) [first, then] = [pair[1], pair[2]];
+    }
     const c = parseStep(first, mac);
     if (!c) return null;
     if (then) {

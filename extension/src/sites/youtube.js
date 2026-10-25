@@ -114,9 +114,8 @@
       for (const [cls, name] of BUTTONS) if (button.closest('.' + cls)) return action(name);
       return null;
     }
-    // Clicking the progress bar jumps to a chosen point, which J/L (10 s steps)
-    // can't replace, so it is not counted.
-    if (el.closest('.ytp-progress-bar-container, .ytp-progress-bar')) return null;
+    // Moving along the timeline is what J/L do in 10-second steps.
+    if (el.closest('.ytp-progress-bar-container, .ytp-progress-bar')) return action('seek');
     if (el.matches('video') || el.closest('.html5-video-container, .ytp-cued-thumbnail-overlay')) return action('playpause');
     return null;
   }

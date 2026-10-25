@@ -121,7 +121,8 @@ td .site-icon { display: inline-block; margin-right: 6px; vertical-align: -3px; 
 .count { color: var(--accent); }
 .hint { margin-top: 6px; font-size: 12px; color: var(--quiet); }
 
-summary { cursor: pointer; font-weight: 600; }
+/* Same look as the section titles (h2) above them. */
+summary { cursor: pointer; font-size: 12px; font-weight: 600; color: var(--quiet); }
 .settings h3 { margin: 14px 0 6px; font-size: 12px; color: var(--quiet); font-weight: 600; }
 .row { display: flex; gap: 6px; flex-wrap: wrap; }
 

@@ -1,9 +1,10 @@
-// Moves every check file (docs, sheets, slides named TITLE) to the trash, one at
+// Moves every check file (docs, sheets, slides named "손빠르미 … (지워도 됨)") to the trash, one at
 // a time from the recent list, and signs the profile out only once none is left
 // (unless run with --keep-login).
 import { launch } from './lib.mjs';
 
-const TITLE = '손빠르미 점검용 (지워도 됨)';
+// "손빠르미 점검용 (지워도 됨)" and "손빠르미 단축키 점검 문서 (지워도 됨)".
+const TITLE = /손빠르미 [^()]*\(지워도 됨\)/;
 const { context } = await launch({ headless: false });
 const page = await context.newPage();
 const rows = page.locator('[role="row"]', { hasText: TITLE }).filter({ visible: true });

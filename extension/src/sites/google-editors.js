@@ -69,6 +69,141 @@
         'mod+alt+x': ['맞춤법 및 문법 검사', 'Spelling and grammar'],
         'f7': ['맞춤법 및 문법 검사', 'Spelling and grammar'],
         'mod+shift+y': ['사전', 'Dictionary'],
+        // The rest of Docs' help page (support.google.com/docs/answer/179738).
+        'mod+y': ['마지막 작업 반복', 'Repeat last action'],
+        'mod+o': ['열기', 'Open'],
+        'mod+s': ['저장', 'Save'],
+        'mod+g': ['다시 찾기', 'Find next'],
+        'mod+shift+g': ['이전 항목 찾기', 'Find previous'],
+        'alt+enter': ['링크 열기', 'Open link'],
+        'alt+/': ['메뉴 검색', 'Search the menus'],
+        'alt+shift+z': ['메뉴 검색', 'Search the menus'],
+        'alt+z': ['메뉴 검색', 'Search the menus'],
+        'mod+alt+shift+z': ['수정 모드로 전환', 'Switch to editing'],
+        'mod+alt+shift+x': ['제안 모드로 전환', 'Switch to suggesting'],
+        'mod+alt+shift+c': ['보기 모드로 전환', 'Switch to viewing'],
+        'mod+=': ['확대', 'Zoom in'],
+        'mod+shift+=': ['확대', 'Zoom in'],
+        'mod++': ['확대', 'Zoom in'],
+        'mod+-': ['축소', 'Zoom out'],
+        'mod+0': ['확대/축소 100%', 'Zoom to 100%'],
+        'mod+.': ['위 첨자', 'Superscript'],
+        'mod+,': ['아래 첨자', 'Subscript'],
+        'mod+alt+c': ['텍스트 서식 복사', 'Copy text formatting'],
+        'mod+alt+v': ['텍스트 서식 붙여넣기', 'Paste text formatting'],
+        'mod+space': ['텍스트 서식 지우기', 'Clear text formatting'],
+        // Small caps in English; with a Korean UI Docs uses the key for its input tools.
+        'mod+shift+k': ['입력 도구 켜기/끄기', 'Small caps'],
+        'mod+]': ['들여쓰기 늘리기', 'Increase indent'],
+        'mod+[': ['들여쓰기 줄이기', 'Decrease indent'],
+        'mod+shift+9': ['체크리스트', 'Checklist'],
+        'mod+shift+arrowup': ['단락 위로 이동', 'Move paragraph up'],
+        'mod+shift+arrowdown': ['단락 아래로 이동', 'Move paragraph down'],
+        'mod+alt+y': ['대체 텍스트', 'Alt text'],
+        'mod+alt+k': ['이미지 크게', 'Enlarge image'],
+        'mod+alt+b': ['이미지 가로로 크게', 'Enlarge image horizontally'],
+        'mod+alt+i': ['이미지 세로로 크게', 'Enlarge image vertically'],
+        'mod+alt+j': ['이미지 작게', 'Shrink image'],
+        'mod+alt+w': ['이미지 가로로 작게', 'Shrink image horizontally'],
+        'mod+alt+q': ['이미지 세로로 작게', 'Shrink image vertically'],
+        'alt+arrowright': ['이미지 시계 방향 15° 회전', 'Rotate image 15° clockwise'],
+        'alt+arrowleft': ['이미지 시계 반대 방향 15° 회전', 'Rotate image 15° counterclockwise'],
+        'alt+shift+arrowright': ['이미지 시계 방향 1° 회전', 'Rotate image 1° clockwise'],
+        'alt+shift+arrowleft': ['이미지 시계 반대 방향 1° 회전', 'Rotate image 1° counterclockwise'],
+        'mod+shift+x': ['컨텍스트 메뉴', 'Context menu'],
+        'mod+shift+\\': ['컨텍스트 메뉴', 'Context menu'],
+        'shift+f10': ['컨텍스트 메뉴', 'Context menu'],
+        'alt+f': ['파일 메뉴', 'File menu'],
+        'alt+e': ['수정 메뉴', 'Edit menu'],
+        'alt+v': ['보기 메뉴', 'View menu'],
+        'alt+i': ['삽입 메뉴', 'Insert menu'],
+        'alt+o': ['서식 메뉴', 'Format menu'],
+        'alt+t': ['도구 메뉴', 'Tools menu'],
+        'alt+h': ['도움말 메뉴', 'Help menu'],
+        'alt+a': ['접근성 메뉴', 'Accessibility menu'],
+        'mod+alt+shift+k': ['입력 도구 메뉴', 'Input tools menu'],
+        'mod+shift+arrowleft': ['단어 단위로 선택', 'Select by word'],
+        'mod+shift+arrowright': ['단어 단위로 선택', 'Select by word'],
+        'mod+shift+home': ['문서 처음까지 선택', 'Select to the start of the document'],
+        'mod+shift+end': ['문서 끝까지 선택', 'Select to the end of the document'],
+        'mod+alt+shift+arrowleft': ['여러 부분 선택', 'Select multiple sections'],
+        'mod+alt+shift+arrowright': ['여러 부분 선택', 'Select multiple sections'],
+        'mod+alt+z': ['스크린 리더 지원 켜기/끄기', 'Turn screen reader support on or off'],
+        'alt+shift+`': ['스크린 리더 지원 켜기/끄기', 'Turn screen reader support on or off'],
+        'mod+alt+h': ['점자 지원 켜기/끄기', 'Turn braille support on or off'],
+        'mod+alt+shift+r': ['실시간 수정 내용 듣기', 'Announce live edits'],
+        'mod+shift+s': ['음성 입력', 'Voice typing'],
+        'mod+alt+.': ['측면 패널로 이동', 'Move to the side panel'],
+        'mod+alt+,': ['측면 패널로 이동', 'Move to the side panel'],
+        "mod+'": ['다음 맞춤법 오류', 'Next misspelling'],
+        'mod+;': ['이전 맞춤법 오류', 'Previous misspelling'],
+        'mod+alt+shift+m': ['편집 영역 밖으로 이동', 'Move focus out of the editing area'],
+        'mod+alt+enter': ['체크박스 전환', 'Toggle checkbox'],
+        'mod+shift+pagedown': ['다음 탭으로', 'Next document tab'],
+        'mod+shift+pageup': ['이전 탭으로', 'Previous document tab'],
+        // Shown in the menus but not on the help page.
+        'shift+f11': ['탭 추가', 'Add tab'],
+        'alt+shift+k': ['작은 대문자', 'Small caps'],
+        'mod+shift+p': ['인쇄 불가 문자 표시', 'Show non-printing characters'],
+        'mod+alt+shift+j': ['댓글 숨기기', 'Hide comments'],
+        // Single letters while a comment is selected (see COMMENT_KEYS).
+        r: ['댓글에 답글', 'Reply to the comment'],
+        j: ['다음 댓글', 'Next comment'],
+        k: ['이전 댓글', 'Previous comment'],
+        e: ['댓글 해결', 'Resolve the comment'],
+        u: ['댓글에서 나가기', 'Leave the comment'],
+        // Selection keys with only Shift, and page keys (see PLAIN_KEYS).
+        'shift+arrowleft': ['한 글자씩 선택', 'Select by character'],
+        'shift+arrowright': ['한 글자씩 선택', 'Select by character'],
+        'shift+arrowup': ['한 줄씩 선택', 'Select by line'],
+        'shift+arrowdown': ['한 줄씩 선택', 'Select by line'],
+        'shift+home': ['줄 처음까지 선택', 'Select to the start of the line'],
+        'shift+end': ['줄 끝까지 선택', 'Select to the end of the line'],
+        'pageup': ['한 페이지 위로', 'Page up'],
+        'pagedown': ['한 페이지 아래로', 'Page down'],
+        'shift+escape': ['그림 편집기 닫기', 'Close the drawing editor'],
+      },
+      // Keys without Ctrl or Alt that still count in Docs (all are named above).
+      plainKeys: ['shift+arrowleft', 'shift+arrowright', 'shift+arrowup', 'shift+arrowdown', 'shift+home', 'shift+end', 'pageup', 'pagedown', 'shift+escape'],
+      // Two-step keys, "Ctrl+Alt+N, H": Ctrl+Alt (+Shift) and a letter, then a second
+      // key, with or without the modifiers still held. Keyed by the first step.
+      sequences: {
+        'mod+alt+u': { a: ['선택 해제', 'Select none'] },
+        'mod+alt+a': {
+          x: ['선택 영역 읽기', 'Speak selection'], r: ['커서 위치부터 읽기', 'Speak from cursor'],
+          l: ['커서 위치 말하기', 'Speak cursor location'], f: ['커서 위치 서식 말하기', 'Speak formatting at cursor'],
+          c: ['댓글 읽기', 'Speak comment'], a: ['댓글 앵커 읽기', 'Speak comment anchor'],
+          s: ['선택 영역 서식 읽기', 'Speak selection formatting'], h: ['개요 표시', 'Show the outline'],
+        },
+        'mod+alt+e': { c: ['현재 댓글로 들어가기', 'Enter the current comment'], f: ['현재 각주로 이동', 'Move to the current footnote'], p: ['팝업으로 이동', 'Move focus to the popup'] },
+        'mod+alt+o': { u: ['제안 검토', 'Review suggested edits'], h: ['머리글로 이동', 'Insert or move to the header'], f: ['바닥글로 이동', 'Insert or move to the footer'] },
+        'mod+alt+n': {
+          h: ['다음 제목', 'Next heading'], 1: ['다음 제목 1', 'Next heading 1'], 2: ['다음 제목 2', 'Next heading 2'], 3: ['다음 제목 3', 'Next heading 3'],
+          4: ['다음 제목 4', 'Next heading 4'], 5: ['다음 제목 5', 'Next heading 5'], 6: ['다음 제목 6', 'Next heading 6'],
+          g: ['다음 그래픽', 'Next graphic'], o: ['다음 목록', 'Next list'], i: ['목록의 다음 항목', 'Next list item'], l: ['다음 링크', 'Next link'],
+          b: ['다음 북마크', 'Next bookmark'], w: ['다음 서식 변경', 'Next formatting change'], r: ['다음 수정', 'Next revision'],
+          f: ['다음 각주', 'Next footnote'], u: ['다음 제안', 'Next suggestion'], c: ['다음 댓글', 'Next comment'],
+        },
+        'mod+alt+p': {
+          h: ['이전 제목', 'Previous heading'], 1: ['이전 제목 1', 'Previous heading 1'], 2: ['이전 제목 2', 'Previous heading 2'], 3: ['이전 제목 3', 'Previous heading 3'],
+          4: ['이전 제목 4', 'Previous heading 4'], 5: ['이전 제목 5', 'Previous heading 5'], 6: ['이전 제목 6', 'Previous heading 6'],
+          g: ['이전 그래픽', 'Previous graphic'], o: ['이전 목록', 'Previous list'], i: ['목록의 이전 항목', 'Previous list item'], l: ['이전 링크', 'Previous link'],
+          b: ['이전 북마크', 'Previous bookmark'], w: ['이전 서식 변경', 'Previous formatting change'], r: ['이전 수정', 'Previous revision'],
+          f: ['이전 각주', 'Previous footnote'], u: ['이전 제안', 'Previous suggestion'], c: ['이전 댓글', 'Previous comment'],
+        },
+        'mod+alt+shift+e': { i: ['현재 목록 항목 선택', 'Select the current list item'], o: ['같은 수준의 목록 항목 모두 선택', 'Select all list items at this level'] },
+        'mod+alt+shift+a': { l: ['커서 위치 읽기', 'Speak cursor position'], w: ['단어 수 읽기', 'Speak word count'] },
+        'mod+alt+shift+n': { t: ['다음 표', 'Next table'] },
+        'mod+alt+shift+p': { t: ['이전 표', 'Previous table'] },
+        // In the View › Comments menu, not on the help page.
+        'mod+alt+shift+w': { m: ['댓글 최소화', 'Minimize comments'], e: ['댓글 펼치기', 'Expand comments'] },
+        'mod+alt+shift+t': {
+          s: ['표의 처음으로', 'Start of the table'], d: ['표의 끝으로', 'End of the table'], i: ['열의 처음으로', 'Start of the column'],
+          k: ['열의 끝으로', 'End of the column'], b: ['다음 열로', 'Next column'], v: ['이전 열로', 'Previous column'],
+          j: ['행의 처음으로', 'Start of the row'], l: ['행의 끝으로', 'End of the row'], m: ['다음 행으로', 'Next row'],
+          g: ['이전 행으로', 'Previous row'], e: ['표에서 나가기', 'Leave the table'], h: ['행·열 머리글 읽기', 'Speak row and column headers'],
+          n: ['셀 위치 읽기', 'Speak cell location'], r: ['행 머리글 읽기', 'Speak row header'], c: ['열 머리글 읽기', 'Speak column header'],
+        },
       },
       rules: [],
     },
@@ -178,6 +313,10 @@
       label = tip.label;
     }
     const combo = K.parse(shortcut, mac);
+    // A menu's "Ctrl+Alt+O Ctrl+Alt+U" is the same two-step key as pressing O, then U.
+    if (combo && combo.then && app.sequences && app.sequences[K.toId(Object.assign({}, combo, { then: null }))]) {
+      combo.then = K.combo(combo.then.key);
+    }
     // Function keys count with or without Shift (Sheets' Insert › Sheet is
     // Shift+F11, Note is Shift+F2); a plain Shift+letter would just be typing.
     if (combo && (K.hasModifier(combo) || /^f\d+$/.test(combo.key)) && label) {
@@ -280,6 +419,42 @@
     return null;
   }
 
+  // Two-step keys (Docs): returns the finished sequence, null while waiting for the
+  // second key, or undefined when the key is not part of a sequence. A first step that
+  // is also a shortcut of its own (Ctrl+Alt+Shift+A, comment history) is answered a
+  // moment later, once it is clear no second key follows.
+  const COMMENT_KEYS = ['r', 'j', 'k', 'e', 'u'];
+  const SEQUENCE_MS = 1500;
+  let firstStep = null;
+  let firstAt = 0;
+  function sequenceStep(app, combo) {
+    const id = K.toId(combo);
+    const now = Date.now();
+    if (firstStep && now - firstAt <= SEQUENCE_MS) {
+      const first = firstStep;
+      firstStep = null;
+      // The second key may come with Ctrl+Alt (+Shift) still held, or on its own.
+      const held = first.shift ? { mod: true, alt: true, shift: true } : { mod: true, alt: true };
+      const plain = Object.keys(held).every((m) => combo[m] === held[m]) || !K.hasModifier(combo);
+      const names = app.sequences[K.toId(first)];
+      const name = plain && names[combo.key];
+      if (!name) return undefined; // not a sequence after all; treat the key on its own
+      const second = K.combo(combo.key);
+      return { id: app.id + ':' + K.toId(K.sequence(first, second)), label: QH.names.pick(name), fallbackLabel: true, combos: [K.sequence(first, second)] };
+    }
+    firstStep = null;
+    if (!app.sequences[id]) return undefined;
+    firstStep = combo;
+    firstAt = now;
+    const alone = app.names[id] || COMMON_NAMES[id];
+    if (!alone) return null;
+    return new Promise((resolve) => setTimeout(() => {
+      const stillAlone = firstStep === combo;
+      if (stillAlone) firstStep = null;
+      resolve(stillAlone ? found(app, combo) : null);
+    }, SEQUENCE_MS));
+  }
+
   function fromKey(app, e, mac) {
     if (K.isModifierOnly(e) || K.isTextEntry(e, mac)) return null;
     const combo = K.fromEvent(e, mac);
@@ -288,8 +463,15 @@
       // Answered a moment later (see rowSelected); content/main.js waits for it.
       return rowSelected().then((yes) => (yes ? found(app, combo) : null));
     }
-    if (!(K.hasModifier(combo) || fnKey)) return null;
+    if (app.sequences) {
+      const step = sequenceStep(app, combo);
+      if (step !== undefined) return step;
+    }
     let id = K.toId(combo);
+    // Docs: a selected comment (not its text box) takes single letters as shortcuts.
+    const commentKey = app.id === 'docs' && COMMENT_KEYS.includes(id) && !K.isTyping(e) &&
+      e.target instanceof Element && !!e.target.closest('.docos-anchoreddocoview, .docos-docoview-active');
+    if (!(K.hasModifier(combo) || fnKey || commentKey || (app.plainKeys && app.plainKeys.includes(id)))) return null;
     if (app.keyAlias && app.keyAlias[id]) id = app.keyAlias[id];
     const seen = detected.get(app.id + ':' + id);
     const name = seen || QH.names.pick(app.names[id] || COMMON_NAMES[id]);

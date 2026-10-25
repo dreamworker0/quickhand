@@ -6,7 +6,7 @@
 
 ## 1. 다루는 정보
 
-확장 프로그램은 다음 사이트에서만 작동합니다: 유튜브(www.youtube.com), Gmail(mail.google.com), 구글 캘린더(calendar.google.com), 구글 드라이브(drive.google.com), 구글 문서·스프레드시트·슬라이드(docs.google.com).
+확장 프로그램은 다음 사이트에서만 작동합니다: 유튜브(www.youtube.com), Gmail(mail.google.com), 구글 캘린더(calendar.google.com), 구글 드라이브(drive.google.com), 구글 문서·시트·슬라이드(docs.google.com).
 
 이 사이트들에서 다음 정보를 기록합니다.
 

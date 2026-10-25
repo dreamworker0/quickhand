@@ -115,3 +115,10 @@ test('Home and End are shown with their key names', () => {
   assert.deepEqual(keys.display(keys.combo('home'), false), ['Home']);
   assert.deepEqual(keys.display(keys.combo('end'), false), ['End']);
 });
+
+test('reads two combos side by side as a two-step key, but not spaced-out single combos', () => {
+  const K = require('../src/core/keys.js');
+  assert.equal(K.toId(K.parse('Ctrl+Alt+Shift+W Ctrl+Alt+Shift+M', false)), 'mod+alt+shift+w>mod+alt+shift+m');
+  assert.equal(K.toId(K.parse('Ctrl + Shift + B', false)), 'mod+shift+b');
+  assert.equal(K.toId(K.parse('Ctrl+B', false)), 'mod+b');
+});

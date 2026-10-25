@@ -1,7 +1,7 @@
 # 손빠르미 (Quickhand) 시험판 0.1.0
 
 마우스로 한 동작에 단축키가 있으면 화면 오른쪽 아래에 알려 주는 크롬 확장 프로그램입니다.
-이번 시험판은 **유튜브(일반 영상·쇼츠), Gmail, 구글 캘린더·드라이브·문서·스프레드시트·슬라이드**를 지원합니다.
+이번 시험판은 **유튜브(일반 영상·쇼츠), Gmail, 구글 캘린더·드라이브·문서·시트·슬라이드**를 지원합니다.
 Gmail의 한 글자 단축키(보관 E, 답장 R 등)는 Gmail **설정 → 바로가기 키 사용**을 켜야 작동합니다.
 
 ## 설치 방법
@@ -62,22 +62,28 @@ Gmail의 한 글자 단축키(보관 E, 답장 R 등)는 Gmail **설정 → 바�
 
 ```
 manifest.json          확장 프로그램 설정 (권한: storage, scripting /
-                       사이트: 유튜브, Gmail, 구글 캘린더·드라이브·문서·스프레드시트·슬라이드)
+                       사이트: 유튜브, Gmail, 구글 캘린더·드라이브·문서·시트·슬라이드)
 _locales/ko, en        한국어·영어 문구
 src/background.js      기록 저장과 알림 판단 (모든 탭의 기록을 한곳에서 처리)
 src/core/engine.js     알림 규칙 (강도, 하루 상한, 1분 간격, 익힘 판단, 그만 알리기, 최근 동작과 이유 기록)
 src/core/keys.js       단축키 읽기·표시 (Windows Ctrl ↔ Mac ⌘, "Alt+C 다음 F" 같은 두 단계 단축키)
 src/core/names.js      키보드로 먼저 쓴 단축키의 이름표 (한국어·영어)
-src/sites/gmail.js     Gmail: 버튼 번호(act)·이름·폴더 링크로 동작 인식
+src/sites/gmail.js     Gmail: 버튼 번호(act)·이름·폴더 링크로 동작 인식. 행의 별표·중요 표시 클릭도 카드를 띄움.
+                       Gmail 도움말의 단축키를 Esc·Shift+Esc(창 닫기에도 쓰여 제외)와 Mac 전용 ⌘;만 빼고 모두 셈.
+                       점검: checks/gmail-shortcuts.mjs(키), checks/gmail-mouse.mjs(마우스 카드)
 src/sites/calendar.js  구글 캘린더: 오늘·이전·다음, 만들기, 보기 전환
 src/sites/drive.js     구글 드라이브: 버튼 설명과 메뉴에 적힌 단축키를 그대로 읽음
 src/sites/youtube.js   유튜브 플레이어 버튼·키 감지 (쇼츠: 재생 K, 음소거 M, 다음 ↓, 이전 ↑).
                        유튜브 도움말의 단축키를 모두 셈: 챕터 Ctrl+←/→(Mac Option), 프레임 . ,, Home/End,
                        볼륨 ↑/↓, 숫자 0~9. Home/End·↑/↓는 플레이어에 포커스가 있을 때만(밖에서는 페이지 스크롤).
-                       볼륨 슬라이더와 설명란 챕터 목록 클릭에도 카드를 띄움. 점검: checks/youtube-shortcuts.mjs
-src/sites/google-editors.js  구글 문서·스프레드시트·슬라이드 툴바·메뉴 감지 (화면에 표시된 단축키를 그대로 읽음.
+                       볼륨 슬라이더와 설명란 챕터 목록 클릭에도 카드를 띄우고, 진행 막대(타임라인) 클릭·드래그는
+                       J/L 카드로 안내. 점검: checks/youtube-shortcuts.mjs
+src/sites/google-editors.js  구글 문서·시트·슬라이드 툴바·메뉴 감지 (화면에 표시된 단축키를 그대로 읽음.
                        시트: 열 머리글 클릭은 Ctrl+Space, 행 번호 클릭은 Shift+Space로 알리고, Shift+Space 키는
-                       잠시 뒤 이름 상자에 행 전체("3:3")가 선택됐을 때만 단축키 사용으로 셈)
+                       잠시 뒤 이름 상자에 행 전체("3:3")가 선택됐을 때만 단축키 사용으로 셈.
+                       문서: 도움말의 단축키를 마우스 동작만 빼고 모두 셈. "Ctrl+Alt+N, H" 같은 두 단계 키는
+                       두 번째 키를 Ctrl+Alt와 함께 눌러도, 따로 눌러도 셈. 댓글이 선택됐을 때 R·J·K·E·U도 셈.
+                       점검: checks/docs-shortcuts.mjs(키, --part2·--part3), checks/docs-mouse.mjs(메뉴·툴바 카드))
 src/content/main.js    페이지에서 클릭·키 입력을 받아 background로 전달, 팝업의 작동 확인(버튼 점검 포함)에 응답
 src/content/card.js    오른쪽 아래 알림 카드
 src/popup, src/welcome 팝업(오늘 기록, 익힌 단축키, 최근 동작과 이유, 설정)과 첫 설치 안내

@@ -47,6 +47,33 @@
     sent: { name: ['보낸편지함으로 이동', 'Go to Sent'], combo: go('t'), folder: 'sent' },
     drafts: { name: ['임시보관함으로 이동', 'Go to Drafts'], combo: go('d'), folder: 'drafts' },
     all: { name: ['전체보관함으로 이동', 'Go to All Mail'], combo: go('a'), folder: 'all' },
+    // Keyboard-only shortcuts from Gmail's help page: counted when pressed, no button to hint from.
+    goTasks: { name: ['Tasks로 이동', 'Go to Tasks'], combo: go('k') },
+    goLabel: { name: ['라벨로 이동', 'Go to label'], combo: go('l') },
+    selectNone: { name: ['모든 대화 선택 해제', 'Deselect all'], combo: K.sequence(key('8', { shift: true }), key('n')) },
+    selectRead: { name: ['읽은 대화 선택', 'Select read'], combo: K.sequence(key('8', { shift: true }), key('r')) },
+    selectUnread: { name: ['읽지 않은 대화 선택', 'Select unread'], combo: K.sequence(key('8', { shift: true }), key('u')) },
+    selectStarred: { name: ['별표표시된 대화 선택', 'Select starred'], combo: K.sequence(key('8', { shift: true }), key('s')) },
+    selectUnstarred: { name: ['별표 없는 대화 선택', 'Select unstarred'], combo: K.sequence(key('8', { shift: true }), key('t')) },
+    open: { name: ['대화 열기', 'Open conversation'], combo: key('o') },
+    archiveNewer: { name: ['보관처리 후 최근 대화로', 'Archive and go to newer'], combo: key('[') },
+    archiveOlder: { name: ['보관처리 후 예전 대화로', 'Archive and go to older'], combo: key(']') },
+    nextMessage: { name: ['대화 안의 다음 메일', 'Next message'], combo: key('n') },
+    prevMessage: { name: ['대화 안의 이전 메일', 'Previous message'], combo: key('p') },
+    collapseAll: { name: ['모두 접기', 'Collapse all'], combo: key(';', { shift: true }) },
+    unreadFrom: { name: ['이 메일부터 읽지 않음으로 표시', 'Mark unread from here'], combo: key('-', { shift: true }) },
+    refresh: { name: ['대화 새로고침', 'Update conversation'], combo: key('n', { shift: true }) },
+    replyWindow: { name: ['새 창에서 답장', 'Reply in a new window'], combo: key('r', { shift: true }) },
+    replyAllWindow: { name: ['새 창에서 전체답장', 'Reply all in a new window'], combo: key('a', { shift: true }) },
+    forwardWindow: { name: ['새 창에서 전달', 'Forward in a new window'], combo: key('f', { shift: true }) },
+    toolbar: { name: ['툴바로 이동', 'Move to the toolbar'], combo: key(',') },
+    nextSection: { name: ['다음 받은편지함 섹션', 'Next inbox section'], combo: key('`') },
+    prevSection: { name: ['이전 받은편지함 섹션', 'Previous inbox section'], combo: key('`', { shift: true }) },
+    composeTab: { name: ['새 탭에서 편지쓰기', 'Compose in a new tab'], combo: key('d') },
+    chatSearch: { name: ['채팅 주소록 검색', 'Search chat contacts'], combo: key('q') },
+    help: { name: ['단축키 도움말 열기', 'Open shortcut help'], combo: key('/', { shift: true }) },
+    sidebarNext: { name: ['사이드바와 받은편지함 전환', 'Switch between side panel and inbox'], combo: key('.', { mod: true, alt: true }) },
+    sidebarPrev: { name: ['사이드바와 받은편지함 전환', 'Switch between side panel and inbox'], combo: key(',', { mod: true, alt: true }) },
   };
 
   // Compose window keys pressed before their button was ever clicked.
@@ -56,6 +83,19 @@
     'mod+shift+9': ['인용구', 'Quote'],
     'mod+shift+c': ['참조 수신자 추가', 'Add Cc recipients'],
     'mod+shift+b': ['숨은참조 수신자 추가', 'Add Bcc recipients'],
+    'mod+shift+f': ['보낸사람 선택', 'Choose the From address'],
+    'mod+m': ['맞춤법 추천 열기', 'Open spelling suggestions'],
+    'mod+.': ['다음 채팅·편지쓰기 창으로', 'Next chat or compose window'],
+    'mod+,': ['이전 채팅·편지쓰기 창으로', 'Previous chat or compose window'],
+    'mod+shift+5': ['이전 글꼴', 'Previous font'],
+    'mod+shift+6': ['다음 글꼴', 'Next font'],
+    'mod+shift+-': ['텍스트 크기 줄이기', 'Decrease text size'],
+    'mod+shift+=': ['텍스트 크기 늘리기', 'Increase text size'],
+    'mod+[': ['들여쓰기 줄이기', 'Indent less'],
+    'mod+]': ['들여쓰기 늘리기', 'Indent more'],
+    'mod+shift+l': ['왼쪽 정렬', 'Align left'],
+    'mod+shift+e': ['가운데 정렬', 'Align center'],
+    'mod+shift+r': ['오른쪽 정렬', 'Align right'],
   });
 
   const byAct = {};
@@ -86,7 +126,7 @@
     return null;
   }
 
-  const CONTROL = '[act], [role="button"], [role="link"], [role="checkbox"], [role="menuitem"], button, [data-tooltip]';
+  const CONTROL = '[act], [role="button"], [role="link"], [role="checkbox"], [role="switch"], [role="menuitem"], button, [data-tooltip]';
 
   function action(name) {
     const a = ACTIONS[name];
@@ -96,10 +136,16 @@
   function describe(el, mac) {
     const act = el.getAttribute('act');
     if (act && byAct[act]) return action(byAct[act]);
-    if (el.getAttribute('role') === 'checkbox') {
-      if (/별표|star/i.test(el.getAttribute('aria-label') || '')) return action('star');
+    const role = el.getAttribute('role');
+    const aria = el.getAttribute('aria-label') || '';
+    if (role === 'checkbox') {
+      if (/별표|star/i.test(aria)) return action('star');
       return action(el.closest('tr.zA') ? 'select' : 'selectAll'); // a row's box, or the one above the list
     }
+    // A row's star is a button named by its state ("별표 없음", "별표표시됨").
+    if (role === 'button' && /^별표|^(Not )?starred/i.test(aria) && el.closest('tr.zA')) return action('star');
+    // The importance marker is a switch named by its state; clicking flips it.
+    if (role === 'switch' && /중요|important/i.test(aria)) return action(/중요하지 않|not important/i.test(aria) ? 'important' : 'notImportant');
     const tip = K.splitLabel(el.getAttribute('data-tooltip') || el.getAttribute('aria-label') || (el.childElementCount ? '' : el.textContent));
     const combo = K.parse(tip.shortcut, mac);
     if (combo && K.hasModifier(combo) && tip.label) return { id: 'gmail:' + K.toId(combo), label: tip.label, combos: [combo] };
@@ -152,6 +198,9 @@
     if (!c) return null;
     const id = K.toId(c);
     if (byCombo[id]) return action(byCombo[id]);
+    // Enter opens the conversation under the list cursor, which is not a focus: the
+    // key then goes to the page itself. On a focused button it just presses it.
+    if (id === 'enter' && e.target instanceof Element && (e.target.closest('tr.zA') || e.target.tagName === 'BODY')) return action('open');
     if (K.hasModifier(c) && !c.then) {
       const seen = detected.get('gmail:' + id);
       const name = seen || QH.names.pick(COMPOSE_NAMES[id]);
