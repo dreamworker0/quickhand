@@ -73,7 +73,7 @@ function fillList(list, actions, emptyKey, withTimes, limit) {
 // Why each recent action did or didn't bring up a card.
 const WHY = {
   new: 'whyNew', repeat: 'whyRepeat', reminder: 'whyReminder', key: 'whyKey', 'learned-now': 'whyLearnedNow',
-  muted: 'whyMuted', suppressed: 'whySuppressed', paused: 'whyPaused', observing: 'whyObserving',
+  muted: 'whyMuted', suppressed: 'whySuppressed', paused: 'whyPaused',
   learned: 'whyLearned', 'repeat-wait': 'whyRepeatWait', 'below-threshold': 'whyBelowThreshold',
   'daily-cap': 'whyDailyCap', gap: 'whyGap', 'new-waiting': 'whyNewWaiting',
 };
@@ -89,7 +89,6 @@ function whyText(e) {
   // Waits are shown as the clock time they end, so they stay true when read later.
   const until = e.waitMs !== undefined ? clock(e.at + e.waitMs, e.waitMs < 10 * 60 * 1000) : '';
   const subs = {
-    observing: [String(e.left)],
     'below-threshold': [String(e.need), String(e.count)],
     'daily-cap': [String(e.need)],
     gap: [until],
@@ -236,9 +235,6 @@ function render(res) {
   $('toggle').textContent = on ? t('popTurnOff') : t(paused ? 'popResume' : 'popTurnOn');
   $('toggle').className = 'btn ' + (on ? 'is-on' : 'is-off');
   $('toggle').onclick = async () => render(await refreshAfter({ type: 'qh-settings', patch: { enabled: !on, pauseUntil: 0 } }));
-
-  $('observing').hidden = summary.observeLeft === 0;
-  $('observing-text').textContent = t('popObserving', [String(summary.observeLeft)]);
 
   $('today-mouse').textContent = summary.todayMouse;
   $('today-key').textContent = summary.todayKey;
@@ -390,8 +386,6 @@ function init() {
     chrome.tabs.create({ url: chrome.runtime.getURL('src/collection/collection.html') + hash });
     window.close();
   });
-
-  $('skip-observe').addEventListener('click', async () => render(await refreshAfter({ type: 'qh-skip-observe' })));
 
   $('reset').addEventListener('click', async () => {
     if (!confirm(t('popResetConfirm'))) return;

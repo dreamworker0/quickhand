@@ -59,11 +59,6 @@
   "tabUnsupported": { "message": "This site isn't supported yet. I work on YouTube, Gmail and Google Calendar, Drive, Docs, Sheets and Slides." },
   "popTurnOn": { "message": "Turn on" },
   "popTurnOff": { "message": "Turn off" },
-  "popObserving": {
-    "message": "At first I only watch your usual habits. I'll start after $COUNT$ more actions.",
-    "placeholders": { "count": { "content": "$1" } }
-  },
-  "popSkipObserve": { "message": "Start now" },
   "popToday": { "message": "Today" },
   "popMouse": { "message": "With the mouse" },
   "popKeyboard": { "message": "With shortcuts" },
@@ -128,10 +123,6 @@
   "whyMuted": { "message": "You stopped hints for this shortcut." },
   "whySuppressed": { "message": "No hint in full screen." },
   "whyPaused": { "message": "Hints were off or paused." },
-  "whyObserving": {
-    "message": "Just watching at first. Hints start after $COUNT$ more actions.",
-    "placeholders": { "count": { "content": "$1" } }
-  },
   "whyLearned": { "message": "You already use this shortcut, so no hint." },
   "whyRepeatWait": {
     "message": "Already hinted. It can come up again from $TIME$.",
@@ -175,7 +166,7 @@
   "welTitle": { "message": "Hi, I'm Quickhand!" },
   "welLead": { "message": "When something you do with the mouse has a shortcut, I'll show it in the bottom-right corner." },
   "welHowTitle": { "message": "How I help" },
-  "welHow1": { "message": "For the first 30 actions I only watch. I skip shortcuts you already know." },
+  "welHow1": { "message": "I skip shortcuts you already use from the keyboard." },
   "welHow2": { "message": "When you repeat an action with the mouse, I show its shortcut." },
   "welHow3": { "message": "Once a shortcut is second nature, I stop mentioning it." },
   "welRecTitle": { "message": "What I record" },

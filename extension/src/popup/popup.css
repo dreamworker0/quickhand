@@ -43,17 +43,6 @@ body { width: 360px; }
 
 .tab-status.warn .btn { flex: none; }
 
-.notice {
-  margin: 12px 16px 0;
-  padding: 10px 12px;
-  border-radius: 8px;
-  background: var(--warn-bg);
-  color: var(--warn-ink);
-  font-size: 13px;
-}
-
-.notice .btn { margin-top: 8px; }
-
 .block { padding: 12px 16px; }
 .block + .block { border-top: 1px solid var(--line); }
 

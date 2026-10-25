@@ -92,15 +92,12 @@ export async function launch({ headless = true } = {}) {
     await popup.close();
   }
   if (!worker) worker = await context.waitForEvent('serviceworker', { predicate: isOurs });
-  // Hint on every click from the start: "active" strength, observation skipped.
+  // Hint on every click from the start: "active" strength.
   await worker.evaluate(async () => {
     const { qh_settings } = await chrome.storage.sync.get('qh_settings');
     await chrome.storage.sync.set({
       qh_settings: Object.assign({}, qh_settings, { enabled: true, pauseUntil: 0, strength: 'active', onboarded: true, disabledSites: [] }),
     });
-    const { qh_state } = await chrome.storage.local.get('qh_state');
-    const state = self.QH.engine.skipObservation(qh_state || self.QH.engine.emptyState(Date.now()));
-    await chrome.storage.local.set({ qh_state: state });
   });
   // The first install opens the welcome tab; it isn't part of the check.
   for (const p of context.pages()) if (p.url().startsWith('chrome-extension://')) await p.close();

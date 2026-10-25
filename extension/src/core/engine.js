@@ -17,7 +17,6 @@
   };
 
   const RULES = {
-    observe: 30, // first actions after install are only watched
     window: 10, // recent uses kept per action
     learnMinUses: 10,
     learnRatio: 0.8,
@@ -38,7 +37,6 @@
     return {
       version: 1,
       day: dayKey(now),
-      observed: 0,
       lastAlertAt: 0,
       lastNewAlertAt: 0,
       newToday: [],
@@ -142,7 +140,6 @@
     if (!a.firstKeyAt) a.firstKeyAt = now;
     a.todayKey++;
     state.todayKey++;
-    state.observed++;
     pushRecent(a, 'k');
     // Used by keyboard before we ever suggested it: the person already knows it.
     if (!a.introducedAt && !a.learnedAt) a.known = true;
@@ -177,7 +174,6 @@
     a.mouse++;
     a.todayMouse++;
     state.todayMouse++;
-    state.observed++;
     pushRecent(a, 'm');
 
     const strength = STRENGTHS[settings.strength] || STRENGTHS.normal;
@@ -186,7 +182,6 @@
     if (a.mutedAt) return skip('muted');
     if (context && context.suppress) return skip('suppressed');
     if (isPaused(settings, now)) return skip('paused');
-    if (state.observed <= RULES.observe) return skip('observing', { left: RULES.observe - state.observed });
 
     let kind;
     if (isLearned(a)) {
@@ -237,11 +232,6 @@
     return true;
   }
 
-  function skipObservation(state) {
-    state.observed = Math.max(state.observed, RULES.observe);
-    return state;
-  }
-
   // The collection: every shortcut the person has pressed at least once, hint or
   // not. Key combos we have no name for are left out.
   function knowsShortcut(a) {
@@ -254,7 +244,6 @@
     return {
       todayMouse: state.todayMouse,
       todayKey: state.todayKey,
-      observeLeft: Math.max(0, RULES.observe - state.observed),
       missed: actions
         .filter((a) => a.todayMouse > 0 && a.display.length && !a.mutedAt)
         .sort((x, y) => y.todayMouse - x.todayMouse),
@@ -269,9 +258,10 @@
       tracked: actions.filter((a) => a.mouse > 0 || a.key > 0 || a.introducedAt).sort((x, y) => y.mouse - x.mouse || y.key - x.key),
       // Newest first, so the one just muted by mistake is at the top.
       muted: actions.filter((a) => a.mutedAt).sort((x, y) => y.mutedAt - x.mutedAt),
-      // Newest first, with the action's name and keys for display.
+      // Newest first, with the action's name and keys for display. "observing" was
+      // left by versions that only watched the first 30 actions.
       log: (state.log || [])
-        .filter((e) => state.actions[e.id])
+        .filter((e) => state.actions[e.id] && e.outcome !== 'observing')
         .map((e) => {
           const a = state.actions[e.id];
           return Object.assign({ label: a.label, site: a.site, display: a.display }, e);
@@ -281,7 +271,7 @@
 
   QH.engine = {
     STRENGTHS, RULES, dayKey, emptyState, rollDay, keyRatio,
-    recordKey, recordMouse, setMuted, skipObservation, summary,
+    recordKey, recordMouse, setMuted, summary,
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = QH.engine;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

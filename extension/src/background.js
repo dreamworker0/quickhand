@@ -136,12 +136,6 @@ async function handle(msg, sender) {
         await saveState(state);
         return { ok };
       });
-    case 'qh-skip-observe':
-      return serial(async () => {
-        const state = await getState();
-        await saveState(engine.skipObservation(state));
-        return { ok: true };
-      });
     case 'qh-settings':
       return setSettings(msg.patch);
     case 'qh-reset':

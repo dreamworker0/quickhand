@@ -59,11 +59,6 @@
   "tabUnsupported": { "message": "이 사이트는 아직 지원하지 않아요. 유튜브, Gmail, 구글 캘린더·드라이브·문서·시트·슬라이드에서 작동해요." },
   "popTurnOn": { "message": "켜기" },
   "popTurnOff": { "message": "끄기" },
-  "popObserving": {
-    "message": "처음에는 평소 습관을 지켜보기만 해요. $COUNT$번 더 지켜본 뒤 알려 드릴게요.",
-    "placeholders": { "count": { "content": "$1" } }
-  },
-  "popSkipObserve": { "message": "바로 시작하기" },
   "popToday": { "message": "오늘" },
   "popMouse": { "message": "마우스로" },
   "popKeyboard": { "message": "단축키로" },
@@ -128,10 +123,6 @@
   "whyMuted": { "message": "'그만 알리기'한 단축키라 알리지 않았어요." },
   "whySuppressed": { "message": "전체 화면이라 알림을 띄우지 않았어요." },
   "whyPaused": { "message": "알림이 꺼져 있거나 쉬는 중이었어요." },
-  "whyObserving": {
-    "message": "처음에는 지켜보기만 해요. $COUNT$번 더 지켜본 뒤 알려 드려요.",
-    "placeholders": { "count": { "content": "$1" } }
-  },
   "whyLearned": { "message": "이미 단축키로 잘 쓰고 계셔서 알리지 않았어요." },
   "whyRepeatWait": {
     "message": "이미 알려 드린 단축키예요. $TIME$부터 다시 알려 드릴 수 있어요.",
@@ -175,7 +166,7 @@
   "welTitle": { "message": "안녕하세요, 손빠르미예요!" },
   "welLead": { "message": "마우스로 한 동작에 단축키가 있으면, 화면 오른쪽 아래에 살짝 알려 드려요." },
   "welHowTitle": { "message": "이렇게 도와드려요" },
-  "welHow1": { "message": "처음 30번은 평소 습관을 지켜보기만 해요. 이미 아는 단축키는 알려 드리지 않아요." },
+  "welHow1": { "message": "키보드로 이미 쓰는 단축키는 알려 드리지 않아요." },
   "welHow2": { "message": "같은 동작을 마우스로 여러 번 하면, 그때 단축키를 알려 드려요." },
   "welHow3": { "message": "단축키를 손에 익히면 더 이상 알려 드리지 않아요." },
   "welRecTitle": { "message": "기록하는 것" },
