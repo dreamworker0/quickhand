@@ -16,7 +16,7 @@ const TITLE = '손빠르미 단축키 점검 문서 (지워도 됨)';
 const OUT = path.join(RESULTS, `${APP}-mouse.json`);
 // Print is left out too: in Sheets its settings page was followed by a save error
 // that blocked the page (Ctrl+P was already checked with the keyboard).
-const SKIP = /스크린 리더|점자|음성 입력|Gemini|확장 프로그램|인쇄/;
+const SKIP = /스크린 리더|점자|음성 입력|음성기록|Gemini|확장 프로그램|인쇄/;
 
 const { context, worker } = await launch({ headless: false });
 await context.addInitScript(() => { window.print = () => {}; });
@@ -45,8 +45,39 @@ async function sheetCell(ref) {
 async function select() {
   if (APP === 'docs') { await docsEditor(); await page.keyboard.press('Control+Home'); await page.keyboard.press('Shift+End'); }
   if (APP === 'sheets') await sheetCell('A1:B2');
-  if (APP === 'slides') { await esc(); const box = page.locator('.punch-viewer-svgpage-svgcontainer, #workspace').first(); await box.click({ position: { x: 300, y: 120 } }).catch(() => {}); }
+  if (APP === 'slides') await slideBox();
   await page.waitForTimeout(300);
+}
+// The middle of the slide's title box (the topmost box; the slide itself is the
+// largest g#editor-*).
+const titleBox = () => page.evaluate(() => {
+  const boxes = [...document.querySelectorAll('#workspace g[id^="editor-"]')]
+    .filter((g) => !/-bg$|-paragraph-/.test(g.id))
+    .map((g) => g.getBoundingClientRect())
+    .filter((r) => r.width > 0 && r.height > 0);
+  if (boxes.length < 2) return null;
+  const whole = boxes.reduce((a, b) => (b.width * b.height > a.width * a.height ? b : a));
+  const top = boxes.filter((b) => b !== whole).sort((a, b) => a.y - b.y)[0];
+  return { x: top.x + top.width / 2, y: top.y + top.height / 2 };
+});
+// The middle of the title's words on the canvas (the slide list has the same boxes).
+const titleText = () => page.evaluate(() => {
+  const r = [...document.querySelectorAll('#workspace g[id*="-paragraph-"]')]
+    .map((g) => g.getBoundingClientRect())
+    .filter((b) => b.width > 0 && b.height > 0)
+    .sort((a, b) => a.y - b.y)[0];
+  return r ? { x: r.x + r.width / 2, y: r.y + r.height / 2 } : null;
+});
+// The title box selected as an object: click its words (the empty part of the box does
+// not take a click), then Esc selects the box itself. With Ctrl+A taking both boxes, Cut
+// and Copy were off; placeholders cannot be grouped, so Group stays off either way.
+async function slideBox() {
+  await esc();
+  const at = (await titleText()) || (await titleBox());
+  if (!at) return;
+  await page.mouse.click(at.x, at.y);
+  await page.waitForTimeout(500);
+  await esc();
 }
 // Sheets sometimes answers a run of quick edits with "변경사항이 저장되지 않았는데 오류가
 // 발생했습니다" and a box that blocks the page; reload as the box asks, and note it.
@@ -104,6 +135,11 @@ if (APP === 'docs') {
   await page.keyboard.press('Enter');
   await page.keyboard.type('둘째 줄');
 }
+// Words in the title, so the text formatting items have something to work on.
+if (APP === 'slides') {
+  const at = await titleBox();
+  if (at) { await page.mouse.click(at.x, at.y); await page.waitForTimeout(500); await page.keyboard.type('Quickhand mouse check'); await esc(); await esc(); }
+}
 if (APP === 'sheets') {
   await sheetCell('A1');
   for (const v of ['Name', 'Score']) { await page.keyboard.type(v); await page.keyboard.press('Tab'); }
@@ -111,32 +147,40 @@ if (APP === 'sheets') {
 }
 await page.waitForTimeout(1000);
 
-// Every item (one submenu deep) of each top menu that shows a shortcut.
-const openItems = () => page.evaluate(() => {
-  const menu = [...document.querySelectorAll('.goog-menu')].filter((m) => m.offsetWidth).pop();
-  return menu ? [...menu.querySelectorAll('.goog-menuitem')].filter((i) => i.offsetWidth).map((i) => ({
+// The items of an open menu: the top menu is the first one on screen, an open submenu
+// the last. `menus` says how many are open, so a submenu that did not open (its item is
+// off right now) is not mistaken for the menu under it.
+const openItems = (which = 'last') => page.evaluate((which) => {
+  const menus = [...document.querySelectorAll('.goog-menu')].filter((m) => m.offsetWidth);
+  const menu = which === 'first' ? menus[0] : menus[menus.length - 1];
+  const items = menu ? [...menu.querySelectorAll('.goog-menuitem')].filter((i) => i.offsetWidth).map((i) => ({
     label: ((i.querySelector('.goog-menuitem-label') || i).innerText || '').replace(/\s+/g, ' ').trim(),
     accel: ((i.querySelector('.goog-menuitem-accel') || {}).innerText || '').trim(),
     sub: i.getAttribute('aria-haspopup') === 'true',
+    off: i.getAttribute('aria-disabled') === 'true' || i.classList.contains('goog-menuitem-disabled'),
   })) : [];
-});
-// The i-th visible item of the menu on top (names in Sheets carry a hidden access letter,
-// so the place in the menu is the reliable way to find an item again).
-const item = (i) => page.locator('.goog-menu').filter({ visible: true }).last().locator('.goog-menuitem').filter({ visible: true }).nth(i);
+  return { menus: menus.length, items };
+}, which);
+// The i-th visible item of the first or last open menu. Items are found again by their
+// name (what is in a menu changes with what is selected), then clicked by place.
+const item = (which, i) => page.locator('.goog-menu').filter({ visible: true })[which]().locator('.goog-menuitem').filter({ visible: true }).nth(i);
 const tops = await page.locator('#docs-menubar [role="menuitem"]').evaluateAll((els) => els.filter((e) => e.offsetWidth && e.id).map((e) => ({ id: '#' + e.id, name: e.innerText.trim() })));
 
 const found = [];
+const closedSubs = [];
 for (const top of tops) {
   if (SKIP.test(top.name)) continue;
   await settle();
   await page.locator(top.id).click();
   await page.waitForTimeout(600);
-  for (const [i, it] of (await openItems()).entries()) {
-    if (it.accel) found.push({ path: [top.id], at: [i], label: it.label, accel: it.accel });
+  for (const [i, it] of (await openItems('first')).items.entries()) {
+    if (it.accel) found.push({ path: [top.id], label: it.label, accel: it.accel });
     if (it.sub && !SKIP.test(it.label)) {
-      await page.locator('.goog-menu').filter({ visible: true }).first().locator('.goog-menuitem').filter({ visible: true }).nth(i).hover({ timeout: 3000 }).catch(() => {});
+      await item('first', i).hover({ timeout: 3000 }).catch(() => {});
       await page.waitForTimeout(700);
-      for (const [j, sub] of (await openItems()).entries()) if (sub.accel) found.push({ path: [top.id, it.label], at: [i, j], label: sub.label, accel: sub.accel });
+      const sub = await openItems('last');
+      if (sub.menus < 2) { closedSubs.push(`${top.name} › ${it.label}`); continue; }
+      for (const s of sub.items) if (s.accel) found.push({ path: [top.id, it.label], label: s.label, accel: s.accel });
     }
   }
   console.log(top.name, 'items with a shortcut so far:', found.length);
@@ -166,16 +210,39 @@ for (const f of found) {
     continue;
   }
   await settle();
-  const r = await check(page, worker, name, async () => {
-    await page.locator(f.path[0]).click();
-    await page.waitForTimeout(500);
-    const first = page.locator('.goog-menu').filter({ visible: true }).first().locator('.goog-menuitem').filter({ visible: true }).nth(f.at[0]);
-    if (f.at.length > 1) { await first.hover(); await page.waitForTimeout(700); await item(f.at[1]).click(); } else await first.click();
-  }, { wait: 1500 });
+  // Open the menu (and submenu) and find the item by its name before clicking it.
+  await page.locator(f.path[0]).click();
+  await page.waitForTimeout(500);
+  let which = 'first';
+  let missing = null;
+  if (f.path.length > 1) {
+    const at = (await openItems('first')).items.findIndex((it) => it.label === f.path[1]);
+    if (at < 0) missing = '하위 메뉴를 찾지 못함';
+    else {
+      await item('first', at).hover({ timeout: 3000 }).catch(() => {});
+      await page.waitForTimeout(700);
+      if ((await openItems('last')).menus < 2) missing = '하위 메뉴가 꺼져 있어 열리지 않음';
+      which = 'last';
+    }
+  }
+  const menu = missing ? null : await openItems(which);
+  // Slides has two "복사" (Ctrl+C and Ctrl+D), so the key is part of the match.
+  const at = menu ? menu.items.findIndex((it) => it.label === f.label && it.accel === f.accel) : -1;
+  if (!missing && at < 0) missing = '메뉴에서 항목을 찾지 못함';
+  if (!missing && menu.items[at].off) missing = '이 상태에서는 메뉴가 꺼져 있어 누를 수 없음';
+  if (missing) {
+    results.push({ kind: 'menu', name, accel: f.accel, skipped: missing });
+    console.log(JSON.stringify(results[results.length - 1]));
+    await esc(); await esc();
+    save();
+    continue;
+  }
+  const r = await check(page, worker, name, () => item(which, at).click(), { wait: 1500 });
   results.push({ kind: 'menu', accel: f.accel, ...r });
   save();
 }
 
+if (closedSubs.length) results.push({ kind: 'note', closedSubmenus: closedSubs });
 
 if (saveErrors.length) results.push({ kind: 'note', saveErrorsAfter: saveErrors });
 save();
