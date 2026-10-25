@@ -524,6 +524,8 @@
   // corner, where both strips meet, selects everything instead. A drag or a
   // Shift+click along the header may select several (see severalLines).
   let pressedHeader = null;
+  // A press in the cell grid, for telling a drag that selects a range (see sheetRange).
+  let pressedCell = null;
   if (location.hostname === 'docs.google.com' && location.pathname.startsWith('/spreadsheets/')) {
     window.addEventListener(
       'mousedown',
@@ -533,6 +535,11 @@
         // A menu or button lying over the header strip is not the header.
         const onControl = e.target instanceof Element && !!e.target.closest(CONTROL);
         pressedHeader = e.button === 0 && !onControl ? { kind: headerAt(e.clientX, e.clientY), x: e.clientX, y: e.clientY, box: nameBox() } : null;
+        // The fill handle (the dot at a selection's corner) also drags out a range, but copies.
+        const inGrid = e.target instanceof Element && !!e.target.closest('#waffle-grid-container') &&
+          !e.target.closest('.autofill-handle, .autofill-cover, input, textarea');
+        pressedCell = pressedHeader && !pressedHeader.kind && inGrid ? { x: e.clientX, y: e.clientY, box: pressedHeader.box } : null;
+        rangeCounted = false;
       },
       true
     );
@@ -595,6 +602,62 @@
     }, 200));
   }
 
+  // A cell range in the name box ("B2:D10"), not one cell and not whole columns.
+  function cellRange(value) {
+    const m = /^([A-Z]+)(\d+):([A-Z]+)(\d+)$/.exec(value);
+    return !!m && (m[1] !== m[3] || m[2] !== m[4]);
+  }
+
+  function rangeAction(app, combos) {
+    return { id: app.id + ':range', label: QH.names.pick(['범위 선택', 'Select a range']), combos };
+  }
+
+  // A drag across cells that leaves a new range in the name box is a range
+  // select: Shift+arrow in the drag's main direction, to the data's edge with
+  // Ctrl (⌘ on Mac) as well. Moving cells keeps the range's size somewhere else.
+  function sheetRange(app, e) {
+    if (app.id !== 'sheets' || !pressedCell) return null;
+    const { x, y, box } = pressedCell;
+    pressedCell = null;
+    const dx = Math.abs(e.clientX - x);
+    const dy = Math.abs(e.clientY - y);
+    if (dx <= 4 && dy <= 4) return null;
+    const dir = dx >= dy ? 'arrowright' : 'arrowdown';
+    return new Promise((resolve) => setTimeout(() => {
+      const after = nameBox();
+      const yes = cellRange(after) && after !== box && !(cellRange(box) && sameSize(box, after));
+      resolve(yes ? rangeAction(app, [K.combo(dir, { shift: true }), K.combo(dir, { shift: true, mod: true })]) : null);
+    }, 200));
+  }
+
+  function sameSize(a, b) {
+    const size = (v) => {
+      const m = /^([A-Z]+)(\d+):([A-Z]+)(\d+)$/.exec(v);
+      const col = (letters) => [...letters].reduce((n, ch) => n * 26 + ch.charCodeAt(0) - 64, 0);
+      return (col(m[3]) - col(m[1])) + 'x' + (m[4] - m[2]);
+    };
+    return size(a) === size(b);
+  }
+
+  // The keyboard way of a range drag: Shift+arrow, or Ctrl+Shift+arrow to the
+  // data's edge. Counted once per range, when the name box then shows one;
+  // in a cell being edited it selects text instead and the box stays one cell.
+  let rangeCounted = false;
+  const ARROWS = ['arrowup', 'arrowdown', 'arrowleft', 'arrowright'];
+  function rangeKey(app, combo) {
+    if (!(combo.shift && ARROWS.includes(combo.key) && !combo.alt && !combo.ctrl)) {
+      rangeCounted = false;
+      return undefined;
+    }
+    if (rangeCounted) return null;
+    rangeCounted = true; // a quick second press waits for this answer
+    return new Promise((resolve) => setTimeout(() => {
+      const yes = cellRange(nameBox());
+      if (!yes) rangeCounted = false;
+      resolve(yes ? rangeAction(app, [combo]) : null);
+    }, 200));
+  }
+
   // The keyboard way: Ctrl+Space (rows: Shift+Space), then Shift+→/← (↓/↑) soon
   // after. Only the first widening step counts, not each further press.
   let lineSelected = null; // { kind, at }
@@ -604,7 +667,12 @@
     lineSelected = null;
     if (!sel || Date.now() - sel.at > WIDEN_MS || !combo.shift || K.hasModifier(combo)) return null;
     const keys = sel.kind === 'column' ? ['arrowright', 'arrowleft'] : ['arrowdown', 'arrowup'];
-    return keys.includes(combo.key) ? found(app, severalLinesKeys(sel.kind, mac)) : null;
+    if (!keys.includes(combo.key)) return null;
+    // The first step was already counted (and cheered) on its own; the cheer for
+    // this one shows only the key just pressed.
+    const result = found(app, severalLinesKeys(sel.kind, mac));
+    result.pressed = combo;
+    return result;
   }
 
   // Shift+Space selects the row while cells are selected, but types a space in
@@ -634,7 +702,7 @@
     // The file name box is titled "이름 바꾸기" (rename the file), not the sheet's Alt+1.
     const title = e.target.closest('.docs-title-widget, .docs-title-input');
     if (title && (title.classList.contains('docs-title-widget') || title.classList.contains('docs-title-input'))) return null;
-    const tab = sheetTab(app, e.target, mac) || sheetHeader(app, e, mac);
+    const tab = sheetTab(app, e.target, mac) || sheetHeader(app, e, mac) || sheetRange(app, e);
     if (tab) return tab;
     let el = e.target.closest(CONTROL);
     // The element with the tooltip is sometimes a wrapper of the one clicked.
@@ -692,6 +760,8 @@
     if (app.id === 'sheets') {
       const wider = widened(app, combo, mac);
       if (wider) return wider;
+      const range = rangeKey(app, combo);
+      if (range !== undefined) return range;
       if (K.toId(combo) === 'shift+space') {
         // Answered a moment later (see rowSelected); content/main.js waits for it.
         return rowSelected().then((yes) => {

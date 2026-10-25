@@ -228,13 +228,56 @@ test('Sheets: dragging along the letters (or Shift+click) to several columns hin
   assert.equal(rows.label, '여러 행 선택');
 });
 
+test('Sheets: dragging across cells to a range hints Shift+arrow, to the edge Ctrl+Shift+arrow', async () => {
+  const { site, listeners, box } = sheetsWithHeaders();
+  // Press inside the grid (or on the fill handle), move, let go; the name box shows `after`.
+  const drag = (x, y, upX, upY, after, ...extra) => {
+    const target = new In('#waffle-grid-container', ...extra);
+    listeners.mousedown({ target, button: 0, clientX: x, clientY: y });
+    box.value = after;
+    return site.fromMouse({ target, button: 0, clientX: upX, clientY: upY }, false);
+  };
+  box.value = 'B2';
+  const across = await drag(300, 300, 600, 330, 'B2:F3');
+  assert.equal(across.id, 'sheets:range');
+  assert.equal(across.label, '범위 선택');
+  assert.deepEqual(JSON.parse(JSON.stringify(across.combos.map((c) => [c.shift, c.mod, c.key]))), [[true, false, 'arrowright'], [true, true, 'arrowright']]);
+  box.value = 'B2';
+  assert.deepEqual((await drag(300, 300, 310, 600, 'B2:B20')).combos[0].key, 'arrowdown');
+  box.value = 'B2';
+  assert.equal(drag(300, 300, 300, 300, 'B2'), null); // a plain click on a cell
+  box.value = 'B2:D4';
+  assert.equal(await drag(300, 300, 500, 400, 'E6:G8'), null); // moving the same-sized block
+  box.value = 'B2';
+  assert.equal(await drag(300, 300, 300, 600, 'B2:B20', '.autofill-handle'), null); // the fill handle copies
+});
+
+test('Sheets: Shift+arrow to a range counts once; inside a cell being edited it does not', async () => {
+  const { site, box } = sheetsWithHeaders();
+  const key = (code, k, patch) => site.fromKey(event(code, k, patch), false);
+  box.value = 'B2:C2';
+  const first = await key('ArrowRight', 'ArrowRight', { shiftKey: true });
+  assert.equal(first.id, 'sheets:range');
+  assert.equal(await key('ArrowDown', 'ArrowDown', { shiftKey: true }), null); // the same range, widened
+  assert.equal(key('KeyB', 'b', { ctrlKey: true }).id, 'sheets:mod+b'); // something else, then a new range
+  box.value = 'B2:B9';
+  assert.equal((await key('ArrowDown', 'ArrowDown', { shiftKey: true, ctrlKey: true })).id, 'sheets:range');
+  key('Escape', 'Escape');
+  box.value = 'B2'; // editing a cell: Shift+→ selects letters, the box stays one cell
+  assert.equal(await key('ArrowRight', 'ArrowRight', { shiftKey: true }), null);
+});
+
 test('Sheets: Ctrl+Space then Shift+→ counts as selecting several columns, once', async () => {
   const { site } = sheetsWithHeaders();
   const key = (code, k, patch) => site.fromKey(event(code, k, patch), false);
   assert.equal(key('Space', ' ', { ctrlKey: true }).id, 'sheets:mod+space');
-  assert.equal(key('ArrowRight', 'ArrowRight', { shiftKey: true }).id, 'sheets:mod+space>shift+arrowright');
-  assert.equal(key('ArrowRight', 'ArrowRight', { shiftKey: true }), null); // widening further
-  assert.equal(key('ArrowRight', 'ArrowRight', { shiftKey: true }), null);
+  const wider = key('ArrowRight', 'ArrowRight', { shiftKey: true });
+  assert.equal(wider.id, 'sheets:mod+space>shift+arrowright');
+  // Ctrl+Space was cheered on its own; this cheer shows only Shift+→.
+  assert.equal(wider.pressed.key, 'arrowright');
+  assert.equal(wider.pressed.shift, true);
+  assert.equal(await key('ArrowRight', 'ArrowRight', { shiftKey: true }), null); // widening further
+  assert.equal(await key('ArrowRight', 'ArrowRight', { shiftKey: true }), null);
 });
 
 test('Sheets: Shift+Space counts as row select only when a whole row ends up selected', async () => {

@@ -62,8 +62,10 @@
 
   // The keys actually pressed, so a cheer for play/pause shows Space when Space
   // was used rather than K. A two-step key ("G then I") keeps its own display,
-  // since this event only saw the second step.
+  // since this event only saw the second step, unless the site says the first
+  // step was a shortcut of its own (`pressed`, Sheets' Ctrl+Space then Shift+→).
   function used(found, e) {
+    if (found.pressed) return QH.keys.display(found.pressed, mac);
     return found.combos.some((c) => c.then) ? null : QH.keys.display(QH.keys.fromEvent(e, mac), mac);
   }
 
