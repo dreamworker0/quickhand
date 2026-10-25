@@ -45,17 +45,37 @@
     .card.praise kbd { animation: press 240ms ease-in-out 200ms 1; }
     /* Sparks fly out from the mascot once; more of them, further, for a streak. */
     .burst { position: absolute; left: 40px; top: 50%; width: 0; height: 0; pointer-events: none; }
-    .burst i { position: absolute; left: -3px; top: -3px; width: 6px; height: 6px; border-radius: 50%; background: var(--c); opacity: 0; animation: fly 750ms ease-out var(--d) both; }
+    .burst i { position: absolute; left: -4px; top: -4px; width: 8px; height: 8px; border-radius: 50%; background: var(--c); opacity: 0; animation: fly 750ms ease-out var(--d) both; }
     @keyframes fly { 0% { opacity: 1; transform: none; } 100% { opacity: 0; transform: translate(var(--x), var(--y)) scale(0.3); } }
-    .card.praise .title { font-size: 16px; font-weight: 700; color: var(--accent); }
-    .card.praise .label { margin: 2px 0 4px; font-size: 13px; }
-    .card.combo .title { font-size: 19px; color: #e76f51; }
-    .card.combo { animation: in 180ms ease-out, cheer 520ms ease-out 120ms; }
+    /* Cheers look nothing like the calm white hint: a warm gold card that bounces
+       up, and a fiery one for a streak. Same colours in light and dark pages. */
+    .card.praise {
+      --ink: #5a3b00; --quiet: #7a5512; --line: #f0c24e; --chip: #fffaf0; --accent: #e09f1f;
+      background: linear-gradient(135deg, #fff7d6 0%, #ffe48f 100%);
+      border: 0; border-radius: 18px;
+      box-shadow: 0 10px 30px rgba(224, 159, 31, 0.4);
+      animation: rise 300ms cubic-bezier(0.3, 1.5, 0.5, 1);
+    }
+    .card.praise .title { font-size: 19px; font-weight: 800; color: #b26a00; letter-spacing: -0.2px; }
+    .card.praise .label { margin: 1px 0 5px; font-size: 13px; }
+    .card.praise.combo {
+      --ink: #ffffff; --quiet: #fff1e6; --line: rgba(255, 255, 255, 0.55); --chip: rgba(255, 255, 255, 0.22); --accent: #ffffff;
+      background: linear-gradient(135deg, #ffb347 0%, #ff7a3d 45%, #e8452c 100%);
+      box-shadow: 0 12px 36px rgba(232, 69, 44, 0.45);
+      animation: rise 300ms cubic-bezier(0.3, 1.5, 0.5, 1), cheer 520ms ease-out 260ms;
+    }
+    .card.praise.combo .title { font-size: 23px; color: #ffffff; text-shadow: 0 1px 2px rgba(120, 30, 0, 0.35); }
+    .card.praise .dots i { background: rgba(178, 106, 0, 0.18); }
+    .card.praise .dots i.on { background: #d48806; }
+    .card.praise.combo .dots i { background: rgba(255, 255, 255, 0.35); }
+    .card.praise.combo .dots i.on { background: #ffffff; }
+    .card.praise .close:hover, .card.praise .close:focus-visible { background: rgba(255, 255, 255, 0.35); }
+    @keyframes rise { from { opacity: 0; transform: translateY(24px) scale(0.8); } to { opacity: 1; transform: none; } }
     @keyframes cheer { 0%, 100% { transform: none; } 35% { transform: scale(1.07); } 65% { transform: scale(0.98); } }
     .dots { display: flex; gap: 3px; margin-top: 6px; }
     .dots i { width: 8px; height: 8px; border-radius: 50%; background: var(--line); }
     .dots i.on { background: var(--accent); }
-    @media (prefers-reduced-motion: reduce) { .card, .card img, .card kbd { animation: none; } .burst { display: none; } }
+    @media (prefers-reduced-motion: reduce) { .card, .card * { animation: none !important; } .burst { display: none; } }
     .body { min-width: 0; }
     .title { margin: 0; font-size: 12px; color: var(--quiet); }
     .label { margin: 2px 0 6px; font-size: 15px; font-weight: 600; overflow-wrap: anywhere; }
@@ -228,7 +248,7 @@
     close.addEventListener('click', hide);
 
     card.append(...(msg.image ? [img] : []), body, close);
-    if (msg.variant === 'praise') card.append(msg.combo ? burst(16, 56) : burst(8, 34));
+    if (msg.variant === 'praise') card.append(msg.combo ? burst(24, 80) : burst(12, 46));
     card.addEventListener('mouseenter', () => clearTimeout(hideTimer));
     card.addEventListener('mouseleave', scheduleHide);
     root.append(style, card);

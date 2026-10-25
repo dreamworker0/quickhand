@@ -3,9 +3,11 @@
 - Toolbar icons (16/32/48/128 px) from mascot/icon.svg, rendered by headless Chrome
   at 512 px and scaled down, since Chrome extensions cannot use SVG icons.
 - Card and page mascots from mascot/*.png, trimmed and shrunk to 192 px.
+- The cheer card's mascot from mascot/praise.svg, rendered the same way at 192 px.
 
 Usage: python extension/tools/build_assets.py
 """
+import re
 import subprocess
 import sys
 import tempfile
@@ -28,7 +30,7 @@ def render_svg(svg_path: Path, out_png: Path) -> None:
     if browser is None:
         sys.exit("Chrome or Edge is needed to render the SVG icon.")
     svg = svg_path.read_text(encoding="utf-8")
-    svg = svg.replace('width="128" height="128"', f'width="{RENDER}" height="{RENDER}"', 1)
+    svg = re.sub(r'width="\d+" height="\d+"', f'width="{RENDER}" height="{RENDER}"', svg, count=1)
     with tempfile.TemporaryDirectory() as tmp:
         page = Path(tmp) / "icon.html"
         page.write_text(
@@ -71,6 +73,10 @@ def build_mascots() -> None:
         canvas = Image.new("RGBA", (192, 192), (0, 0, 0, 0))
         canvas.paste(img, ((192 - img.width) // 2, (192 - img.height) // 2), img)
         canvas.save(target / f"{name}.png", optimize=True)
+    big = target / "praise-512.png"
+    render_svg(MASCOT / "praise.svg", big)
+    Image.open(big).convert("RGBA").resize((192, 192), Image.LANCZOS).save(target / "praise.png", optimize=True)
+    big.unlink()
 
 
 if __name__ == "__main__":
