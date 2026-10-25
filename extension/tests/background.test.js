@@ -66,3 +66,17 @@ test('no cheers while hints are turned off', async () => {
   assert.equal(bg.cards.length, 0);
   assert.equal(bg.storage.local.qh_state.combo, 5);
 });
+
+test('a cheer shows the keys actually pressed, such as Space for play/pause', async () => {
+  const bg = backgroundEnv();
+  const sender = { tab: { id: 7 } };
+  const action = { id: 'yt:playpause', site: 'youtube', label: '재생 / 일시정지', display: [['K']] };
+  for (let i = 0; i < 3; i++) await bg.request({ type: 'qh-mouse', action }, sender);
+  await bg.request({ type: 'qh-key', action, used: ['Space'] }, sender);
+  await bg.request({ type: 'qh-key', action }, sender);
+  await new Promise((resolve) => setImmediate(resolve));
+  const plain = (v) => JSON.parse(JSON.stringify(v)); // arrays from the worker's own context
+  assert.deepEqual(plain(bg.cards.filter((c) => c.variant === 'praise').map((c) => c.display)), [[['Space']], [['K']]]);
+  // The hint for the mouse keeps showing K.
+  assert.deepEqual(plain(bg.storage.local.qh_state.actions['yt:playpause'].display), [['K']]);
+});

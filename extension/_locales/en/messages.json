@@ -44,6 +44,7 @@
   "ytMiniplayer": { "message": "Miniplayer" },
   "ytNext": { "message": "Next video" },
   "ytSeek": { "message": "Back / forward 10 seconds" },
+  "ytSeek5": { "message": "Back / forward 5 seconds" },
   "ytPrev": { "message": "Previous video (playlist)" },
   "ytSpeed": { "message": "Playback speed up / down" },
   "ytSearch": { "message": "Go to search" },

@@ -116,14 +116,16 @@ async function handle(msg, sender) {
         const result = engine.recordKey(state, msg.action, Date.now());
         await saveState(state);
         if (isOff(settings) || tabId === null) return { ok: true };
+        // Cheers show the keys just pressed (Space, not the K it stands for).
+        const pressed = msg.used ? [msg.used] : result.action.display;
         if (result.learnedNow) {
-          showCard(tabId, { variant: 'learned', label: result.action.label, display: result.action.display });
+          showCard(tabId, { variant: 'learned', label: result.action.label, display: pressed });
         } else if (settings.praise && (result.left || result.combo)) {
           showCard(tabId, {
             variant: 'praise',
             id: result.action.id,
             label: result.action.label,
-            display: result.action.display,
+            display: pressed,
             done: result.done,
             left: result.left,
             combo: result.combo,

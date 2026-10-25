@@ -254,6 +254,11 @@ test('YouTube: chapter, frame, start/end, volume and number keys are counted', (
   assert.equal(id('Digit5', '5'), 'yt:jump');
   assert.equal(id('Digit0', '0'), 'yt:jump');
   assert.equal(id('KeyK', 'k', { ctrlKey: true }), null); // other Ctrl keys are not YouTube's
+  // ←/→ move 5 seconds, J/L 10: two shortcuts, not one.
+  assert.equal(id('ArrowLeft', 'ArrowLeft'), 'yt:seek5');
+  assert.equal(id('ArrowRight', 'ArrowRight'), 'yt:seek5');
+  assert.equal(id('KeyJ', 'j'), 'yt:seek');
+  assert.equal(id('Space', ' '), 'yt:playpause');
 });
 
 test('YouTube: Home/End and ↑/↓ outside the player scroll the page, so they are not counted', () => {

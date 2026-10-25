@@ -15,6 +15,7 @@
     next: { msg: 'ytNext', combos: [key('n', true)] },
     prev: { msg: 'ytPrev', combos: [key('p', true)] },
     seek: { msg: 'ytSeek', combos: [key('j'), key('l')] },
+    seek5: { msg: 'ytSeek5', combos: [key('arrowleft'), key('arrowright')] }, // ←/→ move 5 seconds, J/L 10
     speed: { msg: 'ytSpeed', combos: [key('.', true), key(',', true)] },
     search: { msg: 'ytSearch', combos: [key('/')] },
     shortsnext: { msg: 'ytShortsNext', combos: [key('arrowdown')] },
@@ -55,7 +56,7 @@
 
   const KEYS = {
     k: 'playpause', space: 'playpause', m: 'mute', f: 'fullscreen', c: 'captions',
-    t: 'theater', i: 'miniplayer', j: 'seek', l: 'seek', arrowleft: 'seek', arrowright: 'seek',
+    t: 'theater', i: 'miniplayer', j: 'seek', l: 'seek', arrowleft: 'seek5', arrowright: 'seek5',
   };
 
   // Shorts draw their own control bar (play, mute) over the player and put the

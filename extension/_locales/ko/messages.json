@@ -44,6 +44,7 @@
   "ytMiniplayer": { "message": "미니 플레이어" },
   "ytNext": { "message": "다음 동영상" },
   "ytSeek": { "message": "10초 뒤로 / 앞으로" },
+  "ytSeek5": { "message": "5초 뒤로 / 앞으로" },
   "ytPrev": { "message": "이전 동영상 (재생목록)" },
   "ytSpeed": { "message": "재생 속도 빠르게 / 느리게" },
   "ytSearch": { "message": "검색창으로 이동" },

@@ -57,13 +57,20 @@
     if (found) send({ type: 'qh-mouse', action: toAction(found), suppress: !!document.fullscreenElement });
   }
 
+  // The keys actually pressed, so a cheer for play/pause shows Space when Space
+  // was used rather than K. A two-step key ("G then I") keeps its own display,
+  // since this event only saw the second step.
+  function used(found, e) {
+    return found.combos.some((c) => c.then) ? null : QH.keys.display(QH.keys.fromEvent(e, mac), mac);
+  }
+
   function onKey(e) {
     if (stopped || !e.isTrusted || e.repeat) return;
     if (!alive()) return stop();
     const found = site.fromKey(e, mac);
     // A site may need a moment to tell (Sheets' Shift+Space) and answer later.
-    if (found && typeof found.then === 'function') found.then((later) => later && send({ type: 'qh-key', action: toAction(later) }));
-    else if (found) send({ type: 'qh-key', action: toAction(found) });
+    if (found && typeof found.then === 'function') found.then((later) => later && send({ type: 'qh-key', action: toAction(later), used: used(later, e) }));
+    else if (found) send({ type: 'qh-key', action: toAction(found), used: used(found, e) });
   }
 
   window.addEventListener(mouseEvent, onMouse, true);
