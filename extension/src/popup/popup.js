@@ -200,7 +200,18 @@ function initFeedback(tabSite) {
   updateFeedback();
 }
 
-function render({ summary, settings }) {
+// A background worker still running older code (until the extension is reloaded)
+// can leave out a list; draw the rest instead of stopping at the first gap.
+const LISTS = ['missed', 'learned', 'tracked', 'muted', 'log'];
+function complete(summary) {
+  const out = Object.assign({}, summary);
+  for (const key of LISTS) if (!Array.isArray(out[key])) out[key] = [];
+  return out;
+}
+
+function render(res) {
+  const summary = complete(res.summary);
+  const settings = res.settings;
   const now = Date.now();
   const paused = settings.pauseUntil > now;
   const on = settings.enabled && !paused;
