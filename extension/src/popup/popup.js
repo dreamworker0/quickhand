@@ -361,9 +361,24 @@ function endOfToday() {
   return d.getTime();
 }
 
+// The keys the user really has: another extension may hold the suggested ones,
+// and then Chrome leaves ours unset until the user picks some.
+async function showToggleKeys() {
+  const command = (await chrome.commands.getAll()).find((c) => c.name === 'toggle-alerts');
+  const hint = $('toggle-hint');
+  if (command && command.shortcut) {
+    hint.textContent = t('popToggle', [command.shortcut]);
+    return;
+  }
+  const set = UI.el('button', 'btn small', t('popToggleSet'));
+  set.type = 'button';
+  set.addEventListener('click', () => chrome.tabs.create({ url: 'chrome://extensions/shortcuts' }));
+  hint.replaceChildren(t('popToggleNone') + ' ', set);
+}
+
 function init() {
   UI.applyI18n();
-  $('toggle-hint').textContent = t(mac ? 'popToggleMac' : 'popToggleWin');
+  showToggleKeys();
 
   for (const button of document.querySelectorAll('[data-pause]')) {
     button.addEventListener('click', async () => {

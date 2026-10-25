@@ -33,8 +33,10 @@
   "praiseComboText": { "message": "마우스 없이 단축키를 연달아 쓰고 있어요." },
   "toastOn": { "message": "알림을 켰어요" },
   "toastOff": { "message": "알림을 껐어요" },
-  "toastHintWin": { "message": "Alt+Shift+P로 다시 켜고 끌 수 있어요." },
-  "toastHintMac": { "message": "Option+Shift+P로 다시 켜고 끌 수 있어요." },
+  "toastHint": {
+    "message": "$KEYS$ 키로 다시 켜고 끌 수 있어요.",
+    "placeholders": { "keys": { "content": "$1" } }
+  },
 
   "ytPlayPause": { "message": "재생 / 일시정지" },
   "ytMute": { "message": "음소거" },
@@ -178,8 +180,12 @@
   "popColKey": { "message": "단축키" },
   "popReset": { "message": "기록 모두 지우기" },
   "popResetConfirm": { "message": "저장된 기록을 모두 지울까요? 되돌릴 수 없어요." },
-  "popToggleWin": { "message": "알림 켜고 끄기: Alt+Shift+P" },
-  "popToggleMac": { "message": "알림 켜고 끄기: Option+Shift+P" },
+  "popToggle": {
+    "message": "알림 켜고 끄기: $KEYS$",
+    "placeholders": { "keys": { "content": "$1" } }
+  },
+  "popToggleNone": { "message": "알림을 켜고 끄는 단축키가 아직 없어요. 다른 확장 프로그램이 같은 키를 쓰고 있을 수 있어요." },
+  "popToggleSet": { "message": "단축키 정하기" },
 
   "welTitle": { "message": "안녕하세요, 손빠르미예요!" },
   "welLead": { "message": "마우스로 한 동작에 단축키가 있으면, 화면 오른쪽 아래에 살짝 알려 드려요." },
@@ -198,8 +204,11 @@
   "welStore": { "message": "기록은 이 기기에만 저장되고 어디로도 보내지 않아요. 설정만 크롬 동기화로 다른 기기와 맞춰져요. 언제든 아이콘을 눌러 기록을 보거나 지울 수 있어요." },
   "welStrength": { "message": "알림 강도를 골라 주세요" },
   "welSites": { "message": "지금은 유튜브, Gmail, 구글 캘린더·드라이브·문서·시트·슬라이드에서 작동해요." },
-  "welToggleWin": { "message": "알림은 Alt+Shift+P로 언제든 켜고 끌 수 있어요." },
-  "welToggleMac": { "message": "알림은 Option+Shift+P로 언제든 켜고 끌 수 있어요." },
+  "welToggle": {
+    "message": "알림은 $KEYS$ 키로 언제든 켜고 끌 수 있어요.",
+    "placeholders": { "keys": { "content": "$1" } }
+  },
+  "welToggleNone": { "message": "알림을 켜고 끄는 단축키는 크롬의 확장 프로그램 단축키 화면(chrome://extensions/shortcuts)에서 정할 수 있어요." },
   "welStart": { "message": "시작하기" },
   "welDoneTitle": { "message": "준비됐어요!" },
   "welDone": { "message": "이제 유튜브나 Gmail, 구글 캘린더·드라이브·문서·시트·슬라이드에서 평소처럼 일해 보세요." },

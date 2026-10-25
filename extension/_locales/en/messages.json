@@ -33,8 +33,10 @@
   "praiseComboText": { "message": "Shortcut after shortcut, no mouse." },
   "toastOn": { "message": "Hints are on" },
   "toastOff": { "message": "Hints are off" },
-  "toastHintWin": { "message": "Press Alt+Shift+P to turn them on or off." },
-  "toastHintMac": { "message": "Press Option+Shift+P to turn them on or off." },
+  "toastHint": {
+    "message": "Press $KEYS$ to turn them on or off.",
+    "placeholders": { "keys": { "content": "$1" } }
+  },
 
   "ytPlayPause": { "message": "Play / pause" },
   "ytMute": { "message": "Mute" },
@@ -178,8 +180,12 @@
   "popColKey": { "message": "Shortcut" },
   "popReset": { "message": "Delete all records" },
   "popResetConfirm": { "message": "Delete all saved records? This can't be undone." },
-  "popToggleWin": { "message": "Turn hints on or off: Alt+Shift+P" },
-  "popToggleMac": { "message": "Turn hints on or off: Option+Shift+P" },
+  "popToggle": {
+    "message": "Turn hints on or off: $KEYS$",
+    "placeholders": { "keys": { "content": "$1" } }
+  },
+  "popToggleNone": { "message": "No shortcut turns hints on or off yet. Another extension may be using the same keys." },
+  "popToggleSet": { "message": "Set a shortcut" },
 
   "welTitle": { "message": "Hi, I'm Quickhand!" },
   "welLead": { "message": "When something you do with the mouse has a shortcut, I'll show it in the bottom-right corner." },
@@ -198,8 +204,11 @@
   "welStore": { "message": "Records stay on this device and are never sent anywhere. Only settings sync across your devices through Chrome sync. Click the icon any time to view or delete records." },
   "welStrength": { "message": "Choose a hint level" },
   "welSites": { "message": "For now I work on YouTube, Gmail and Google Calendar, Drive, Docs, Sheets and Slides." },
-  "welToggleWin": { "message": "Press Alt+Shift+P any time to turn hints on or off." },
-  "welToggleMac": { "message": "Press Option+Shift+P any time to turn hints on or off." },
+  "welToggle": {
+    "message": "Press $KEYS$ any time to turn hints on or off.",
+    "placeholders": { "keys": { "content": "$1" } }
+  },
+  "welToggleNone": { "message": "You can set a shortcut to turn hints on or off on Chrome's extension shortcuts page (chrome://extensions/shortcuts)." },
   "welStart": { "message": "Get started" },
   "welDoneTitle": { "message": "All set!" },
   "welDone": { "message": "Work on YouTube, Gmail or Google Calendar, Drive, Docs, Sheets and Slides as usual." },

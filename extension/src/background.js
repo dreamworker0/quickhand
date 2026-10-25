@@ -173,8 +173,16 @@ chrome.commands.onCommand.addListener(async (command, tab) => {
   if (command !== 'toggle-alerts') return;
   // Paused or off → turn on (and clear the pause); otherwise turn off.
   const next = await setSettings((current) => ({ enabled: isOff(current), pauseUntil: 0 }));
-  if (tab && tab.id !== undefined) showCard(tab.id, { variant: 'toast', on: next.enabled });
+  if (tab && tab.id !== undefined) showCard(tab.id, { variant: 'toast', on: next.enabled, keys: await toggleShortcut() });
 });
+
+// The keys the user actually has for turning hints on or off: another extension
+// may hold the suggested ones, and the user can change them.
+async function toggleShortcut() {
+  const commands = chrome.commands.getAll ? await chrome.commands.getAll() : [];
+  const command = commands.find((c) => c.name === 'toggle-alerts');
+  return (command && command.shortcut) || '';
+}
 
 chrome.runtime.onStartup.addListener(() => updateBadge());
 

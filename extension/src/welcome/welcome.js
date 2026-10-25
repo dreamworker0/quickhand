@@ -1,6 +1,6 @@
 'use strict';
 
-const t = (key) => chrome.i18n.getMessage(key) || key;
+const t = (key, subs) => chrome.i18n.getMessage(key, subs) || key;
 
 const STRENGTHS = [
   ['gentle', 'strengthGentle', 'strengthGentleDesc'],
@@ -17,7 +17,11 @@ function el(tag, cls, text) {
 
 document.documentElement.lang = chrome.i18n.getUILanguage();
 for (const node of document.querySelectorAll('[data-i18n]')) node.textContent = t(node.dataset.i18n);
-document.getElementById('toggle-hint').textContent = t(QH.keys.isMac() ? 'welToggleMac' : 'welToggleWin');
+// The keys the user really has: another extension may hold the suggested ones.
+chrome.commands.getAll().then((commands) => {
+  const command = commands.find((c) => c.name === 'toggle-alerts');
+  document.getElementById('toggle-hint').textContent = command && command.shortcut ? t('welToggle', [command.shortcut]) : t('welToggleNone');
+});
 
 const strengths = document.getElementById('strengths');
 for (const [value, nameKey, descKey] of STRENGTHS) {

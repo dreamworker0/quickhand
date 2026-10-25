@@ -7,7 +7,6 @@
   globalThis.__quickhandCard = true; // the background may inject us again into an open tab
 
   const t = (key, subs) => chrome.i18n.getMessage(key, subs) || key;
-  const mac = globalThis.QH && globalThis.QH.keys ? globalThis.QH.keys.isMac() : false;
   const SHOW_MS = 5000;
   const PRAISE_MS = 2200; // a cheer is a moment, not something to read
   const SPARKS = ['#2a9d8f', '#e9c46a', '#f4a261', '#e76f51', '#8ecae6'];
@@ -231,7 +230,8 @@
     const body = el('div', 'body');
 
     if (msg.variant === 'toast') {
-      body.append(el('p', 'label', t(msg.on ? 'toastOn' : 'toastOff')), el('p', 'sub', t(mac ? 'toastHintMac' : 'toastHintWin')));
+      body.append(el('p', 'label', t(msg.on ? 'toastOn' : 'toastOff')));
+      if (msg.keys) body.append(el('p', 'sub', t('toastHint', [msg.keys])));
     } else if (msg.variant === 'intro') {
       // Once after install: the click was recognized, the hint comes later.
       body.append(el('p', 'title', t('introTitle')), el('p', 'label', msg.label), el('p', 'sub', t('introText', [String(msg.need)])));
