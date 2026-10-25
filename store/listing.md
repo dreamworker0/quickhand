@@ -3,6 +3,19 @@
 개발자 대시보드(https://chrome.google.com/webstore/devconsole)에 그대로 붙여 넣을 내용입니다.
 업로드할 파일은 `extension` 폴더에서 `npm run pack`으로 만든 `dist/quickhand-<버전>.zip`입니다.
 
+## 게시자 계정 (Account)
+
+처음 한 번만 설정합니다. 등록비(US$5)는 게시자 계정을 만들 때 냅니다.
+
+- **게시자 이름**: 소셜프리즘
+- **연락처 이메일**: ehsheh@gmail.com (대시보드에서 인증 메일을 받아 확인해야 저장됩니다)
+- **판매자(Trader) 여부**: 판매자 — 소셜프리즘이라는 사업자 이름으로 내므로 '판매자'를 고릅니다.
+  판매자를 고르면 아래 정보를 넣어야 하고, 유럽연합 사용자에게는 스토어에 공개됩니다.
+  저장소에 남기지 않도록 이 파일에는 적지 않고, 대시보드에 직접 넣습니다.
+  - 사업장 주소
+  - 전화번호 (문자·전화 인증)
+  - 사업자 등록 정보
+
 ## 스토어 등록정보 (Store listing)
 
 **이름** (manifest에서 자동): 손빠르미 – 단축키 코치
@@ -39,7 +52,11 @@
 • 기록은 이 기기의 크롬에만 저장되고 어디로도 보내지 않아요. 언제든 팝업에서 보거나 모두 지울 수 있어요.
 • 안 되는 단축키는 팝업의 '의견 보내기'로 알려 주세요. 보낼 내용을 보여 드리고, 그 내용이 채워진 Gmail 편지쓰기를 열어 드려요. 확인하고 직접 보내면 돼요.
 
+■ 만든 곳
+소셜프리즘 · 문의 ehsheh@gmail.com
+
 손빠르미는 구글이나 유튜브가 만들거나 보증한 프로그램이 아니에요.
+YouTube, Gmail, Google Drive, Google Docs, Google Sheets, Google Slides, Google Calendar는 Google LLC의 상표입니다.
 ```
 
 **이미지** (`store/` 폴더):
@@ -88,7 +105,15 @@
 
 **인증 3개 모두 체크**: 승인된 용도 외 제3자 판매·전송 안 함 / 단일 목적과 무관한 용도로 사용·전송 안 함 / 신용도 판단·대출 목적으로 사용·전송 안 함
 
-**개인정보처리방침 URL**: `store/privacy-policy.md`를 공개 웹 주소로 올린 뒤 그 주소 (예: 구글 문서에 붙여 넣고 파일 › 공유 › 웹에 게시)
+**개인정보처리방침 URL**: `https://dreamworker0.github.io/quickhand/privacy`
+(`store/privacy-policy.md`를 GitHub Pages로 올린 주소. Pages를 켠 뒤 이 주소가 열리는지 확인하고 넣습니다.)
+
+## 지원 (Support)
+
+- **지원 이메일**: ehsheh@gmail.com (게시자 계정의 연락처와 같음)
+- **홈페이지 URL (선택)**: `https://github.com/dreamworker0/quickhand`
+- **지원 URL (선택)**: `https://github.com/dreamworker0/quickhand/issues`
+- 공식 URL(사이트 소유 확인)은 넣지 않습니다. 넣으려면 Google Search Console에서 도메인 소유를 먼저 확인해야 합니다.
 
 ## 배포 (Distribution)
 
