@@ -1,0 +1,56 @@
+# Every push to main and every pull request: unit tests, the offline Chrome
+# checks (local fixtures, no Google account or network), and the store and
+# tester ZIPs, kept for two weeks as a download on the run page.
+# GitHub-hosted runner on purpose: this repository is public, so a pull request
+# from anyone would run on a self-hosted machine.
+name: 테스트
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: test-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: checks/package-lock.json
+
+      - name: 단위 테스트
+        working-directory: extension
+        run: npm test
+
+      - name: 점검 도구 설치
+        working-directory: checks
+        run: npm ci
+
+      # Uses the Google Chrome that comes with the runner image.
+      - name: 오프라인 크롬 점검
+        working-directory: checks
+        run: npm run offline
+
+      - name: 업로드용·테스터용 ZIP 만들기
+        working-directory: extension
+        run: |
+          npm run pack
+          npm run pack:testers
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: quickhand-${{ github.sha }}
+          path: dist/*.zip
+          retention-days: 14

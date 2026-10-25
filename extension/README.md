@@ -116,6 +116,10 @@ npm test               # 알림 규칙·단축키·사이트 인식·백그라�
 npm run assets         # ../mascot 원본에서 아이콘·마스코트 이미지 다시 만들기 (Python + Pillow + Chrome)
 ```
 
+GitHub Actions(`.github/workflows/test.yml`)가 `main`에 push할 때와 PR마다 단위 테스트, 오프라인 크롬 점검(`checks`의 `npm run offline`),
+업로드용·테스터용 ZIP 만들기를 GitHub 호스티드 러너에서 돌립니다. 만든 ZIP은 실행 결과 페이지에서 2주 동안 내려받을 수 있습니다.
+저장소가 공개라 누구의 PR이든 돌 수 있으므로 이 PC를 자체 러너로 쓰지 않습니다.
+
 ### 크롬 웹스토어 등록 (`../store`)
 
 ```bash
