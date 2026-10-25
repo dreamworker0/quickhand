@@ -16,7 +16,8 @@ const TITLE = '손빠르미 단축키 점검 문서 (지워도 됨)';
 const OUT = path.join(RESULTS, `${APP}-mouse.json`);
 // Print is left out too: in Sheets its settings page was followed by a save error
 // that blocked the page (Ctrl+P was already checked with the keyboard).
-const SKIP = /스크린 리더|점자|음성 입력|음성기록|Gemini|확장 프로그램|인쇄/;
+// Only Print itself ("인쇄", "인쇄 (Ctrl+P)"), not "인쇄 불가 문자 표시".
+const SKIP = /스크린 리더|점자|음성 입력|음성기록|Gemini|확장 프로그램|^인쇄( \(|$)/;
 
 const { context, worker } = await launch({ headless: false });
 await context.addInitScript(() => { window.print = () => {}; });
