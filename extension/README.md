@@ -85,7 +85,12 @@ src/sites/google-editors.js  구글 문서·시트·슬라이드 툴바·메뉴 
                        Ctrl+Shift+1~6 카드. 점검: checks/sheets-shortcuts.mjs(키, --from=번호), checks/editor-mouse.mjs sheets
                        문서: 도움말의 단축키를 마우스 동작만 빼고 모두 셈. "Ctrl+Alt+N, H" 같은 두 단계 키는
                        두 번째 키를 Ctrl+Alt와 함께 눌러도, 따로 눌러도 셈. 댓글이 선택됐을 때 R·J·K·E·U도 셈.
-                       점검: checks/docs-shortcuts.mjs(키, --part2·--part3), checks/editor-mouse.mjs docs(메뉴·툴바 카드))
+                       점검: checks/docs-shortcuts.mjs(키, --part2·--part3), checks/editor-mouse.mjs docs(메뉴·툴바 카드)
+                       슬라이드: 도움말의 단축키를 마우스·마이크·동영상 키만 빼고 셈. 현재 댓글로 들어가기는 도움말의
+                       Ctrl+Enter가 아니라 실제로 듣는 Ctrl+Alt+E, C로 셈. 댓글 카드에 포커스가 있을 때 R·J·K·E·U도 셈.
+                       화살표·Home/End·Tab·Delete·Enter·Esc·F11·발표 중 한 글자 키는 평소에도 써서 세지 않음
+                       (슬라이드 목록의 Page Up/Down은 셈). 점검: checks/slides-shortcuts.mjs(키, --from=번호,
+                       --only=C,N14처럼 고른 항목만), checks/editor-mouse.mjs slides(메뉴·툴바 카드))
 src/content/main.js    페이지에서 클릭·키 입력을 받아 background로 전달, 팝업의 작동 확인(버튼 점검 포함)에 응답
 src/content/card.js    오른쪽 아래 알림 카드
 src/popup, src/welcome 팝업(오늘 기록, 익힌 단축키, 최근 동작과 이유, 설정)과 첫 설치 안내
@@ -132,5 +137,8 @@ node google.mjs             # 문서·드라이브·Gmail·캘린더 (docs / dri
 `google.mjs`는 "손빠르미 점검용 (지워도 됨)" 문서를 새로 만들어 그 문서만 고치고, Gmail에서는 메일을 바꾸지 않는 버튼만 누릅니다.
 캘린더에서는 이동·보기 전환·검색만 하고, 새 일정 창은 저장하지 않고 빠져나옵니다(끝에 이번 주 '제목 없음' 일정이 0개인지 확인).
 로그인 창의 크롬은 창을 닫은 뒤에도 뒤에서 실행 중일 수 있습니다. 점검용 크롬이 열리지 않으면(종료 코드 21) 그 크롬을 먼저 닫으세요.
+구글 로그인은 꼭 `node login.mjs` 창에서 하세요. 점검 스크립트가 띄운 크롬에서는 구글이 "로그인할 수 없음"으로 막습니다.
+로그인 정보는 그 컴퓨터에 묶여 있어, `checks/.profile`을 다른 컴퓨터로 복사하면 다시 로그인해야 합니다.
+로그인할 때 크롬 동기화는 켜지 마세요. 켜면 평소 쓰는 확장 프로그램이 점검 프로필에 깔려 점검에 끼어들 수 있습니다.
 점검이 끝나면 `node cleanup.mjs`로 점검용 문서를 휴지통으로 옮기고 로그아웃한 뒤, `checks/.profile` 폴더를 지우면 로그인 정보가 남지 않습니다.
 계속 점검할 때는 `node cleanup.mjs --keep-login`으로 파일만 정리하고 로그인은 남겨 둘 수 있습니다.
