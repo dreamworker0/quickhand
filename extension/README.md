@@ -86,8 +86,11 @@ src/sites/youtube.js   유튜브 플레이어 버튼·키 감지 (쇼츠: 재생
                        볼륨 슬라이더와 설명란 챕터 목록 클릭에도 카드를 띄우고, 진행 막대(타임라인) 클릭·드래그는
                        J/L 카드로 안내. 점검: checks/youtube-shortcuts.mjs
 src/sites/google-editors.js  구글 문서·시트·슬라이드 툴바·메뉴 감지 (화면에 표시된 단축키를 그대로 읽음.
-                       시트: 열 머리글 클릭은 Ctrl+Space, 행 번호 클릭은 Shift+Space로 알리고, Shift+Space 키는
-                       잠시 뒤 이름 상자에 한 행("3:3" 또는 데이터 칸 "A3:C3")이 선택됐을 때만 단축키 사용으로 셈.
+                       시트: 열 머리글 클릭은 Ctrl+Space, 행 번호 클릭은 Shift+Space, 왼쪽 위 구석 버튼은 Ctrl+A로 알리고,
+                       머리글을 마우스로 고른 뒤 바로 서식·숨기기·삽입/삭제·복사 버튼을 누르면 "Ctrl+Space 다음 Ctrl+Shift+R"처럼
+                       두 단계로 알림(키보드로 고른 뒤면 버튼의 키만). Shift+Space 키는 잠시 뒤 이름 상자에 행이
+                       선택됐을 때만 셈. 열·행 선택 뒤 Shift+방향키나 Ctrl+Shift+방향키는 여러 열·행 선택,
+                       Shift+방향키·Ctrl+Shift+방향키·Shift+PageUp/Down으로 범위가 생기면 범위 선택으로 셈.
                        도움말의 시트 단축키를 모두 셈(두 단계 댓글 키, 댓글 안 R·J·K·E·U 포함). 서식 › 숫자 메뉴는
                        Ctrl+Shift+1~6 카드. 점검: checks/sheets-shortcuts.mjs(키, --from=번호), checks/editor-mouse.mjs sheets
                        문서: 도움말의 단축키를 마우스 동작만 빼고 모두 셈. "Ctrl+Alt+N, H" 같은 두 단계 키는
@@ -155,7 +158,8 @@ npm run offline             # 외부 접속 없이 로컬 모형에서 실제 �
 node reload.mjs             # 유튜브 탭을 연 채로 확장을 새로고침해도 카드와 그림이 오류 없이 뜨는지
 node login.mjs              # 구글 로그인 창: 로그인한 뒤 창을 닫기
 node google.mjs             # 문서·드라이브·Gmail·캘린더 (docs / drive / gmail / calendar 중 일부만 지정 가능)
-npm run sheets-scenarios    # 시트 실사용 흐름 28가지(범위 끌기·Shift+클릭·머리글·채우기 핸들·Shift/Ctrl+Shift+방향키·편집 중)를
+npm run sheets-scenarios    # 시트 실사용 흐름 43가지(범위 끌기·Shift+클릭·머리글·구석 버튼·채우기 핸들·Shift/Ctrl+Shift+방향키·
+                            # PageUp/Down·편집 중·머리글 뒤 서식 버튼)를
                             # 시험 문서에서 해 보고 기대와 맞는지 표로 (로그인 필요, results/sheets-scenarios.json)
 npm run gmail-scenarios     # Gmail 목록에서 고르지 않고 E·#·Shift+U 등을 누르면 세지 않고, X로 고르거나 대화를 열면 세는지
                             # 시험 메일 한 통으로 13가지 확인 (로그인 필요, 끝나면 휴지통으로, results/gmail-scenarios.json)

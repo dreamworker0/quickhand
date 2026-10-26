@@ -120,10 +120,11 @@ const newButton = visible('button, [role="button"]', { hasText: /^\s*(신규|새
 await newButton.click();
 await page.waitForTimeout(800);
 await visible('[role="menuitem"]', { hasText: /새 폴더|New folder/ }).click();
-await page.waitForTimeout(1200);
-await page.keyboard.press('Control+KeyA');
-await page.keyboard.type(TITLE);
-await page.keyboard.press('Enter');
+// The name box can take a while to come up ("실행 중…"); type only once it is there.
+const nameInput = visible('[role="dialog"] input');
+await nameInput.waitFor({ timeout: 30000 });
+await nameInput.fill(TITLE);
+await nameInput.press('Enter');
 let folderId = null;
 for (let i = 0; i < 15 && !folderId; i++) {
   await page.waitForTimeout(1000);

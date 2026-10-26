@@ -1,5 +1,5 @@
 // Everyday Sheets flows, not just the help page's keys: selecting with the mouse
-// (cell drags, Shift+click, header clicks and drags, the fill handle, resizing) and
+// (cell drags, Shift+click, header clicks and drags, the corner button, the fill handle, resizing) and
 // with the keyboard (Shift/Ctrl+Shift+arrows in every direction, turning back,
 // Ctrl+Space or Shift+Space then widening, Shift+← while editing a cell). Each step
 // records what Sheets did (the name box) and what Quickhand made of it, against
@@ -125,6 +125,8 @@ const FLOWS = [
   ['마우스: 열 머리글 끌기 C→F', 'A12', () => drag(colHeader('C'), colHeader('F')), COLUMNS],
   ['마우스: 열 머리글 C 클릭 뒤 F Shift+클릭', 'A12', async () => { await page.mouse.click(colHeader('C').x, colHeader('C').y); await page.waitForTimeout(300); await shiftClick(colHeader('F')); }, COLUMNS],
   ['마우스: 행 번호 끌기 3→7', 'A12', () => drag(rowHeader(3), rowHeader(7)), ROWS],
+  ['마우스: 왼쪽 위 구석 버튼(모두 선택)', 'A12', () => page.mouse.click(g.rowMid, g.colMid), 'sheets:mod+a'],
+  ['키보드: Ctrl+A', 'B3', press('Control+KeyA'), 'sheets:mod+a'],
   ['마우스: 열 너비 조절 C|D 경계', 'A12', () => drag({ x: g.left + 300, y: g.colMid }, { x: g.left + 330, y: g.colMid }), null],
   ['키보드: Shift+→', 'B3', press('Shift+ArrowRight'), RANGE],
   ['키보드: 같은 범위에서 Shift+→ 한 번 더', null, press('Shift+ArrowRight'), null],
@@ -136,10 +138,20 @@ const FLOWS = [
   ['키보드: 같은 범위에서 Ctrl+Shift+→', null, press('Control+Shift+ArrowRight'), null],
   ['키보드: Shift+→ 뒤 Ctrl+Shift+↓', 'B3', press('Shift+ArrowRight', 'Control+Shift+ArrowDown'), RANGE],
   ['키보드: Ctrl+Shift+←', 'D5', press('Control+Shift+ArrowLeft'), RANGE],
+  ['키보드: Shift+End (시트는 범위를 넓히지 않음)', 'B5', press('Shift+End'), null],
+  ['키보드: Shift+Home (시트는 범위를 넓히지 않음)', 'C5', press('Shift+Home'), null],
+  ['키보드: Ctrl+Shift+End (시트는 범위를 넓히지 않음)', 'B3', press('Control+Shift+End'), null],
+  ['키보드: Ctrl+Shift+Home (시트는 범위를 넓히지 않음)', 'C5', press('Control+Shift+Home'), null],
+  ['키보드: Shift+PageDown (한 화면 아래로)', 'B3', press('Shift+PageDown'), RANGE],
+  ['키보드: Shift+PageUp (한 화면 위로)', 'B40', press('Shift+PageUp'), RANGE],
   ['키보드: Ctrl+Space', 'C3', press('Control+Space'), COLUMN],
   ['키보드: 이어서 Shift+→ (여러 열)', null, press('Shift+ArrowRight'), COLUMNS],
+  ['키보드: Ctrl+Space 다시', 'C3', press('Control+Space'), COLUMN],
+  ['키보드: 이어서 Ctrl+Shift+→ (끝까지 여러 열)', null, press('Control+Shift+ArrowRight'), COLUMNS],
   ['키보드: Shift+Space', 'C3', press('Shift+Space'), ROW],
   ['키보드: 이어서 Shift+↓ (여러 행)', null, press('Shift+ArrowDown'), ROWS],
+  ['키보드: Shift+Space 다시', 'C3', press('Shift+Space'), ROW],
+  ['키보드: 이어서 Ctrl+Shift+↓ (끝까지 여러 행)', null, press('Control+Shift+ArrowDown'), ROWS],
   // Typing straight into a cell (entry mode): arrows end the entry, so Shift+← widens the range.
   ['키보드: 셀에 바로 입력하다 Shift+←', 'B12', async () => { await page.keyboard.type('abc'); await page.waitForTimeout(300); await page.keyboard.press('Shift+ArrowLeft'); }, RANGE],
   // Editing a cell (F2): Shift+← selects letters; the name box stays one cell.
@@ -161,6 +173,41 @@ for (const [name, start, step, expected] of FLOWS) {
   if (name.includes('채우기 핸들') || name.includes('열 너비')) { await page.keyboard.press('Escape'); await page.keyboard.press('Control+Z'); await page.waitForTimeout(500); }
 }
 await page.keyboard.press('Escape');
+
+// ---------------------------------------------------------------- header, then a format button
+// The card should show the whole way: "Ctrl+Space 다음 Ctrl+B".
+const visibleOne = (sel, opts) => page.locator(sel, opts).filter({ visible: true }).first();
+const TWO_STEP = [
+  ['마우스: 열 머리글 D 뒤 굵게 버튼', () => page.mouse.click(colHeader('D').x, colHeader('D').y), () => visibleOne('#t-bold').click(), 'sheets:mod+b', /Space[\s\S]*다음[\s\S]*B/],
+  ['마우스: 행 번호 6 뒤 서식 › 정렬 › 오른쪽', () => page.mouse.click(rowHeader(6).x, rowHeader(6).y), async () => {
+    await visibleOne('#docs-menubar [role="menuitem"]', { hasText: /^서식$/ }).click();
+    await page.waitForTimeout(600);
+    await visibleOne('.goog-menuitem', { hasText: /^정렬/ }).hover();
+    await page.waitForTimeout(800);
+    await visibleOne('.goog-menuitem', { hasText: /^오른쪽/ }).click();
+  }, 'sheets:mod+shift+r', /Shift[\s\S]*Space[\s\S]*다음[\s\S]*R/],
+  ['키보드로 고른 열(Ctrl+Space) 뒤 굵게 버튼', async () => { await go('E3'); await page.keyboard.press('Control+Space'); }, () => visibleOne('#t-bold').click(), 'sheets:mod+b', /^(?![\s\S]*Space)/],
+];
+for (const [name, pick, step, expected, cardShows] of TWO_STEP) {
+  // Sheets' error dialog ("오류 발생 … 새로고침") can come up in between: reload and try again.
+  let r;
+  for (let attempt = 0; attempt < 2; attempt++) {
+    await page.keyboard.press('Escape');
+    await go('A12');
+    await pick();
+    await page.waitForTimeout(700);
+    await recover();
+    if (attempt === 0 && !(await nameBox()).includes(':')) continue; // the reload lost the pick
+    r = await check(page, worker, name, step, { wait: 1300 });
+    if (!r.error) break;
+    await recover();
+  }
+  const cardOk = !!r.card && cardShows.test(r.card);
+  results.push({ name, expected, recognized: r.recognized, outcome: r.outcome, card: r.card, nameBox: await nameBox(), ok: r.recognized === expected && cardOk, error: r.error || (cardOk ? undefined : '카드 내용이 기대와 다름: ' + (r.card || '(카드 없음)').replace(/\s+/g, ' ').slice(0, 60)) });
+  await page.keyboard.press('Escape');
+  await page.keyboard.press('Control+KeyZ');
+  await page.waitForTimeout(500);
+}
 
 fs.mkdirSync(RESULTS, { recursive: true });
 fs.writeFileSync(OUT, JSON.stringify(results, null, 2));
