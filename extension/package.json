@@ -1,6 +1,6 @@
 {
   "name": "quickhand-extension",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "private": true,
   "description": "손빠르미(Quickhand) 크롬 확장 프로그램",
   "scripts": {

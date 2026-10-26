@@ -91,6 +91,8 @@ src/sites/google-editors.js  구글 문서·시트·슬라이드 툴바·메뉴 
                        두 단계로 알림(키보드로 고른 뒤면 버튼의 키만). Shift+Space 키는 잠시 뒤 이름 상자에 행이
                        선택됐을 때만 셈. 열·행 선택 뒤 Shift+방향키나 Ctrl+Shift+방향키는 여러 열·행 선택,
                        Shift+방향키·Ctrl+Shift+방향키·Shift+PageUp/Down으로 범위가 생기면 범위 선택으로 셈.
+                       '호환되는 스프레드시트 단축키 사용'은 단축키 창(Ctrl+/)의 스위치를 읽어 기억하고(chrome.storage.local
+                       qh_sheets_compat), 켜져 있을 때만 엑셀식 키(Ctrl+2 굵게, Ctrl+9 행 숨기기 등 22개)를 같은 동작으로 셈.
                        도움말의 시트 단축키를 모두 셈(두 단계 댓글 키, 댓글 안 R·J·K·E·U 포함). 서식 › 숫자 메뉴는
                        Ctrl+Shift+1~6 카드. 점검: checks/sheets-shortcuts.mjs(키, --from=번호), checks/editor-mouse.mjs sheets
                        문서: 도움말의 단축키를 마우스 동작만 빼고 모두 셈. "Ctrl+Alt+N, H" 같은 두 단계 키는
@@ -161,6 +163,8 @@ node google.mjs             # 문서·드라이브·Gmail·캘린더 (docs / dri
 npm run sheets-scenarios    # 시트 실사용 흐름 43가지(범위 끌기·Shift+클릭·머리글·구석 버튼·채우기 핸들·Shift/Ctrl+Shift+방향키·
                             # PageUp/Down·편집 중·머리글 뒤 서식 버튼)를
                             # 시험 문서에서 해 보고 기대와 맞는지 표로 (로그인 필요, results/sheets-scenarios.json)
+npm run sheets-compat       # 시트 '호환되는 스프레드시트 단축키 사용'을 시험 문서에서 잠깐 켜고 엑셀식 키(Ctrl+2 등)를 세는지,
+                            # 끄면 안 세는지 확인. 계정 전체 설정이라 끝나면(실패해도) 반드시 끔. 사용자에게 먼저 물을 것
 npm run gmail-scenarios     # Gmail 목록에서 고르지 않고 E·#·Shift+U 등을 누르면 세지 않고, X로 고르거나 대화를 열면 세는지
                             # 시험 메일 한 통으로 13가지 확인 (로그인 필요, 끝나면 휴지통으로, results/gmail-scenarios.json)
 node cleanup.mjs --keep-login  # 점검용 시험 문서를 모두 휴지통으로 (--keep-login 없으면 로그아웃까지 함)
