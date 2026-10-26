@@ -31,6 +31,7 @@
     "placeholders": { "count": { "content": "$1" } }
   },
   "praiseComboText": { "message": "Shortcut after shortcut, no mouse." },
+  "praiseKey": { "message": "Done with the shortcut." },
   "toastOn": { "message": "Hints are on" },
   "toastOff": { "message": "Hints are off" },
   "toastHint": {
@@ -118,7 +119,7 @@
   "strengthActive": { "message": "Active" },
   "strengthGentleDesc": { "message": "From the 5th time, up to 2 new shortcuts a day" },
   "strengthNormalDesc": { "message": "From the 3rd time, up to 3 new shortcuts a day" },
-  "strengthActiveDesc": { "message": "Every time an action has a shortcut" },
+  "strengthActiveDesc": { "message": "Every time an action has a shortcut, and a cheer each time you use one" },
   "popPause": { "message": "Take a break" },
   "pause30": { "message": "30 min" },
   "pause60": { "message": "1 hour" },

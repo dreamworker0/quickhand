@@ -240,7 +240,7 @@
       if (msg.combo) title.append(el('span', 'badge', t('praiseCombo', [String(msg.combo)])));
       body.append(title, el('p', 'label', msg.label), keysNode(msg.display));
       if (msg.left) body.append(dots(msg.done || 0, msg.left), el('p', 'sub', t('praiseLeft', [String(msg.left)])));
-      else body.append(el('p', 'sub', t('praiseComboText')));
+      else body.append(el('p', 'sub', t(msg.combo ? 'praiseComboText' : 'praiseKey')));
     } else if (msg.variant === 'learned') {
       body.append(el('p', 'title', t('learnedTitle')), el('p', 'label', msg.label), keysNode(msg.display), el('p', 'sub', t('learnedText')));
     } else {
@@ -262,7 +262,7 @@
     card.append(...(msg.image ? [img] : []), body, close);
     if (msg.variant === 'praise') {
       // Practice fills the gold up to 80%; learning it takes the last step.
-      gold(card, msg.left ? (0.8 * (msg.done || 0)) / ((msg.done || 0) + msg.left) : 0.5);
+      gold(card, msg.left ? (0.8 * (msg.done || 0)) / ((msg.done || 0) + msg.left) : msg.combo ? 0.5 : 0.2);
       card.append(msg.combo ? burst(24, 80) : burst(12, 46));
     }
     if (msg.variant === 'learned') {

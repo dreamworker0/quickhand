@@ -56,6 +56,29 @@ test('practising a hinted shortcut sends a cheer unless cheers are turned off', 
   assert.equal(bg.cards.filter((c) => c.variant === 'praise').length, 1);
 });
 
+test('with "active" strength every key use gets a cheer, even a shortcut already known', async () => {
+  const bg = backgroundEnv();
+  const sender = { tab: { id: 7 } };
+  const action = { id: 'sheets:mod+space', site: 'sheets', label: '열 선택', display: [['Ctrl', 'Space']] };
+  // "normal": a shortcut known from the keyboard is counted quietly.
+  for (let i = 0; i < 3; i++) await bg.request({ type: 'qh-key', action }, sender);
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.equal(bg.cards.filter((c) => c.variant === 'praise').length, 0);
+  // "active": a cheer each time.
+  await bg.request({ type: 'qh-settings', patch: { strength: 'active' } });
+  for (let i = 0; i < 3; i++) await bg.request({ type: 'qh-key', action }, sender);
+  await new Promise((resolve) => setImmediate(resolve));
+  const praise = bg.cards.filter((c) => c.variant === 'praise');
+  assert.equal(praise.length, 3);
+  assert.equal(praise[0].left, undefined); // no practice dots for a shortcut never hinted
+  assert.equal(praise[1].combo, 5); // the 5th in a row is still a streak cheer
+  // Cheers turned off: none, whatever the strength.
+  await bg.request({ type: 'qh-settings', patch: { praise: false } });
+  await bg.request({ type: 'qh-key', action }, sender);
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.equal(bg.cards.filter((c) => c.variant === 'praise').length, 3);
+});
+
 test('no cheers while hints are turned off', async () => {
   const bg = backgroundEnv();
   const sender = { tab: { id: 7 } };

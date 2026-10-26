@@ -31,6 +31,7 @@
     "placeholders": { "count": { "content": "$1" } }
   },
   "praiseComboText": { "message": "마우스 없이 단축키를 연달아 쓰고 있어요." },
+  "praiseKey": { "message": "단축키로 바로 하셨어요." },
   "toastOn": { "message": "알림을 켰어요" },
   "toastOff": { "message": "알림을 껐어요" },
   "toastHint": {
@@ -118,7 +119,7 @@
   "strengthActive": { "message": "적극적으로" },
   "strengthGentleDesc": { "message": "같은 동작 5번째부터, 하루 새 단축키 2개까지" },
   "strengthNormalDesc": { "message": "같은 동작 3번째부터, 하루 새 단축키 3개까지" },
-  "strengthActiveDesc": { "message": "단축키가 있는 동작이면 매번 알려 드려요" },
+  "strengthActiveDesc": { "message": "단축키가 있는 동작이면 매번 알려 드리고, 단축키를 쓸 때마다 칭찬해요" },
   "popPause": { "message": "잠시 쉬기" },
   "pause30": { "message": "30분" },
   "pause60": { "message": "1시간" },

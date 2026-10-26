@@ -120,7 +120,8 @@ async function handle(msg, sender) {
         const pressed = msg.used ? [msg.used] : result.action.display;
         if (result.learnedNow) {
           showCard(tabId, { variant: 'learned', label: result.action.label, display: pressed });
-        } else if (settings.praise && (result.left || result.combo)) {
+        } else if (settings.praise && (result.left || result.combo || settings.strength === 'active')) {
+          // Practice progress and streaks always; with "active" strength, every key use too.
           showCard(tabId, {
             variant: 'praise',
             id: result.action.id,
