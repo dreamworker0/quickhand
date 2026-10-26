@@ -29,8 +29,9 @@
     }).join(' / ');
   }
 
-  // parts: { kind, site, message, env, log } where log is null (left out) or a list
-  // of { time, site, label, keys, input, why }, all already in the UI's words.
+  // parts: { kind, site, message, env, log, unknown } where log is null (left out) or a
+  // list of { time, site, label, keys, input, why }, and unknown is null or a list of
+  // { site, label, count, day } (buttons not recognized), all already in the UI's words.
   // t(key, subs) returns those words for this extension's own lines.
   function compose(parts, t) {
     const env = parts.env;
@@ -49,6 +50,11 @@
       lines.push('', t('fbLineLog'));
       if (!parts.log.length) lines.push(t('fbNoLog'));
       for (const e of parts.log) lines.push([e.time, e.site, e.label, e.keys, e.input, e.why].filter(Boolean).join(' · '));
+    }
+    if (parts.unknown) {
+      lines.push('', t('fbLineUnknown'));
+      if (!parts.unknown.length) lines.push(t('fbNoLog'));
+      for (const u of parts.unknown) lines.push([u.site, u.label, u.count, u.day].filter(Boolean).join(' · '));
     }
     return lines.join('\n');
   }

@@ -938,6 +938,11 @@
       fromMouse: (e, mac) => fromMouse(app, e, mac),
       fromKey: (e, mac) => fromKey(app, e, mac),
       extraKeyTargets,
+      // The document, the grid, slides, sheet names, comments, the outline and the title.
+      contentAreas: '.kix-appview-editor, #waffle-grid-container, .punch-viewer-container, .punch-filmstrip-scroll, .docs-sheet-tab, ' +
+        '.docos-stream-view, .docos-anchoreddocoview, .navigation-widget, .docs-title-widget, .docs-explore-widget',
+      // "F - I열 데이터 삭제" and "B열 데이터 삭제" are one menu item: kept without the range.
+      unknownLabel: (name) => name.replace(SHEET_RANGE_PREFIX, '').trim(),
     });
   }
 })();

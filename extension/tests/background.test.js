@@ -103,3 +103,17 @@ test('a cheer shows the keys actually pressed, such as Space for play/pause', as
   // The hint for the mouse keeps showing K.
   assert.deepEqual(plain(bg.storage.local.qh_state.actions['yt:playpause'].display), [['K']]);
 });
+
+test('a button not recognized is kept by name and site, unless the site is turned off', async () => {
+  const bg = backgroundEnv();
+  const sender = { tab: { id: 7 } };
+  await bg.request({ type: 'qh-unknown', site: 'sheets', label: '필터 만들기' }, sender);
+  await bg.request({ type: 'qh-unknown', site: 'sheets', label: '필터 만들기' }, sender);
+  await bg.request({ type: 'qh-unknown', site: 'sheets', label: 'x'.repeat(41) }, sender); // too long
+  await bg.request({ type: 'qh-settings', patch: { disabledSites: ['gmail'] } });
+  await bg.request({ type: 'qh-unknown', site: 'gmail', label: '라벨' }, sender);
+  const unknown = JSON.parse(JSON.stringify(bg.storage.local.qh_state.unknown));
+  assert.deepEqual(Object.values(unknown).map((u) => [u.site, u.label, u.count]), [['sheets', '필터 만들기', 2]]);
+  const res = await bg.request({ type: 'qh-summary' }, sender);
+  assert.equal(res.summary.unknown[0].label, '필터 만들기');
+});

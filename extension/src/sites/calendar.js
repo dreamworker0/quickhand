@@ -143,5 +143,7 @@
     mouseEvent: 'click',
     fromMouse,
     fromKey,
+    // Events and their details hold the person's own words; not kept as unknown buttons.
+    contentAreas: '[data-eventid], [role="grid"], [role="dialog"] [role="heading"]',
   });
 })();

@@ -197,7 +197,7 @@
   "welRecTitle": { "message": "기록하는 것" },
   "welRec1": { "message": "동작 이름 (예: 굵게, 재생)" },
   "welRec2": { "message": "마우스로 했는지, 단축키로 했는지" },
-  "welRec3": { "message": "횟수와 날짜" },
+  "welRec3": { "message": "횟수와 날짜, 손빠르미가 알아보지 못한 버튼의 이름" },
   "welNoRecTitle": { "message": "기록하지 않는 것" },
   "welNoRec1": { "message": "입력한 글자" },
   "welNoRec2": { "message": "문서·동영상 내용" },
@@ -266,6 +266,12 @@
   },
   "fbLineLog": { "message": "최근 동작 (새것부터):" },
   "fbNoLog": { "message": "(아직 없음)" },
+  "fbIncludeUnknown": { "message": "알아보지 못한 버튼 상위 10개 넣기 (버튼 이름과 횟수만)" },
+  "fbLineUnknown": { "message": "알아보지 못한 버튼 (이 기기에서 많이 누른 순):" },
+  "fbUnknownCount": {
+    "message": "$COUNT$번",
+    "placeholders": { "count": { "content": "$1" } }
+  },
   "fbInputMouse": { "message": "마우스" },
   "fbInputKey": { "message": "단축키" }
 }

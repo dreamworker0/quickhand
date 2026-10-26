@@ -87,11 +87,13 @@ try {
     await page.locator('#clear span').click();
     await page.locator('#hide span').click();
     await page.keyboard.press('Control+Alt+-');
-    assert.deepEqual(await page.evaluate(() => messages.map((m) => [m.type, m.action.id])), [
+    assert.deepEqual(await page.evaluate(() => messages.filter((m) => m.action).map((m) => [m.type, m.action.id])), [
       ['qh-mouse', 'sheets:mod+alt+-'], ['qh-mouse', 'sheets:mod+alt+0'], ['qh-key', 'sheets:mod+alt+-'],
     ]);
+    // The one it doesn't know is kept by name, for the feedback form.
+    assert.deepEqual(await page.evaluate(() => messages.filter((m) => m.type === 'qh-unknown').map((m) => [m.site, m.label])), [['sheets', '열 데이터 삭제']]);
     await context.close();
-    console.log('PASS: range-prefixed Sheets delete/hide menus work; clear data is ignored'); passed++;
+    console.log('PASS: range-prefixed Sheets delete/hide menus work; clear data is kept as a button not recognized'); passed++;
   }
   console.log(`${passed} offline Chrome checks passed`);
 } finally {

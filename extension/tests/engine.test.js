@@ -468,3 +468,26 @@ test('a mouse action or a new day ends the streak', () => {
   for (let i = 0; i < 4; i++) engine.recordKey(state, action('c'), START);
   assert.equal(engine.recordKey(state, action('c'), START + 24 * HOUR).combo, undefined);
 });
+
+test('buttons not recognized keep the site, name, count and last day, the 50 most clicked', () => {
+  const state = engine.emptyState(START);
+  engine.recordUnknown(state, 'sheets', '필터 만들기', START);
+  engine.recordUnknown(state, 'sheets', '필터 만들기', START + 25 * HOUR);
+  engine.recordUnknown(state, 'gmail', '라벨', START);
+  const list = engine.summary(state, START + 25 * HOUR).unknown;
+  assert.deepEqual(list.map((u) => [u.site, u.label, u.count, u.last]), [['sheets', '필터 만들기', 2, '2026-10-27'], ['gmail', '라벨', 1, '2026-10-26']]);
+  // Full: a new name drops the least clicked (the oldest among equals), never a busy one.
+  for (let i = 0; i < 48; i++) engine.recordUnknown(state, 'drive', 'B' + i, START + HOUR);
+  assert.equal(Object.keys(state.unknown).length, 50);
+  engine.recordUnknown(state, 'drive', '새 버튼', START + 2 * HOUR);
+  assert.equal(Object.keys(state.unknown).length, 50);
+  assert.ok(!state.unknown['gmail|라벨']); // 1 click, the oldest
+  assert.ok(state.unknown['sheets|필터 만들기']);
+  assert.ok(state.unknown['drive|새 버튼']);
+  // States saved before this existed still work.
+  const old = engine.emptyState(START);
+  delete old.unknown;
+  assert.deepEqual(engine.summary(old, START).unknown, []);
+  engine.recordUnknown(old, 'docs', '표 삽입', START);
+  assert.equal(old.unknown['docs|표 삽입'].count, 1);
+});

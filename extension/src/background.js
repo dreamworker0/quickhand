@@ -155,6 +155,16 @@ async function handle(msg, sender) {
       });
     case 'qh-settings':
       return setSettings(msg.patch);
+    case 'qh-unknown':
+      return serial(async () => {
+        const settings = await getSettings();
+        const label = typeof msg.label === 'string' ? msg.label.trim() : '';
+        if (!label || label.length > 40 || settings.disabledSites.includes(msg.site)) return { ok: true };
+        const state = await getState();
+        engine.recordUnknown(state, String(msg.site || ''), label, Date.now());
+        await saveState(state);
+        return { ok: true };
+      });
     case 'qh-reset':
       return serial(async () => {
         await chrome.storage.local.remove('qh_state');

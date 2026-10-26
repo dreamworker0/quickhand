@@ -141,8 +141,16 @@ function fillMuted(actions) {
 // The feedback form: its preview is exactly what "copy" puts on the clipboard.
 const FEEDBACK_KINDS = ['fbKindBroken', 'fbKindWrong', 'fbKindMissed', 'fbKindSite', 'fbKindOther'];
 let feedbackLog = [];
+let feedbackUnknown = [];
+const UNKNOWN_TOP = 10;
 
 const chosen = (select) => select.selectedOptions[0].textContent;
+
+// "2026-10-26" → "10월 26일" in the UI's language.
+function dayText(day) {
+  const [y, m, d] = (day || '').split('-').map(Number);
+  return y ? new Date(y, m - 1, d).toLocaleDateString(chrome.i18n.getUILanguage(), { month: 'long', day: 'numeric' }) : '';
+}
 
 function feedbackText(withLog = $('fb-log').checked) {
   const env = QH.feedback.environment(navigator.userAgent, chrome.runtime.getManifest().version, chrome.i18n.getUILanguage());
@@ -156,7 +164,10 @@ function feedbackText(withLog = $('fb-log').checked) {
       why: whyText(e),
     }))
     : null;
-  return QH.feedback.compose({ kind: chosen($('fb-kind')), site: chosen($('fb-site')), message: $('fb-message').value, env, log }, t);
+  const unknown = $('fb-unknown').checked
+    ? feedbackUnknown.slice(0, UNKNOWN_TOP).map((u) => ({ site: siteName(u.site), label: u.label, count: t('fbUnknownCount', [String(u.count)]), day: dayText(u.last) }))
+    : null;
+  return QH.feedback.compose({ kind: chosen($('fb-kind')), site: chosen($('fb-site')), message: $('fb-message').value, env, log, unknown }, t);
 }
 
 function updateFeedback() {
@@ -202,7 +213,9 @@ function initFeedback(tabSite) {
     option.selected = s === tabSite;
     site.append(option);
   }
-  for (const id of ['fb-kind', 'fb-site', 'fb-log']) $(id).addEventListener('change', updateFeedback);
+  // "Didn't recognize a button" comes with the list of such buttons; other kinds start without it.
+  kind.addEventListener('change', () => { $('fb-unknown').checked = kind.selectedIndex === FEEDBACK_KINDS.indexOf('fbKindMissed'); });
+  for (const id of ['fb-kind', 'fb-site', 'fb-log', 'fb-unknown']) $(id).addEventListener('change', updateFeedback);
   $('fb-message').addEventListener('input', updateFeedback);
   $('fb-send').addEventListener('click', sendFeedback);
   $('fb-address').textContent = t('fbAddress', [QH.feedback.ADDRESS]);
@@ -211,7 +224,7 @@ function initFeedback(tabSite) {
 
 // A background worker still running older code (until the extension is reloaded)
 // can leave out a list; draw the rest instead of stopping at the first gap.
-const LISTS = ['missed', 'learned', 'tracked', 'muted', 'log'];
+const LISTS = ['missed', 'learned', 'tracked', 'muted', 'log', 'unknown'];
 function complete(summary) {
   const out = Object.assign({}, summary);
   for (const key of LISTS) if (!Array.isArray(out[key])) out[key] = [];
@@ -250,6 +263,7 @@ function render(res) {
 
   fillLog(summary.log);
   feedbackLog = summary.log;
+  feedbackUnknown = summary.unknown;
   if ($('fb-kind').options.length) updateFeedback();
 
   const strengths = $('strengths');

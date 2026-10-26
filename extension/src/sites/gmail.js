@@ -237,5 +237,7 @@
     mouseEvent: 'mouseup', // Gmail buttons act on mouseup
     fromMouse,
     fromKey,
+    // Mail, its senders and labels hold the person's own words.
+    contentAreas: '.adn, .a3s, .gs, .aeF, [role="main"] table, [role="navigation"]',
   });
 })();

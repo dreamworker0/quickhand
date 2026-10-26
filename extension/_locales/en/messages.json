@@ -197,7 +197,7 @@
   "welRecTitle": { "message": "What I record" },
   "welRec1": { "message": "Action names (e.g. Bold, Play)" },
   "welRec2": { "message": "Whether you used the mouse or a shortcut" },
-  "welRec3": { "message": "Counts and dates" },
+  "welRec3": { "message": "Counts and dates, and the names of buttons Quickhand did not recognize" },
   "welNoRecTitle": { "message": "What I never record" },
   "welNoRec1": { "message": "What you type" },
   "welNoRec2": { "message": "Document or video content" },
@@ -266,6 +266,12 @@
   },
   "fbLineLog": { "message": "Recent actions (newest first):" },
   "fbNoLog": { "message": "(none yet)" },
+  "fbIncludeUnknown": { "message": "Add the top 10 buttons Quickhand didn't recognize (button names and counts only)" },
+  "fbLineUnknown": { "message": "Buttons not recognized (most clicked on this device first):" },
+  "fbUnknownCount": {
+    "message": "$COUNT$ times",
+    "placeholders": { "count": { "content": "$1" } }
+  },
   "fbInputMouse": { "message": "Mouse" },
   "fbInputKey": { "message": "Shortcut" }
 }

@@ -65,3 +65,12 @@ test('a typical text with 10 recent actions fits the length Gmail takes', () => 
   const text = feedback.compose({ kind: '단축키가 안 돼요', site: '구글 슬라이드', message: '댓글 칸에 들어가지 않아요', env: { version: '0.1.0', chrome: '155', os: 'Windows', language: 'ko-KR' }, log }, t);
   assert.ok(feedback.composeUrl('[손빠르미 의견] 단축키가 안 돼요', text).length <= feedback.MAX_URL);
 });
+
+test('adds the buttons not recognized after the recent actions, only when asked', () => {
+  const parts = { kind: '누른 버튼을 알아보지 못해요', site: '시트', message: '', env: { version: '0.1.3', chrome: '150', os: 'Windows', language: 'ko' }, log: null };
+  assert.ok(!feedback.compose(parts, t).includes('fbLineUnknown'));
+  const unknown = [{ site: '시트', label: '필터 만들기', count: '12번', day: '10월 26일' }, { site: 'Gmail', label: '라벨', count: '5번', day: '10월 25일' }];
+  const text = feedback.compose(Object.assign({}, parts, { unknown }), t);
+  assert.ok(text.endsWith('fbLineUnknown\n시트 · 필터 만들기 · 12번 · 10월 26일\nGmail · 라벨 · 5번 · 10월 25일'));
+  assert.ok(feedback.compose(Object.assign({}, parts, { unknown: [] }), t).endsWith('fbLineUnknown\nfbNoLog'));
+});

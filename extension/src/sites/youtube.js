@@ -182,5 +182,7 @@
     fromMouse,
     fromKey,
     missing,
+    // Comments, the description, recommendations and playlists hold others' words and titles.
+    contentAreas: '#comments, #description, #related, #secondary, ytd-playlist-panel-renderer, ytd-rich-grid-renderer, ytd-rich-item-renderer',
   });
 })();

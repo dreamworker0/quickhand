@@ -49,6 +49,27 @@
     };
   }
 
+  // A click on a button or menu item Quickhand doesn't know: only the site and the
+  // button's name are kept (on this device), for the feedback form. Links, rows and
+  // lists, text boxes, the site's own content (mail, files, the document, the grid,
+  // comments) and long, address-like or mostly-number names are left out.
+  const CONTROLS = 'button, [role="button"], [role="menuitem"], [role="menuitemcheckbox"], [role="menuitemradio"], [role="tab"], [role="switch"], [role="checkbox"]';
+  const CONTENT = 'a[href], [role="link"], [role="row"], [role="gridcell"], [role="listitem"], [role="tree"], [role="treeitem"], [role="option"], [contenteditable="true"], input, textarea, quickhand-card';
+  function unknownName(e) {
+    const el = e.target instanceof Element ? e.target.closest(CONTROLS) : null;
+    if (!el || el.closest(CONTENT) || (site.contentAreas && el.closest(site.contentAreas))) return null;
+    const raw = el.getAttribute('aria-label') || el.getAttribute('data-tooltip') || el.getAttribute('title') || el.textContent || '';
+    let name = QH.keys.splitLabel(raw.replace(/\s+/g, ' ').trim()).label.trim();
+    if (site.unknownLabel) name = site.unknownLabel(name);
+    if (!name || name.length > 40 || name.includes('@') || !/[\p{L}]/u.test(name)) return null;
+    const digits = (name.match(/\d/g) || []).length;
+    return digits * 2 > name.replace(/\s/g, '').length ? null : name;
+  }
+  function noteUnknown(e) {
+    const label = unknownName(e);
+    if (label) send({ type: 'qh-unknown', site: site.id, label });
+  }
+
   function onMouse(e) {
     if (stopped || e.button !== 0 || !e.isTrusted) return;
     if (mouseEvent === 'click' && e.detail === 0) return; // keyboard activation of a button
@@ -56,8 +77,9 @@
     const found = site.fromMouse(e, mac);
     const suppress = !!document.fullscreenElement;
     // A site may need a moment to tell (Sheets' header drag) and answer later.
-    if (found && typeof found.then === 'function') found.then((later) => later && send({ type: 'qh-mouse', action: toAction(later), suppress }));
+    if (found && typeof found.then === 'function') found.then((later) => (later ? send({ type: 'qh-mouse', action: toAction(later), suppress }) : noteUnknown(e)));
     else if (found) send({ type: 'qh-mouse', action: toAction(found), suppress });
+    else noteUnknown(e);
   }
 
   // The keys actually pressed, so a cheer for play/pause shows Space when Space

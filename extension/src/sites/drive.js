@@ -174,5 +174,7 @@
     mouseEvent: 'mouseup', // Drive menus act on mouseup
     fromMouse,
     fromKey,
+    // Files, folders and the folder path hold the person's own names.
+    contentAreas: '[role="main"] [role="grid"], [role="main"] [role="heading"], [role="navigation"], [data-id]',
   });
 })();

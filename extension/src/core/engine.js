@@ -56,6 +56,7 @@
       todayKey: 0,
       actions: {},
       log: [],
+      unknown: {},
     };
   }
 
@@ -297,6 +298,8 @@
         .filter(knowsShortcut)
         .sort((x, y) => (y.learnedAt || y.firstKeyAt || 0) - (x.learnedAt || x.firstKeyAt || 0) || y.key - x.key),
       tracked: actions.filter((a) => a.mouse > 0 || a.key > 0 || a.introducedAt).sort((x, y) => y.mouse - x.mouse || y.key - x.key),
+      // Most clicked first.
+      unknown: Object.values(state.unknown || {}).sort((x, y) => y.count - x.count || (x.last < y.last ? 1 : -1)),
       // Newest first, so the one just muted by mistake is at the top.
       muted: actions.filter((a) => a.mutedAt).sort((x, y) => y.mutedAt - x.mutedAt),
       // Newest first, with the action's name and keys for display. "observing" was
@@ -310,9 +313,29 @@
     };
   }
 
+  // Buttons and menu items clicked that Quickhand didn't recognize, for the feedback
+  // form: the site, the button's name, how many times and the last day, nothing else.
+  // The most clicked ones are kept; a new one makes room by dropping the least clicked
+  // (the oldest among equals).
+  const UNKNOWN_MAX = 50;
+  function recordUnknown(state, site, label, now) {
+    const list = state.unknown || (state.unknown = {});
+    const key = site + '|' + label;
+    if (!list[key]) {
+      const keys = Object.keys(list);
+      if (keys.length >= UNKNOWN_MAX) {
+        const drop = keys.reduce((a, b) => (list[b].count < list[a].count || (list[b].count === list[a].count && list[b].last < list[a].last) ? b : a));
+        delete list[drop];
+      }
+      list[key] = { site, label, count: 0, last: '' };
+    }
+    list[key].count++;
+    list[key].last = dayKey(now);
+  }
+
   QH.engine = {
     STRENGTHS, RULES, dayKey, emptyState, rollDay, keyRatio,
-    recordKey, recordMouse, setMuted, summary,
+    recordKey, recordMouse, recordUnknown, setMuted, summary,
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = QH.engine;
 })(typeof globalThis !== 'undefined' ? globalThis : this);
