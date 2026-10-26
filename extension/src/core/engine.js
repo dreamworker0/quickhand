@@ -20,9 +20,9 @@
     window: 10, // recent uses kept per action
     learnMinUses: 10,
     learnRatio: 0.8,
-    knownRatio: 0.5, // used by keyboard before any hint: known while half of recent uses are keys
-    relapseRatio: 0.5,
-    relapseGapMs: DAY,
+    // Learned or known (used by keyboard before any hint): quiet only while the keyboard is
+    // more than half of recent uses; with the mouse half the time or more, hinted again.
+    quietRatio: 0.5,
     newWaitMs: 10 * 60 * 1000, // a first hint held back by the gap goes before repeats this long
     logSize: 10, // recent decisions kept for the popup
   };
@@ -117,9 +117,6 @@
     return k / a.recent.length;
   }
 
-  // Learned after a hint stays learned (a drift back to the mouse gets a daily
-  // reminder). A shortcut pressed before any hint only counts as known while the
-  // keyboard keeps up: one press of Space doesn't silence play/pause for good.
   // Keyboard uses still needed before a hinted shortcut counts as learned.
   function usesToLearn(a) {
     let recent = a.recent;
@@ -130,8 +127,11 @@
     return RULES.window;
   }
 
+  // Learned after a hint, or known from the keyboard before any hint: either keeps quiet
+  // only while the keyboard keeps up, so one press of Space doesn't silence play/pause
+  // for good and a shortcut forgotten since gets hinted again.
   function isLearned(a) {
-    return !!(a.learnedAt || (a.known && keyRatio(a) >= RULES.knownRatio));
+    return !!((a.learnedAt || a.known) && keyRatio(a) > RULES.quietRatio);
   }
 
   function isPaused(settings, now) {
@@ -223,15 +223,16 @@
     if (context && context.suppress) return skip('suppressed');
     if (isPaused(settings, now)) return skip('paused');
 
+    if (isLearned(a)) return skip('learned');
+    // Back to the mouse half the time or more after learning it: learning starts over,
+    // and the hint says so.
+    const relapsed = !!a.learnedAt;
+    a.learnedAt = 0;
+
     let kind;
-    if (isLearned(a)) {
-      // Back to the mouse after learning it: remind at most once a day.
-      if (a.recent.length < RULES.learnMinUses || keyRatio(a) >= RULES.relapseRatio) return skip('learned');
-      if (now - a.lastAlertAt < RULES.relapseGapMs) return skip('learned');
-      kind = 'reminder';
-    } else if (a.introducedAt) {
+    if (a.introducedAt) {
       if (now - a.lastAlertAt < strength.repeatMs) return skip('repeat-wait', { waitMs: a.lastAlertAt + strength.repeatMs - now });
-      kind = 'repeat';
+      kind = relapsed ? 'reminder' : 'repeat';
     } else {
       if (a.mouse < strength.threshold) return skip('below-threshold', { count: a.mouse, need: strength.threshold });
       if (state.newToday.length >= strength.dailyNew) {

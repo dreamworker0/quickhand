@@ -121,19 +121,23 @@ test('marks a shortcut learned once most recent uses are the keyboard', () => {
   assert.equal(engine.recordMouse(state, action('b'), settings({ strength: 'active' }), START + 2 * HOUR).reason, 'learned');
 });
 
-test('reminds once a day when someone drifts back to the mouse', () => {
+test('a learned shortcut done half the time by mouse again is hinted again, and learning starts over', () => {
   const state = engine.emptyState(START);
   const s = settings({ strength: 'active' });
   engine.recordMouse(state, action('b'), s, START);
   for (let i = 0; i < 10; i++) engine.recordKey(state, action('b'), START + MIN);
   assert.ok(state.actions.b.learnedAt);
-  let reminder;
-  for (let i = 0; i < 6 && !reminder; i++) {
-    const r = engine.recordMouse(state, action('b'), s, START + 25 * HOUR + i * MIN);
-    if (r.show) reminder = r;
-  }
-  assert.equal(reminder.kind, 'reminder');
-  assert.equal(engine.recordMouse(state, action('b'), s, START + 26 * HOUR).show, false);
+  // Keyboard still more than half of the last 10: quiet.
+  for (let i = 0; i < 4; i++) assert.equal(engine.recordMouse(state, action('b'), s, START + 2 * MIN).reason, 'learned');
+  // The 5th mouse use makes it half and half: hinted again, the same day.
+  const r = engine.recordMouse(state, action('b'), s, START + 3 * MIN);
+  assert.equal(r.show, true);
+  assert.equal(r.kind, 'reminder');
+  assert.equal(state.actions.b.learnedAt, 0);
+  // Back on the keyboard, it is learned again (with its card).
+  let again = false;
+  for (let i = 0; i < 10 && !again; i++) again = engine.recordKey(state, action('b'), START + 4 * MIN).learnedNow;
+  assert.equal(again, true);
 });
 
 test('skips shortcuts the person already uses by keyboard', () => {
@@ -147,9 +151,10 @@ test('a key pressed before any hint stops counting once the mouse takes over', (
   const state = engine.emptyState(START);
   const s = settings();
   engine.recordKey(state, action('k'), START);
-  // Half of the recent uses are still the keyboard: known, no hint.
+  engine.recordKey(state, action('k'), START);
+  // The keyboard is still more than half of the recent uses: known, no hint.
   assert.equal(engine.recordMouse(state, action('k'), s, START).reason, 'learned');
-  // Mostly the mouse now: hinted like any new shortcut, from the 3rd mouse use.
+  // Half by mouse now: hinted like any new shortcut, from the 3rd mouse use.
   assert.equal(engine.recordMouse(state, action('k'), s, START).reason, 'below-threshold');
   const r = engine.recordMouse(state, action('k'), s, START);
   assert.equal(r.show, true);
@@ -290,7 +295,7 @@ test('a waiting new shortcut that gets muted or pressed by key stops holding bac
   const s = settings({ strength: 'everyMinute' });
   for (const settle of [
     (state) => engine.setMuted(state, 't', true, START + 20 * 1000),
-    (state) => engine.recordKey(state, action('t'), START + 20 * 1000),
+    (state) => { engine.recordKey(state, action('t'), START + 20 * 1000); engine.recordKey(state, action('t'), START + 21 * 1000); },
   ]) {
     const state = engine.emptyState(START);
     engine.recordMouse(state, action('k'), s, START);
