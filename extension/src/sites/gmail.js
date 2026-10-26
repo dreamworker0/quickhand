@@ -179,6 +179,9 @@
       const found = describe(control, mac);
       if (found) {
         detected.set(found.id, found.label);
+        // In the list the key alone does nothing: the conversation is ticked with x first.
+        const name = found.id.slice('gmail:'.length);
+        if (ON_CONVERSATIONS.has(name) && !isOpen()) found.combos = [K.sequence(key('x'), ACTIONS[name].combo)];
         return found;
       }
       control = control.parentElement ? control.parentElement.closest(CONTROL) : null;
@@ -188,10 +191,21 @@
 
   // Keys that change conversations do nothing in the list until one is ticked
   // (Gmail says "No conversations selected"); in an open conversation they act on it.
-  const ON_CONVERSATIONS = new Set(['archive', 'spam', 'remove', 'read', 'unread', 'snooze', 'tasks', 'move', 'label', 'mute', 'important', 'notImportant', 'archiveNewer', 'archiveOlder']);
-  function hasConversation() {
-    if (/\/[A-Za-z0-9]{16,}$/.test(location.hash)) return true; // "#inbox/FMfcgz…"
-    return [...document.querySelectorAll('tr.zA [role="checkbox"][aria-checked="true"]')].some((box) => box.getClientRects().length);
+  // Checked key by key in a real Gmail (checks/gmail-prereq.mjs).
+  const ON_CONVERSATIONS = new Set(['archive', 'spam', 'remove', 'read', 'unread', 'snooze', 'tasks', 'move', 'label', 'mute', 'important', 'notImportant']);
+  // Keys that only work inside an open conversation; in the list they do nothing.
+  const IN_CONVERSATION = new Set(['reply', 'replyAll', 'forward', 'replyWindow', 'replyAllWindow', 'forwardWindow', 'nextMessage', 'prevMessage',
+    'expandAll', 'collapseAll', 'unreadFrom', 'refresh', 'back', 'archiveNewer', 'archiveOlder']);
+  const visible = (el) => el.getClientRects().length > 0;
+  const isOpen = () => /\/[A-Za-z0-9]{16,}$/.test(location.hash); // "#inbox/FMfcgz…"
+  const ticked = () => [...document.querySelectorAll('tr.zA [role="checkbox"][aria-checked="true"]')].some(visible);
+  // z only undoes while Gmail offers it ("대화가 보관처리되었습니다. 실행취소").
+  const undoOffered = () => [...document.querySelectorAll('.bAq, .vh, [role="alert"]')].some((el) => visible(el) && /실행취소|Undo/.test(el.textContent || ''));
+  function works(name) {
+    if (ON_CONVERSATIONS.has(name)) return isOpen() || ticked();
+    if (IN_CONVERSATION.has(name)) return isOpen();
+    if (name === 'undo') return undoOffered();
+    return true;
   }
 
   // "g then i" (go to) and "* then a" (select).
@@ -205,7 +219,7 @@
     c = nextKey(c, Date.now());
     if (!c) return null;
     const id = K.toId(c);
-    if (byCombo[id]) return ON_CONVERSATIONS.has(byCombo[id]) && !hasConversation() ? null : action(byCombo[id]);
+    if (byCombo[id]) return works(byCombo[id]) ? action(byCombo[id]) : null;
     // Enter opens the conversation under the list cursor, which is not a focus: the
     // key then goes to the page itself. On a focused button it just presses it.
     if (id === 'enter' && e.target instanceof Element && (e.target.closest('tr.zA') || e.target.tagName === 'BODY')) return action('open');

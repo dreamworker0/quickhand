@@ -67,6 +67,16 @@
 
   // The full event page ("일정 세부정보"), where Esc goes back to the grid.
   const onEventPage = () => /\/eventedit\b/.test(location.pathname);
+  // An event's details window (or any other window) over the grid.
+  const windowOpen = () => [...document.querySelectorAll('[role="dialog"]')].some((d) => d.getClientRects().length > 0);
+  // Checked in a real Calendar (checks/calendar-prereq.mjs): with an event's window open
+  // the grid keys do nothing; on the event page moving between periods does nothing.
+  const GRID = new Set(['today', 'next', 'prev', 'day', 'week', 'month', 'year', 'schedule', 'custom', 'create', 'allDay']);
+  function works(name) {
+    if (name === 'edit' || name === 'remove') return windowOpen();
+    if (GRID.has(name)) return !windowOpen() && !(onEventPage() && name !== 'create');
+    return true;
+  }
 
   function action(name) {
     const a = ACTIONS[name];
@@ -108,7 +118,7 @@
     if (K.isTextEntry(e, mac)) return null;
     const c = K.fromEvent(e, mac);
     const id = K.toId(c);
-    if (id === 'mod+s' || (id === 'mod+enter' && onEventPage())) return action('save'); // works while editing an event
+    if ((id === 'mod+s' || id === 'mod+enter') && onEventPage()) return action('save'); // only while editing an event
     // Esc leaves the full event page for the grid, even from its title box.
     // Not on the page's own X ("일정 변경 취소") button, which has the focus right after
     // the page opens: Calendar ignores Esc there.
@@ -124,7 +134,7 @@
     if (c.key === '+' && !e.ctrlKey && !e.metaKey && !e.altKey) return action('people');
     if (e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) return null;
     const name = BY_KEY[c.key];
-    return name ? action(name) : null;
+    return name && works(name) ? action(name) : null;
   }
 
   (QH.sites = QH.sites || []).push({

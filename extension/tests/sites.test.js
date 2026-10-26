@@ -310,6 +310,19 @@ test('Sheets: Shift+Space counts as row select only when a whole row ends up sel
   assert.equal(site.fromKey(event('Space', ' ', { ctrlKey: true }), false).id, 'sheets:mod+space');
 });
 
+test('Sheets: Shift+Space with a range selected selects all of its rows, and counts', async () => {
+  const { site, ctx } = siteEnv('sheets');
+  let nameBox = 'B2:C4';
+  let next = '2:4';
+  ctx.setTimeout = (fn) => { nameBox = next; fn(); }; // Sheets changes the box in the meantime
+  ctx.document.querySelector = (sel) => (sel.includes('name-box') ? { value: nameBox } : null);
+  assert.equal((await site.fromKey(event('Space', ' ', { shiftKey: true }), false)).id, 'sheets:shift+space');
+  // A range left as it was (the space went into a cell) does not count.
+  nameBox = 'B2:C4';
+  next = 'B2:C4';
+  assert.equal(await site.fromKey(event('Space', ' ', { shiftKey: true }), false), null);
+});
+
 test('Sheets on Mac: the column header and the key are both Control+Space', () => {
   const { click, site } = sheetsWithHeaders('MacIntel');
   const clicked = click(300, 150);
@@ -330,8 +343,14 @@ class In extends Element {
   matches() { return false; }
 }
 
+// A video with chapters: the progress bar is cut into several parts.
+const withChapters = (ctx) => {
+  ctx.document.querySelectorAll = (sel) => (sel.includes('ytp-chapter-hover-container') ? [{}, {}, {}] : []);
+};
+
 test('YouTube: chapter, frame, start/end, volume and number keys are counted', () => {
-  const { site } = siteEnv('youtube');
+  const { site, ctx } = siteEnv('youtube');
+  withChapters(ctx);
   const inPlayer = new In('#movie_player');
   const id = (code, key, patch) => { const r = site.fromKey(event(code, key, patch), false); return r && r.id; };
   assert.equal(id('ArrowRight', 'ArrowRight', { ctrlKey: true }), 'yt:chapter');
@@ -353,6 +372,29 @@ test('YouTube: chapter, frame, start/end, volume and number keys are counted', (
   assert.equal(id('Space', ' '), 'yt:playpause');
 });
 
+test('YouTube: keys count only where the video allows them', () => {
+  const { site, ctx } = siteEnv('youtube');
+  const id = (code, key, patch) => { const r = site.fromKey(event(code, key, patch), false); return r && r.id; };
+  const page = (parts) => { ctx.document.querySelectorAll = (sel) => parts[Object.keys(parts).find((k) => sel.includes(k))] || []; };
+  const video = (paused) => ({ paused });
+  const cc = (title) => ({ getAttribute: (n) => (n === 'data-title-no-tooltip' ? title : null) });
+  // No chapters, playing, captions unavailable, not a playlist: none of these do anything.
+  page({ 'ytp-chapter-hover-container': [{}], video: [video(false)], 'ytp-subtitles-button': [cc('자막 사용 불가')] });
+  assert.equal(id('ArrowRight', 'ArrowRight', { ctrlKey: true }), null);
+  assert.equal(id('Period', '.'), null);
+  assert.equal(id('Comma', ','), null);
+  assert.equal(id('KeyC', 'c'), null);
+  assert.equal(id('KeyP', 'P', { shiftKey: true }), null);
+  assert.equal(id('KeyN', 'N', { shiftKey: true }), 'yt:next'); // the next video, playlist or not
+  // Chapters, paused, captions, a playlist.
+  page({ 'ytp-chapter-hover-container': [{}, {}], video: [video(true)], 'ytp-subtitles-button': [cc('자막')] });
+  ctx.location.search = '?v=abc&list=PL123';
+  assert.equal(id('ArrowRight', 'ArrowRight', { ctrlKey: true }), 'yt:chapter');
+  assert.equal(id('Period', '.'), 'yt:frame');
+  assert.equal(id('KeyC', 'c'), 'yt:captions');
+  assert.equal(id('KeyP', 'P', { shiftKey: true }), 'yt:prev');
+});
+
 test('YouTube: Home/End and ↑/↓ outside the player scroll the page, so they are not counted', () => {
   const { site } = siteEnv('youtube');
   const id = (code, key, target) => { const r = site.fromKey(event(code, key, { target }), false); return r && r.id; };
@@ -365,6 +407,7 @@ test('YouTube: Home/End and ↑/↓ outside the player scroll the page, so they 
 
 test('YouTube on Mac: chapters are Option+←/→', () => {
   const { site, ctx } = siteEnv('youtube');
+  withChapters(ctx);
   ctx.navigator.platform = 'MacIntel';
   assert.equal(site.fromKey(event('ArrowRight', 'ArrowRight', { altKey: true }), true).id, 'yt:chapter');
   assert.equal(site.fromKey(event('ArrowRight', 'ArrowRight', { ctrlKey: true }), true), null);
@@ -399,12 +442,51 @@ test('Gmail: keys that change conversations count only when one is open or ticke
   assert.equal(id('KeyE', 'e'), null);
 });
 
+test('Gmail: reply, message and conversation-view keys count only in an open conversation', () => {
+  const { site, ctx } = siteEnv('gmail');
+  const id = (code, key, patch) => { const r = site.fromKey(event(code, key, patch), false); return r && r.id; };
+  const shift = { shiftKey: true };
+  const keys = [['KeyR', 'r', 'reply'], ['KeyA', 'a', 'replyAll'], ['KeyF', 'f', 'forward'], ['KeyR', 'R', 'replyWindow', shift],
+    ['KeyN', 'n', 'nextMessage'], ['KeyP', 'p', 'prevMessage'], ['Semicolon', ';', 'expandAll'], ['Semicolon', ':', 'collapseAll', shift],
+    ['Minus', '_', 'unreadFrom', shift], ['KeyN', 'N', 'refresh', shift], ['KeyU', 'u', 'back'], ['BracketLeft', '[', 'archiveNewer'], ['BracketRight', ']', 'archiveOlder']];
+  // In the list these do nothing, even with a conversation ticked.
+  const box = { getClientRects: () => [{}] };
+  ctx.document.querySelectorAll = (sel) => (sel.includes('aria-checked="true"') ? [box] : []);
+  for (const [code, key, , mods] of keys) assert.equal(id(code, key, mods), null, key);
+  assert.equal(id('KeyJ', 'j'), 'gmail:older'); // the list cursor moves
+  assert.equal(id('KeyO', 'o'), 'gmail:open');
+  ctx.location.hash = '#inbox/FMfcgzQXJWDsKlmBhQZHJTrzvNZsxwlL';
+  for (const [code, key, name, mods] of keys) assert.equal(id(code, key, mods), 'gmail:' + name, key);
+});
+
+test('Gmail: z counts only while Gmail offers to undo', () => {
+  const { site, ctx } = siteEnv('gmail');
+  const id = () => { const r = site.fromKey(event('KeyZ', 'z'), false); return r && r.id; };
+  assert.equal(id(), null);
+  const toast = (text, shown) => ({ textContent: text, getClientRects: () => (shown ? [{}] : []) });
+  ctx.document.querySelectorAll = (sel) => (sel.includes('.bAq') ? [toast('대화가 보관처리되었습니다. 실행취소', false)] : []);
+  assert.equal(id(), null); // an old notice, hidden
+  ctx.document.querySelectorAll = (sel) => (sel.includes('.bAq') ? [toast('대화가 보관처리되었습니다. 실행취소', true)] : []);
+  assert.equal(id(), 'gmail:undo');
+});
+
+test('Gmail: a toolbar click in the list hints x then the key; in an open conversation the key alone', () => {
+  const { site, ctx } = siteEnv('gmail');
+  const archive = () => site.fromMouse({ target: new Element({ control: true, act: '7' }) }, false);
+  const shown = (r) => JSON.parse(JSON.stringify(r.combos.map((c) => ctx.QH.keys.display(c, false))));
+  assert.deepEqual(shown(archive()), [['X', '→', 'E']]);
+  assert.equal(archive().id, 'gmail:archive');
+  ctx.location.hash = '#inbox/FMfcgzQXJWDsKlmBhQZHJTrzvNZsxwlL';
+  assert.deepEqual(shown(archive()), [['E']]);
+});
+
 test("Gmail: every key on Gmail's help page that changes something is counted", () => {
   const { site, ctx } = siteEnv('gmail');
   const id = (code, key, patch) => { const r = site.fromKey(event(code, key, patch), false); return r && r.id; };
   const shift = { shiftKey: true };
   const ctrl = { ctrlKey: true };
   const ctrlShift = { ctrlKey: true, shiftKey: true };
+  ctx.location.hash = '#inbox/FMfcgzQXJWDsKlmBhQZHJTrzvNZsxwlL'; // an open conversation, where every key works
   assert.equal(id('KeyN', 'n'), 'gmail:nextMessage');
   assert.equal(id('KeyP', 'p'), 'gmail:prevMessage');
   assert.equal(id('KeyO', 'o'), 'gmail:open');
@@ -412,10 +494,8 @@ test("Gmail: every key on Gmail's help page that changes something is counted", 
   const body = new Element(); body.tagName = 'BODY';
   assert.equal(id('Enter', 'Enter', { target: body }), 'gmail:open'); // the list cursor is not a focus
   assert.equal(id('Enter', 'Enter'), null); // Enter on a button just presses it
-  ctx.location.hash = '#inbox/FMfcgzQXJWDsKlmBhQZHJTrzvNZsxwlL'; // an open conversation
   assert.equal(id('BracketRight', ']'), 'gmail:archiveOlder');
   assert.equal(id('BracketLeft', '['), 'gmail:archiveNewer');
-  ctx.location.hash = '#inbox';
   assert.equal(id('Comma', ','), 'gmail:toolbar');
   assert.equal(id('Backquote', '`'), 'gmail:nextSection');
   assert.equal(id('Backquote', '~', shift), 'gmail:prevSection');
@@ -496,6 +576,22 @@ test('Docs: Ctrl+Alt+Shift+A alone is comment history, answered once no second k
   const later = site.fromKey(event('KeyA', 'A', { ctrlKey: true, altKey: true, shiftKey: true }), false);
   assert.equal(typeof later.then, 'function');
   assert.equal((await later).id, 'docs:mod+alt+shift+a');
+});
+
+test('Docs: copy and cut count only with text selected', () => {
+  const { site } = siteEnv('docs');
+  // Keys come from Docs' typing frame, which holds the selected text (a space) or nothing.
+  const typing = (selected) => {
+    const target = new Element({ typing: true });
+    target.ownerDocument = { getSelection: () => ({ toString: () => selected }) };
+    return target;
+  };
+  const id = (code, key, target) => { const r = site.fromKey(event(code, key, { ctrlKey: true, target }), false); return r && r.id; };
+  assert.equal(id('KeyC', 'c', typing('')), null);
+  assert.equal(id('KeyX', 'x', typing('')), null);
+  assert.equal(id('KeyB', 'b', typing('')), 'docs:mod+b'); // bold applies to what is typed next
+  assert.equal(id('KeyC', 'c', typing(' ')), 'docs:mod+c');
+  assert.equal(id('KeyX', 'x', typing(' ')), 'docs:mod+x');
 });
 
 test('Docs: R, J, K, E, U count only while a comment (not its text box) is selected', () => {

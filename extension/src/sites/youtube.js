@@ -90,6 +90,26 @@
     return location.pathname.startsWith('/shorts/');
   }
 
+  // Measured on real videos (checks/youtube-prereq.mjs): these keys do nothing unless the
+  // video allows them, so they count only then.
+  const first = (sel) => document.querySelectorAll(sel)[0] || null;
+  const paused = () => { const v = first('#movie_player video'); return !v || v.paused; }; // frame steps
+  const hasChapters = () => document.querySelectorAll('.ytp-chapters-container .ytp-chapter-hover-container').length > 1;
+  // Without captions the button stays, named "자막 사용 불가" / "… unavailable".
+  function hasCaptions() {
+    const b = first('.ytp-subtitles-button');
+    return !!b && !/사용 불가|unavailable/i.test(b.getAttribute('data-title-no-tooltip') || b.getAttribute('data-tooltip-title') || '');
+  }
+  const inPlaylist = () => /[?&]list=/.test(location.search || ''); // Shift+P goes back only in a playlist
+  function works(name) {
+    if (name === 'captions') return hasCaptions();
+    if (name === 'chapter') return hasChapters();
+    if (name === 'frame') return paused();
+    if (name === 'prev') return inPlaylist();
+    return true;
+  }
+  const act = (name) => (works(name) ? action(name) : null);
+
   function fromShortsMouse(el) {
     for (const [sel, name] of SHORTS_BUTTONS) if (el.closest(sel)) return action(name);
     // Clicking the video itself pauses and resumes it.
@@ -111,8 +131,8 @@
     const button = el.closest('button, .ytp-button');
     if (button) {
       const aria = (button.getAttribute('aria-keyshortcuts') || '').toLowerCase();
-      if (ARIA_KEYS[aria]) return action(ARIA_KEYS[aria]);
-      for (const [cls, name] of BUTTONS) if (button.closest('.' + cls)) return action(name);
+      if (ARIA_KEYS[aria]) return act(ARIA_KEYS[aria]);
+      for (const [cls, name] of BUTTONS) if (button.closest('.' + cls)) return act(name);
       return null;
     }
     // Moving along the timeline is what J/L do in 10-second steps.
@@ -138,16 +158,16 @@
     const k = QH.keys.fromEvent(e, mac).key;
     // Chapters: Ctrl+←/→, on Mac Option+←/→.
     const chapterMod = mac ? e.altKey && !e.ctrlKey && !e.metaKey : e.ctrlKey && !e.altKey && !e.metaKey;
-    if (onWatchPage() && chapterMod && !e.shiftKey && (k === 'arrowleft' || k === 'arrowright')) return action('chapter');
+    if (onWatchPage() && chapterMod && !e.shiftKey && (k === 'arrowleft' || k === 'arrowright')) return act('chapter');
     if (e.ctrlKey || e.metaKey || e.altKey) return null;
     if (k === '/' && !e.shiftKey) return action('search');
     if (onShortsPage()) return !e.shiftKey && SHORTS_KEYS[k] ? action(SHORTS_KEYS[k]) : null;
     if (!onWatchPage()) return null;
-    if (e.shiftKey) return SHIFT_KEYS[k] ? action(SHIFT_KEYS[k]) : null;
+    if (e.shiftKey) return SHIFT_KEYS[k] ? act(SHIFT_KEYS[k]) : null;
     if (PLAYER_KEYS[k]) return inPlayer(e, k) ? action(PLAYER_KEYS[k]) : null;
-    if (k === '.' || k === ',') return action('frame');
+    if (k === '.' || k === ',') return act('frame');
     if (/^[0-9]$/.test(k)) return action('jump');
-    return KEYS[k] ? action(KEYS[k]) : null;
+    return KEYS[k] ? act(KEYS[k]) : null;
   }
 
   function missing() {

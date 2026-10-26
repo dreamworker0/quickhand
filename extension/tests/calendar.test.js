@@ -5,22 +5,48 @@ const { siteEnv, Element, event } = require('./helpers/browser-env.cjs');
 const press = (site, code, key, patch, mac = false) => site.fromKey(event(code, key, patch), mac)?.id ?? null;
 
 test('Calendar: every help-page shortcut is counted', () => {
-  const { site } = siteEnv('calendar');
+  const { site, ctx } = siteEnv('calendar');
   const keys = [
     ['KeyJ', 'j', 'next'], ['KeyN', 'n', 'next'], ['KeyT', 't', 'today'],
     ['Slash', '/', 'search'], ['KeyS', 's', 'settings'], ['KeyG', 'g', 'goto'],
     ['Digit1', '1', 'day'], ['KeyD', 'd', 'day'], ['Digit2', '2', 'week'], ['KeyW', 'w', 'week'],
     ['Digit3', '3', 'month'], ['KeyM', 'm', 'month'], ['Digit4', '4', 'custom'], ['KeyX', 'x', 'custom'],
     ['Digit5', '5', 'schedule'], ['KeyA', 'a', 'schedule'],
-    ['KeyC', 'c', 'create'], ['KeyE', 'e', 'edit'], ['Backspace', 'Backspace', 'remove'], ['Delete', 'Delete', 'remove'], ['KeyZ', 'z', 'undo'],
+    ['KeyC', 'c', 'create'], ['KeyZ', 'z', 'undo'],
   ];
   for (const [code, key, id] of keys) assert.equal(press(site, code, key), 'calendar:' + id, code);
+  // e and Delete act on the event whose window is open.
+  ctx.document.querySelectorAll = (sel) => (sel === '[role="dialog"]' ? [{ getClientRects: () => [{}] }] : []);
+  for (const [code, key, id] of [['KeyE', 'e', 'edit'], ['Backspace', 'Backspace', 'remove'], ['Delete', 'Delete', 'remove']]) assert.equal(press(site, code, key), 'calendar:' + id, code);
+  ctx.document.querySelectorAll = () => [];
   assert.equal(press(site, 'Equal', '+', { shiftKey: true }), 'calendar:people');
   assert.equal(press(site, 'NumpadAdd', '+'), 'calendar:people');
   assert.equal(press(site, 'Slash', '?', { shiftKey: true }), 'calendar:help');
+  assert.equal(press(site, 'KeyS', 's', { ctrlKey: true }), null); // nothing to save on the grid
+  ctx.location.pathname = '/calendar/u/0/r/eventedit/abc123';
   assert.equal(press(site, 'KeyS', 's', { ctrlKey: true }), 'calendar:save');
+  ctx.location.pathname = '/calendar/u/0/r/week';
   assert.equal(press(site, 'Period', '.', { ctrlKey: true, altKey: true }), 'calendar:sidePanel');
   assert.equal(press(site, 'Comma', ',', { ctrlKey: true, altKey: true }), 'calendar:sidePanel');
+});
+
+test('Calendar: keys count only where Calendar acts on them', () => {
+  const { site, ctx } = siteEnv('calendar');
+  const open = (shown) => { ctx.document.querySelectorAll = (sel) => (sel === '[role="dialog"]' ? [{ getClientRects: () => (shown ? [{}] : []) }] : []); };
+  // No event window: e and Delete have nothing to act on.
+  open(false);
+  assert.equal(press(site, 'KeyE', 'e'), null);
+  assert.equal(press(site, 'Delete', 'Delete'), null);
+  assert.equal(press(site, 'KeyJ', 'j'), 'calendar:next');
+  // An event's window open: the grid keys do nothing.
+  open(true);
+  for (const [code, key] of [['KeyJ', 'j'], ['KeyK', 'k'], ['KeyT', 't'], ['KeyC', 'c'], ['KeyW', 'w'], ['Digit3', '3']]) assert.equal(press(site, code, key), null, key);
+  assert.equal(press(site, 'KeyE', 'e'), 'calendar:edit');
+  // The event page: moving between periods does nothing; c starts another event.
+  open(false);
+  ctx.location.pathname = '/calendar/u/0/r/eventedit/abc123';
+  assert.equal(press(site, 'KeyJ', 'j'), null);
+  assert.equal(press(site, 'KeyC', 'c'), 'calendar:create');
 });
 
 test('Calendar: keys from its own ? list that the help page leaves out', () => {
@@ -41,7 +67,8 @@ test('Calendar: keys from its own ? list that the help page leaves out', () => {
 });
 
 test('Calendar: Mac uses Command for save and Command+Option for the side panel', () => {
-  const { site } = siteEnv('calendar');
+  const { site, ctx } = siteEnv('calendar');
+  ctx.location.pathname = '/calendar/u/0/r/eventedit/abc123';
   assert.equal(press(site, 'KeyS', 's', { metaKey: true }, true), 'calendar:save');
   assert.equal(press(site, 'Period', '≥', { metaKey: true, altKey: true }, true), 'calendar:sidePanel');
   assert.equal(press(site, 'KeyS', 's', { ctrlKey: true }, true), null);

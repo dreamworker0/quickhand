@@ -690,10 +690,15 @@
   // what was done before, so look at the result instead: a moment later the name
   // box shows a whole row ("3:3"), or the row's filled part ("A3:C3") inside data,
   // only if the row was selected.
+  // Shift+Space selects the rows of the cell or range: one row ("2:2"), or with a range
+  // selected all of its rows ("2:4", measured in checks/editors-prereq.mjs). The box must
+  // change, so a range left as it was (Shift+Space typed into a cell) does not count.
   function rowSelected() {
+    const before = nameBox();
     return new Promise((resolve) => setTimeout(() => {
-      const m = /^[A-Z]*(\d+):[A-Z]*(\d+)$/.exec(nameBox());
-      resolve(!!m && m[1] === m[2]);
+      const after = nameBox();
+      const m = /^[A-Z]*(\d+):[A-Z]*(\d+)$/.exec(after);
+      resolve(!!m && (m[1] === m[2] || after !== before));
     }, 200));
   }
 
@@ -763,6 +768,14 @@
     }, SEQUENCE_MS));
   }
 
+  // Docs keeps the selected text in its typing frame (a space stands for it); with only a
+  // caret the frame is empty and copy or cut does nothing (checks/editors-prereq.mjs).
+  function nothingSelected(e) {
+    const doc = e.target && e.target.ownerDocument;
+    if (!doc || doc === document || !doc.getSelection) return false;
+    return doc.getSelection().toString() === '';
+  }
+
   function fromKey(app, e, mac) {
     if (K.isModifierOnly(e) || K.isTextEntry(e, mac)) return null;
     const combo = K.fromEvent(e, mac);
@@ -791,6 +804,7 @@
       e.target instanceof Element && !!e.target.closest('.docos-anchoreddocoview, .docos-docoview-active');
     if (!(K.hasModifier(combo) || fnKey || commentKey || (app.plainKeys && app.plainKeys.includes(id)))) return null;
     if (app.keyAlias && app.keyAlias[id]) id = app.keyAlias[id];
+    if (app.id === 'docs' && (id === 'mod+c' || id === 'mod+x') && nothingSelected(e)) return null;
     const seen = detected.get(app.id + ':' + id);
     const name = seen || QH.names.pick(app.names[id] || COMMON_NAMES[id]);
     if (!name) return null;
