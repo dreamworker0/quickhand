@@ -128,6 +128,20 @@
   // "Make a copy" is Ctrl+C then Ctrl+V; copy stays a copy on its own.
   let lastCopyAt = 0;
 
+  // Measured in a real Drive (checks/drive-prereq.mjs): these act on the selected items and
+  // do nothing with none selected; rename and the item menu also take the focused one
+  // (still focused after Esc clears the selection).
+  const ON_SELECTED = new Set(['mod+enter', 'mod+alt+a', 'mod+alt+m', 'mod+alt+s', 'mod+alt+r', 'mod+alt+l', 'mod+alt+p', 'delete', 'mod+x', 'mod+c', 'mod+shift+c', 'alt+a']);
+  const ON_FOCUSED = new Set(['f2', 'mod+alt+e', 'shift+f10']);
+  const ITEM = '[role="row"][data-id], [role="gridcell"][data-id]';
+  const anySelected = () => [...document.querySelectorAll('[role="row"][data-id][aria-selected="true"], [role="gridcell"][data-id][aria-selected="true"]')]
+    .some((el) => el.getClientRects().length > 0);
+  function works(id, e) {
+    if (ON_SELECTED.has(id)) return anySelected();
+    if (ON_FOCUSED.has(id)) return anySelected() || (e.target instanceof Element && !!e.target.closest(ITEM));
+    return true;
+  }
+
   function fromKey(e, mac) {
     if (K.isModifierOnly(e)) return null;
     if (K.isTextEntry(e, mac)) { nextKey.reset(); lastCopyAt = 0; return null; }
@@ -147,6 +161,7 @@
       if (c.then) c.then.alt = c.then.ctrl = false; // the modifier may still be held for the second key
     }
     const id = K.toId(c);
+    if (!typing && !works(id, e)) return null;
     const seen = detected.get('drive:' + id);
     const name = seen || nameFor(id);
     if (name) return { id: 'drive:' + id, label: name, fallbackLabel: !seen, combos: [c] };

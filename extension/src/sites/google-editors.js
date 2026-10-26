@@ -272,7 +272,6 @@
         'mod+alt+,': ['측면 패널로 이동', 'Move to the side panel'],
         'mod+alt+shift+m': ['스프레드시트 밖으로 이동', 'Move focus out of the spreadsheet'],
         'alt+shift+q': ['빠른 요약으로 이동', 'Move to quick sum'],
-        'mod+alt+r': ['필터 메뉴 열기', 'Open the filter menu'],
         'shift+escape': ['그림 편집기 닫기', 'Close the drawing editor'],
         'mod+alt+m': ['댓글 넣기', 'Insert comment'],
         'alt+f': ['파일 메뉴', 'File menu'],
@@ -521,7 +520,7 @@
   // Sheets: a plain click on a column letter selects the column (Ctrl+Space, on
   // Mac Control+Space), on a row number the row (Shift+Space). Where the press
   // landed is taken at mousedown, with the name box as it was then; the top-left
-  // corner, where both strips meet, selects everything instead. A drag or a
+  // corner, where both strips meet, selects everything (Ctrl+A). A drag or a
   // Shift+click along the header may select several (see severalLines).
   let pressedHeader = null;
   // A press in the cell grid, for telling a drag that selects a range (see sheetRange).
@@ -545,14 +544,20 @@
     );
   }
 
+  // 'column' or 'row' on a header strip; 'all' on the corner button where the two strips
+  // meet (above row 1, left of A), which selects the whole sheet like Ctrl+A.
   function headerAt(x, y) {
-    const hit = (sel) => [...document.querySelectorAll(sel)].some((el) => {
-      const r = el.getBoundingClientRect();
-      return r.width > 0 && r.height > 0 && x >= r.left && x < r.right && y >= r.top && y < r.bottom;
-    });
-    const column = hit('.column-headers-background');
-    const row = hit('.row-headers-background');
-    return column === row ? null : column ? 'column' : 'row';
+    const strips = (sel) => [...document.querySelectorAll(sel)].map((el) => el.getBoundingClientRect()).filter((r) => r.width > 0 && r.height > 0);
+    const columns = strips('.column-headers-background');
+    const rows = strips('.row-headers-background');
+    const inside = (r) => x >= r.left && x < r.right && y >= r.top && y < r.bottom;
+    const column = columns.some(inside);
+    const row = rows.some(inside);
+    // The strips overlap in the corner on the page; where they don't, the corner is still
+    // where the numbers' column meets the letters' row.
+    const corner = (column && row) || (!column && !row && rows.some((r) => x >= r.left && x < r.right) && columns.some((r) => y >= r.top && y < r.bottom));
+    if (corner) return 'all';
+    return column ? 'column' : row ? 'row' : null;
   }
 
   function nameBox() {
@@ -582,8 +587,12 @@
     if (app.id !== 'sheets' || !pressedHeader || !pressedHeader.kind) return null;
     const { kind, x, y, box } = pressedHeader;
     pressedHeader = null;
+    if (kind === 'all') return found(app, K.combo('a', { mod: true }));
     const dragged = Math.abs(e.clientX - x) > 4 || Math.abs(e.clientY - y) > 4;
-    if (!dragged && !e.shiftKey) return found(app, lineSelect(kind, mac));
+    if (!dragged && !e.shiftKey) {
+      headerPick = { kind, at: Date.now() };
+      return found(app, lineSelect(kind, mac));
+    }
     return severalLines(app, kind, box, mac);
   }
 
@@ -641,19 +650,27 @@
   }
 
   // The keyboard way of a range drag: Shift+arrow, or Ctrl+Shift+arrow to the
-  // data's edge. Counted once per range, when the name box then shows one;
-  // in a cell being edited it selects text instead and the box stays one cell.
-  // A range shrunk back to one cell is over: the next press starts a new one
-  // (Shift+→ then Shift+← twice selects to the left). Shift+arrow and
-  // Ctrl+Shift+arrow are two shortcuts, so each counts once in the same range.
-  let rangeCounted = {}; // { step, edge } already counted in this range
+  // data's edge, or Shift+PageUp/Down a screen at a time (Shift+Home/End and
+  // Ctrl+Shift+Home/End leave the selection as it is in Sheets, measured in
+  // checks/sheets-scenarios.mjs). Counted once per range, when
+  // the name box then shows one; in a cell being edited they select text instead
+  // and the box stays one cell. A range shrunk back to one cell is over: the next
+  // press starts a new one (Shift+→ then Shift+← twice selects to the left). Each
+  // of these is its own shortcut, so each counts once in the same range.
+  let rangeCounted = {}; // the kinds of key already counted in this range
   const ARROWS = ['arrowup', 'arrowdown', 'arrowleft', 'arrowright'];
+  function rangeKind(combo) {
+    if (!combo.shift || combo.alt || combo.ctrl) return null;
+    if (ARROWS.includes(combo.key)) return combo.mod ? 'edge' : 'step';
+    if ((combo.key === 'pageup' || combo.key === 'pagedown') && !combo.mod) return 'page';
+    return null;
+  }
   function rangeKey(app, combo) {
-    if (!(combo.shift && ARROWS.includes(combo.key) && !combo.alt && !combo.ctrl)) {
+    const kind = rangeKind(combo);
+    if (!kind) {
       rangeCounted = {};
       return undefined;
     }
-    const kind = combo.mod ? 'edge' : 'step';
     if (rangeCounted[kind]) {
       return new Promise((resolve) => setTimeout(() => {
         if (!cellRange(nameBox())) rangeCounted = {};
@@ -669,13 +686,14 @@
   }
 
   // The keyboard way: Ctrl+Space (rows: Shift+Space), then Shift+→/← (↓/↑) soon
-  // after. Only the first widening step counts, not each further press.
+  // after, or Ctrl+Shift+arrow to the data's edge. Only the first widening step
+  // counts, not each further press.
   let lineSelected = null; // { kind, at }
   const WIDEN_MS = 5000;
   function widened(app, combo, mac) {
     const sel = lineSelected;
     lineSelected = null;
-    if (!sel || Date.now() - sel.at > WIDEN_MS || !combo.shift || K.hasModifier(combo)) return null;
+    if (!sel || Date.now() - sel.at > WIDEN_MS || !combo.shift || combo.alt || combo.ctrl) return null;
     const keys = sel.kind === 'column' ? ['arrowright', 'arrowleft'] : ['arrowdown', 'arrowup'];
     if (!keys.includes(combo.key)) return null;
     // The first step was already counted (and cheered) on its own; the cheer for
@@ -689,10 +707,9 @@
   // a cell being edited. Sheets sends the key to different elements depending on
   // what was done before, so look at the result instead: a moment later the name
   // box shows a whole row ("3:3"), or the row's filled part ("A3:C3") inside data,
-  // only if the row was selected.
-  // Shift+Space selects the rows of the cell or range: one row ("2:2"), or with a range
-  // selected all of its rows ("2:4", measured in checks/editors-prereq.mjs). The box must
-  // change, so a range left as it was (Shift+Space typed into a cell) does not count.
+  // only if the row was selected. With a range selected it selects all of its rows
+  // ("2:4", measured in checks/editors-prereq.mjs); the box must change then, so a
+  // range left as it was (Shift+Space typed into a cell) does not count.
   function rowSelected() {
     const before = nameBox();
     return new Promise((resolve) => setTimeout(() => {
@@ -700,6 +717,27 @@
       const m = /^[A-Z]*(\d+):[A-Z]*(\d+)$/.exec(after);
       resolve(!!m && (m[1] === m[2] || after !== before));
     }, 200));
+  }
+
+  // Sheets: a column or row picked by its header with the mouse, then a button that acts
+  // on it (bold, align, borders, number formats, hide, insert/delete, copy): the hint is
+  // the whole way, "Ctrl+Space then Ctrl+Shift+R". Picked with the keyboard, the first
+  // step is known and only the button's key is hinted.
+  let headerPick = null; // { kind, at }
+  const PICK_MS = 30000;
+  const ON_LINES = new Set(['mod+b', 'mod+i', 'mod+u', 'alt+shift+5', 'mod+\\', 'mod+shift+l', 'mod+shift+e', 'mod+shift+r', 'mod+shift+j',
+    'mod+shift+1', 'mod+shift+2', 'mod+shift+3', 'mod+shift+4', 'mod+shift+5', 'mod+shift+6', 'mod+shift+7',
+    'alt+shift+1', 'alt+shift+2', 'alt+shift+3', 'alt+shift+4', 'alt+shift+6', 'alt+shift+7',
+    'mod+alt+=', 'mod+alt+-', 'mod+alt+9', 'mod+alt+0', 'mod+c', 'mod+x']);
+  function afterHeaderPick(app, result, mac) {
+    if (app.id !== 'sheets' || !headerPick || Date.now() - headerPick.at > PICK_MS) return result;
+    const combo = result.combos && result.combos[0];
+    if (!combo || combo.then || !ON_LINES.has(K.toId(combo))) return result;
+    // Still the one column or row picked then.
+    const line = lineRange(nameBox());
+    if (!line || line.kind !== headerPick.kind || line.count !== 1) return result;
+    result.combos = [K.sequence(lineSelect(headerPick.kind, mac), combo)];
+    return result;
   }
 
   function sheetTab(app, el, mac) {
@@ -725,7 +763,7 @@
       const result = describe(app, el, mac);
       if (result) {
         detected.set(result.id, result.label);
-        return result;
+        return afterHeaderPick(app, result, mac);
       }
       el = el.parentElement ? el.parentElement.closest(CONTROL) : null;
     }
@@ -793,6 +831,7 @@
         });
       }
       if (K.toId(combo) === K.toId(lineSelect('column', mac))) lineSelected = { kind: 'column', at: Date.now() };
+      if (K.toId(combo) === K.toId(lineSelect('column', mac)) || K.toId(combo) === 'shift+space') headerPick = null; // picked by keyboard
     }
     if (app.sequences) {
       const step = sequenceStep(app, combo);

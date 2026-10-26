@@ -82,8 +82,29 @@ test('Gmail and Drive normal two-step shortcuts still work', () => {
   assert.equal(drive.fromKey(event('KeyF', 'f', { altKey: true }), false).id, 'drive:alt+c>f');
 });
 
+test('Drive: keys for the selected items count only with an item selected (focused, for rename and the item menu)', () => {
+  const { site, ctx } = siteEnv('drive');
+  const id = (code, key, mods, target) => { const r = site.fromKey(event(code, key, { ...mods, target }), false); return r && r.id; };
+  const ctrlAlt = { ctrlKey: true, altKey: true };
+  const keys = [['KeyS', 's', ctrlAlt, 'mod+alt+s'], ['KeyA', 'a', ctrlAlt, 'mod+alt+a'], ['KeyM', 'm', ctrlAlt, 'mod+alt+m'], ['KeyL', 'l', ctrlAlt, 'mod+alt+l'],
+    ['KeyP', 'p', ctrlAlt, 'mod+alt+p'], ['Delete', 'Delete', {}, 'delete'], ['KeyX', 'x', { ctrlKey: true }, 'mod+x'], ['Enter', 'Enter', { ctrlKey: true }, 'mod+enter']];
+  // Nothing selected: Drive does nothing.
+  for (const [code, key, mods] of keys) assert.equal(id(code, key, mods), null, key);
+  assert.equal(id('F2', 'F2', {}), null);
+  // An item focused but not selected (after Esc): rename and the item menu work on it.
+  const row = new Element();
+  row.closest = (sel) => (sel.includes('data-id') ? row : null);
+  assert.equal(id('F2', 'F2', {}, row), 'drive:f2');
+  assert.equal(id('F10', 'F10', { shiftKey: true }, row), 'drive:shift+f10');
+  assert.equal(id('KeyS', 's', ctrlAlt, row), null);
+  // An item selected.
+  ctx.document.querySelectorAll = (sel) => (sel.includes('aria-selected="true"') ? [{ getClientRects: () => [{}] }] : []);
+  for (const [code, key, mods, name] of keys) assert.equal(id(code, key, mods), 'drive:' + name, key);
+});
+
 test('Drive: the help page keys found missing in the real-site check are named', () => {
-  const { site } = siteEnv('drive');
+  const { site, ctx } = siteEnv('drive');
+  ctx.document.querySelectorAll = (sel) => (sel.includes('aria-selected="true"') ? [{ getClientRects: () => [{}] }] : []); // an item selected
   const id = (code, key, mods) => { const r = site.fromKey(event(code, key, mods), false); return r && r.id; };
   assert.equal(id('KeyG', 'g', { altKey: true }), null);
   assert.equal(id('KeyF', 'f', { altKey: true }), 'drive:alt+g>f'); // Alt still held for the second key
@@ -181,7 +202,8 @@ function sheetsWithHeaders(platform = 'Win32') {
   env.ctx.document.querySelector = (sel) => (sel.includes('name-box') ? { value: env.box.value } : null);
   const rect = (left, top, width, height) => ({ getBoundingClientRect: () => ({ left, top, right: left + width, bottom: top + height, width, height }) });
   env.ctx.document.querySelectorAll = (sel) =>
-    sel === '.column-headers-background' ? [rect(0, 142, 1088, 24)] : sel === '.row-headers-background' ? [rect(0, 142, 46, 708)] : [];
+    // As on the page: the letters start right of the numbers, the numbers below the letters.
+    sel === '.column-headers-background' ? [rect(46, 142, 1042, 24)] : sel === '.row-headers-background' ? [rect(0, 166, 46, 684)] : [];
   // The header strip is drawn, not a button; `onMenu` puts a menu item over it instead.
   const click = (x, y, upX = x, upY = y, onMenu = false, shiftKey = false) => {
     const target = new Element({ control: onMenu });
@@ -203,14 +225,59 @@ test('Sheets: clicking a column letter hints Ctrl+Space, a row number Shift+Spac
   assert.equal(row.label, '행 선택');
 });
 
-test('Sheets: dragging a header (resize or move) and the top-left corner are not column/row selects', async () => {
+test('Sheets: a column picked by its letter with the mouse, then a format button, hints both steps', () => {
+  const { site, ctx, box, click } = sheetsWithHeaders();
+  const shown = (r) => JSON.parse(JSON.stringify(r.combos.map((c) => ctx.QH.keys.display(c, false))));
+  const button = (label) => site.fromMouse({ target: new Element({ control: true, 'aria-label': label }), button: 0, clientX: 600, clientY: 60 }, false);
+  box.next = 'C:C';
+  click(300, 150); // column C
+  const align = button('오른쪽 정렬 (Ctrl+Shift+R)');
+  assert.equal(align.id, 'sheets:mod+shift+r');
+  assert.deepEqual(shown(align), [['Ctrl', 'Space', '→', 'Ctrl', 'Shift', 'R']]);
+  // A button that does not act on the column keeps its own key.
+  assert.deepEqual(shown(button('실행취소 (Ctrl+Z)')), [['Ctrl', 'Z']]);
+  // A row picked by its number: Shift+Space first.
+  box.next = '3:3';
+  click(20, 400);
+  assert.deepEqual(shown(button('굵게 (Ctrl+B)')), [['Shift', 'Space', '→', 'Ctrl', 'B']]);
+  // Once the selection is something else (a cell), the button's key alone.
+  box.value = 'B4';
+  assert.deepEqual(shown(button('굵게 (Ctrl+B)')), [['Ctrl', 'B']]);
+});
+
+test('Sheets: a column picked with Ctrl+Space, then a format button, hints only the button', () => {
+  const { site, ctx, box, click } = sheetsWithHeaders();
+  const shown = (r) => JSON.parse(JSON.stringify(r.combos.map((c) => ctx.QH.keys.display(c, false))));
+  box.next = 'C:C';
+  click(300, 150);
+  site.fromKey(event('Space', ' ', { ctrlKey: true }), false); // then picked again with the keyboard
+  const r = site.fromMouse({ target: new Element({ control: true, 'aria-label': '오른쪽 정렬 (Ctrl+Shift+R)' }), button: 0, clientX: 600, clientY: 60 }, false);
+  assert.deepEqual(shown(r), [['Ctrl', 'Shift', 'R']]);
+});
+
+test('Sheets: dragging a header (resize or move) is not a column/row select', async () => {
   const { click, box } = sheetsWithHeaders();
   assert.equal(await click(300, 150, 340, 150), null); // resize: the name box stays as it was
   box.value = 'C:F';
   box.next = 'H:K';
   assert.equal(await click(300, 150, 500, 150), null); // moving four selected columns
-  assert.equal(click(20, 150), null);
   assert.equal(click(500, 500), null);
+});
+
+test('Sheets: the corner button above row 1, left of A, selects everything: Ctrl+A (⌘A on Mac)', () => {
+  const corner = sheetsWithHeaders().click(20, 150);
+  assert.equal(corner.id, 'sheets:mod+a');
+  assert.equal(corner.label, '모두 선택');
+  // On the page the two strips overlap in the corner.
+  const overlap = sheetsWithHeaders();
+  const rect = (left, top, width, height) => ({ getBoundingClientRect: () => ({ left, top, right: left + width, bottom: top + height, width, height }) });
+  overlap.ctx.document.querySelectorAll = (sel) =>
+    sel === '.column-headers-background' ? [rect(0, 142, 1088, 24)] : sel === '.row-headers-background' ? [rect(0, 142, 46, 708)] : [];
+  assert.equal(overlap.click(20, 150).id, 'sheets:mod+a');
+  assert.equal(overlap.click(300, 150).id, 'sheets:mod+space');
+  assert.equal(overlap.click(20, 400).id, 'sheets:shift+space');
+  const { ctx, click } = sheetsWithHeaders('MacIntel');
+  assert.deepEqual(JSON.parse(JSON.stringify(ctx.QH.keys.display(click(20, 150).combos[0], true))), ['⌘', 'A']);
 });
 
 test('Sheets: dragging along the letters (or Shift+click) to several columns hints Ctrl+Space, then Shift+→', async () => {
@@ -245,7 +312,7 @@ test('Sheets: dragging across cells to a range hints Shift+arrow, to the edge Ct
   box.value = 'B2';
   assert.deepEqual((await drag(300, 300, 310, 600, 'B2:B20')).combos[0].key, 'arrowdown');
   box.value = 'B2';
-  assert.equal(drag(300, 300, 300, 300, 'B2'), null); // a plain click on a cell
+  assert.equal(await drag(300, 300, 300, 300, 'B2'), null); // a plain click on a cell
   box.value = 'B2';
   const shiftClick = (x, y, after) => {
     const target = new In('#waffle-grid-container');
@@ -283,6 +350,33 @@ test('Sheets: Shift+arrow to a range counts once; inside a cell being edited it 
   assert.equal(await key('ArrowRight', 'ArrowRight', { shiftKey: true }), null);
 });
 
+test('Sheets: Shift+PageUp/Down to a range counts as a range select; Shift+Home/End do not select in Sheets', async () => {
+  const { site, box } = sheetsWithHeaders();
+  const key = (code, k, patch) => site.fromKey(event(code, k, patch), false);
+  const shift = { shiftKey: true };
+  for (const [code, after] of [['PageDown', 'C3:C40'], ['PageUp', 'C1:C3']]) {
+    key('Escape', 'Escape'); // a new range each time
+    box.value = after;
+    const r = await key(code, code, shift);
+    assert.equal(r && r.id, 'sheets:range', code);
+    assert.equal(r.combos[0].key, code.toLowerCase()); // the cheer shows the key pressed
+  }
+  // In the same range each is its own shortcut, counted once.
+  key('Escape', 'Escape');
+  box.value = 'C3:C40';
+  assert.equal((await key('PageDown', 'PageDown', shift)).id, 'sheets:range');
+  assert.equal(await key('PageDown', 'PageDown', shift), null);
+  assert.equal((await key('ArrowRight', 'ArrowRight', shift)).id, 'sheets:range');
+  // Editing a cell: the box stays one cell.
+  key('Escape', 'Escape');
+  box.value = 'C3';
+  assert.equal(await key('PageDown', 'PageDown', shift), null);
+  // Shift+End and Ctrl+Shift+PageDown are not range selects.
+  box.value = 'C3:Z3';
+  assert.notEqual((await key('End', 'End', shift) || {}).id, 'sheets:range');
+  assert.notEqual((await key('PageDown', 'PageDown', { shiftKey: true, ctrlKey: true }) || {}).id, 'sheets:range');
+});
+
 test('Sheets: Ctrl+Space then Shift+→ counts as selecting several columns, once', async () => {
   const { site } = sheetsWithHeaders();
   const key = (code, k, patch) => site.fromKey(event(code, k, patch), false);
@@ -294,6 +388,19 @@ test('Sheets: Ctrl+Space then Shift+→ counts as selecting several columns, onc
   assert.equal(wider.pressed.shift, true);
   assert.equal(await key('ArrowRight', 'ArrowRight', { shiftKey: true }), null); // widening further
   assert.equal(await key('ArrowRight', 'ArrowRight', { shiftKey: true }), null);
+});
+
+test('Sheets: Ctrl+Space then Ctrl+Shift+→ (to the edge) also counts as several columns', async () => {
+  const { site } = sheetsWithHeaders();
+  const key = (code, k, patch, mac = false) => site.fromKey(event(code, k, patch), mac);
+  key('Space', ' ', { ctrlKey: true });
+  const wider = key('ArrowRight', 'ArrowRight', { ctrlKey: true, shiftKey: true });
+  assert.equal(wider.id, 'sheets:mod+space>shift+arrowright');
+  assert.equal(wider.pressed.mod, true); // the cheer shows Ctrl+Shift+→
+  // Alt or a Mac Control key is something else.
+  key('Space', ' ', { ctrlKey: true });
+  const other = await key('ArrowRight', 'ArrowRight', { altKey: true, shiftKey: true });
+  assert.notEqual(other && other.id, 'sheets:mod+space>shift+arrowright');
 });
 
 test('Sheets: Shift+Space counts as row select only when a whole row ends up selected', async () => {
