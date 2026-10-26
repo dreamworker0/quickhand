@@ -752,6 +752,7 @@
 
   function fromMouse(app, e, mac) {
     if (!(e.target instanceof Element)) return null;
+    if (app.id === 'sheets') readCompatSoon(); // the click may open the shortcuts window or flip its switch
     // The file name box is titled "이름 바꾸기" (rename the file), not the sheet's Alt+1.
     const title = e.target.closest('.docs-title-widget, .docs-title-input');
     if (title && (title.classList.contains('docs-title-widget') || title.classList.contains('docs-title-input'))) return null;
@@ -814,6 +815,51 @@
     return doc.getSelection().toString() === '';
   }
 
+  // Sheets' "호환되는 스프레드시트 단축키 사용" (compatible, Excel-style keys) is an account
+  // setting shown only as the switch at the top of the keyboard shortcuts window (Ctrl+/).
+  // It is read whenever that window is open and remembered for every sheet.
+  const COMPAT_STORE = 'qh_sheets_compat';
+  let sheetsCompat = false;
+  const storage = globalThis.chrome && chrome.storage && chrome.storage.local;
+  if (storage && location.hostname === 'docs.google.com' && location.pathname.startsWith('/spreadsheets/')) {
+    storage.get(COMPAT_STORE).then((v) => { sheetsCompat = !!v[COMPAT_STORE]; }).catch(() => {});
+    chrome.storage.onChanged.addListener((changes, area) => {
+      if (area === 'local' && changes[COMPAT_STORE]) sheetsCompat = !!changes[COMPAT_STORE].newValue;
+    });
+  }
+  function readCompatSwitch() {
+    const win = [...document.querySelectorAll('[role="dialog"]')]
+      .find((d) => d.getClientRects().length > 0 && /키보드 단축키|Keyboard shortcuts/.test(d.textContent || '') && d.querySelector('[role="switch"]'));
+    if (!win) return;
+    const on = win.querySelector('[role="switch"]').getAttribute('aria-checked') === 'true';
+    if (on === sheetsCompat) return;
+    sheetsCompat = on;
+    if (storage) storage.set({ [COMPAT_STORE]: on }).catch(() => {});
+  }
+  const readCompatSoon = () => setTimeout(readCompatSwitch, 800);
+  // The keys the setting adds (from the shortcuts window, marked "호환되는 스프레드시트
+  // 단축키" while it is off), each with the usual key of the same action, or '' for an
+  // action of its own (named in COMPAT_NAMES).
+  const COMPAT_KEYS = {
+    'alt+shift+f1': 'shift+f11', 'alt+2': 'mod+z', 'alt+3': 'mod+y', 'mod+-': 'mod+alt+-', 'mod+shift+=': 'mod+alt+=', 'mod+=': 'mod+alt+=',
+    'mod+1': 'alt+o', 'mod+2': 'mod+b', 'mod+3': 'mod+i', 'mod+4': 'mod+u', 'mod+5': 'alt+shift+5', 'mod+shift+-': 'alt+shift+6',
+    'mod+shift+8': 'mod+a', 'mod+f2': 'mod+p', 'mod+0': 'mod+alt+0', 'mod+9': 'mod+alt+9',
+    'mod+shift+`': '', 'alt+f1': '', 'f7': '', 'mod+shift+u': '', 'mod+f1': '', 'f5': '',
+  };
+  const COMPAT_NAMES = {
+    'mod+shift+`': ['숫자 형식: 자동', 'Number format: automatic'],
+    'alt+f1': ['차트 삽입', 'Insert chart'],
+    'f7': ['맞춤법 검사', 'Spell check'],
+    'mod+shift+u': ['수식 바 표시', 'Show the formula bar'],
+    'mod+f1': ['전체 화면', 'Full screen'],
+    'f5': ['범위로 이동', 'Go to range'],
+  };
+  function comboFromId(id) {
+    const parts = id.split('+');
+    const key = parts.pop() || '+';
+    return K.combo(key, Object.fromEntries(parts.map((m) => [m, true])));
+  }
+
   function fromKey(app, e, mac) {
     if (K.isModifierOnly(e) || K.isTextEntry(e, mac)) return null;
     const combo = K.fromEvent(e, mac);
@@ -844,10 +890,22 @@
     if (!(K.hasModifier(combo) || fnKey || commentKey || (app.plainKeys && app.plainKeys.includes(id)))) return null;
     if (app.keyAlias && app.keyAlias[id]) id = app.keyAlias[id];
     if (app.id === 'docs' && (id === 'mod+c' || id === 'mod+x') && nothingSelected(e)) return null;
+    // The shortcuts window may be open (Ctrl+/, or keys inside it): read its switch.
+    if (app.id === 'sheets' && (id === 'mod+/' || (e.target instanceof Element && e.target.closest('[role="dialog"]')))) readCompatSoon();
+    // An Excel-style key counts only with the setting on, as the action it stands for;
+    // the cheer shows the key pressed.
+    let pressed = null;
+    if (app.id === 'sheets' && COMPAT_KEYS[id] !== undefined) {
+      if (!sheetsCompat) return null;
+      pressed = combo;
+      if (COMPAT_KEYS[id]) id = COMPAT_KEYS[id];
+    }
     const seen = detected.get(app.id + ':' + id);
-    const name = seen || QH.names.pick(app.names[id] || COMMON_NAMES[id]);
+    const name = seen || QH.names.pick(app.names[id] || COMMON_NAMES[id] || (pressed && COMPAT_NAMES[id]));
     if (!name) return null;
-    return { id: app.id + ':' + id, label: name, fallbackLabel: !seen, combos: [combo] };
+    const result = { id: app.id + ':' + id, label: name, fallbackLabel: !seen, combos: [pressed && COMPAT_KEYS[K.toId(pressed)] ? comboFromId(id) : combo] };
+    if (pressed) result.pressed = pressed;
+    return result;
   }
 
   // Typing happens inside a same-origin iframe (docs-texteventtarget-iframe today),

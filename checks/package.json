@@ -10,7 +10,8 @@
     "login": "node login.mjs",
     "storyboard": "node storyboard.mjs",
     "sheets-scenarios": "node sheets-scenarios.mjs",
-    "gmail-scenarios": "node gmail-scenarios.mjs"
+    "gmail-scenarios": "node gmail-scenarios.mjs",
+    "sheets-compat": "node sheets-compat.mjs"
   },
   "devDependencies": {
     "playwright": "^1.56.1"

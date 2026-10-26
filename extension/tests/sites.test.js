@@ -255,6 +255,34 @@ test('Sheets: a column picked with Ctrl+Space, then a format button, hints only 
   assert.deepEqual(shown(r), [['Ctrl', 'Shift', 'R']]);
 });
 
+test("Sheets: Excel-style keys count only once the shortcuts window showed the compatible setting on", () => {
+  const { site, ctx } = siteEnv('sheets');
+  ctx.setTimeout = (fn) => fn();
+  const id = (code, key, mods) => { const r = site.fromKey(event(code, key, mods), false); return r; };
+  const ctrl = { ctrlKey: true };
+  // Off (or never seen): Ctrl+2 is not Sheets' bold.
+  assert.equal(id('Digit2', '2', ctrl), null);
+  assert.equal(id('Digit9', '9', ctrl), null);
+  // The shortcuts window open with the switch on; a click there is when it is read.
+  let on = 'true';
+  const win = { getClientRects: () => [{}], textContent: '키보드 단축키 검색 호환되는 스프레드시트 단축키 사용', querySelector: () => ({ getAttribute: () => on }) };
+  ctx.document.querySelectorAll = (sel) => (sel === '[role="dialog"]' ? [win] : []);
+  site.fromMouse({ target: new Element(), button: 0, clientX: 10, clientY: 10 }, false);
+  const bold = id('Digit2', '2', ctrl);
+  assert.equal(bold.id, 'sheets:mod+b'); // the same action as Ctrl+B
+  assert.equal(bold.pressed.key, '2'); // the cheer shows Ctrl+2
+  assert.deepEqual([bold.combos[0].mod, bold.combos[0].key], [true, 'b']); // hints keep Ctrl+B
+  assert.equal(id('Digit9', '9', ctrl).id, 'sheets:mod+alt+9');
+  assert.equal(id('Equal', '=', ctrl).id, 'sheets:mod+alt+=');
+  assert.equal(id('F7', 'F7', {}).id, 'sheets:f7');
+  assert.equal(id('F7', 'F7', {}).label, '맞춤법 검사');
+  // Turned off again in the window.
+  on = 'false';
+  site.fromMouse({ target: new Element(), button: 0, clientX: 10, clientY: 10 }, false);
+  assert.equal(id('Digit2', '2', ctrl), null);
+  assert.equal(id('KeyB', 'b', ctrl).id, 'sheets:mod+b'); // the usual key always counts
+});
+
 test('Sheets: dragging a header (resize or move) is not a column/row select', async () => {
   const { click, box } = sheetsWithHeaders();
   assert.equal(await click(300, 150, 340, 150), null); // resize: the name box stays as it was
