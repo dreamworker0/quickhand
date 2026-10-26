@@ -96,6 +96,8 @@ src/sites/google-editors.js  구글 문서·시트·슬라이드 툴바·메뉴 
                        Shift+방향키·Ctrl+Shift+방향키·Shift+PageUp/Down으로 범위가 생기면 범위 선택으로 셈.
                        '호환되는 스프레드시트 단축키 사용'은 단축키 창(Ctrl+/)의 스위치를 읽어 기억하고(chrome.storage.local
                        qh_sheets_compat), 켜져 있을 때만 엑셀식 키(Ctrl+2 굵게, Ctrl+9 행 숨기기 등 22개)를 같은 동작으로 셈.
+                       문서·시트·슬라이드: 메뉴 막대(파일·수정·보기·삽입·서식·데이터·도구·도움말 등)를 마우스로 열면 Alt+글자를
+                       안내(윈도에서 확인한 키만, Mac은 아직 안내하지 않음).
                        도움말의 시트 단축키를 모두 셈(두 단계 댓글 키, 댓글 안 R·J·K·E·U 포함). 서식 › 숫자 메뉴는
                        Ctrl+Shift+1~6 카드. 점검: checks/sheets-shortcuts.mjs(키, --from=번호), checks/editor-mouse.mjs sheets
                        문서: 도움말의 단축키를 마우스 동작만 빼고 모두 셈. "Ctrl+Alt+N, H" 같은 두 단계 키는

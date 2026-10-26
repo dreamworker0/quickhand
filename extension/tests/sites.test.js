@@ -283,6 +283,23 @@ test("Sheets: Excel-style keys count only once the shortcuts window showed the c
   assert.equal(id('KeyB', 'b', ctrl).id, 'sheets:mod+b'); // the usual key always counts
 });
 
+test('Docs, Sheets, Slides: opening a menu bar menu with the mouse hints its Alt key (Windows)', () => {
+  const bar = (text) => {
+    const item = new Element({ role: 'menuitem' }, text);
+    item.closest = (sel) => (sel.includes('#docs-menubar') ? item : null);
+    return item;
+  };
+  const click = (id, text, mac = false) => { const r = siteEnv(id).site.fromMouse({ target: bar(text), button: 0, clientX: 5, clientY: 5 }, mac); return r && r.id; };
+  assert.equal(click('sheets', '데이터'), 'sheets:alt+d');
+  assert.equal(click('sheets', '파일'), 'sheets:alt+f');
+  assert.equal(click('docs', '서식'), 'docs:alt+o');
+  assert.equal(click('docs', 'Help'), 'docs:alt+h');
+  assert.equal(click('slides', '삽입'), 'slides:alt+i');
+  assert.equal(click('docs', '데이터'), null); // not measured in Docs
+  assert.equal(click('slides', '슬라이드'), null); // nor Slides' own menus
+  assert.equal(click('sheets', '데이터', true), null); // Mac: other keys
+});
+
 test('Sheets: dragging a header (resize or move) is not a column/row select', async () => {
   const { click, box } = sheetsWithHeaders();
   assert.equal(await click(300, 150, 340, 150), null); // resize: the name box stays as it was

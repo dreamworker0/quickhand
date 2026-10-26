@@ -750,8 +750,24 @@
     return result;
   }
 
+  // The menu bar's menus open with Alt+letter in Chrome on Windows (measured in
+  // checks/*-shortcuts.mjs for each editor's own menus; an editor without the name of
+  // that key, like Docs' Data, gets no hint). Mac uses other keys there, not checked yet.
+  const MENU_BAR = {
+    파일: 'f', File: 'f', 수정: 'e', Edit: 'e', 보기: 'v', View: 'v', 삽입: 'i', Insert: 'i', 서식: 'o', Format: 'o',
+    데이터: 'd', Data: 'd', 도구: 't', Tools: 't', '확장 프로그램': 'n', Extensions: 'n', 도움말: 'h', Help: 'h',
+    접근성: 'a', Accessibility: 'a', 양식: 'm', Form: 'm',
+  };
+  function menuBar(app, el, mac) {
+    const item = el.closest('#docs-menubar [role="menuitem"], #docs-menubar .menu-button');
+    const letter = item && MENU_BAR[(item.textContent || '').trim()];
+    return letter && !mac && app.names['alt+' + letter] ? found(app, K.combo(letter, { alt: true })) : null;
+  }
+
   function fromMouse(app, e, mac) {
     if (!(e.target instanceof Element)) return null;
+    const menu = menuBar(app, e.target, mac);
+    if (menu) return menu;
     if (app.id === 'sheets') readCompatSoon(); // the click may open the shortcuts window or flip its switch
     // The file name box is titled "이름 바꾸기" (rename the file), not the sheet's Alt+1.
     const title = e.target.closest('.docs-title-widget, .docs-title-input');

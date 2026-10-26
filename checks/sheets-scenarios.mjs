@@ -177,6 +177,11 @@ for (const [name, start, step, expected] of FLOWS) {
 await page.keyboard.press('Escape');
 
 // ---------------------------------------------------------------- header, then a format button
+// After the many edits and undos above Sheets often errors and reloads; a fresh load first.
+await page.reload({ waitUntil: 'domcontentloaded' });
+await page.waitForSelector('#t-name-box', { timeout: 60000 });
+await page.waitForTimeout(6000);
+await recover();
 // The card should show the whole way: "Ctrl+Space 다음 Ctrl+B".
 const visibleOne = (sel, opts) => page.locator(sel, opts).filter({ visible: true }).first();
 const TWO_STEP = [
