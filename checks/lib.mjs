@@ -92,6 +92,22 @@ export async function launch({ headless = true } = {}) {
     await popup.close();
   }
   if (!worker) worker = await context.waitForEvent('serviceworker', { predicate: isOurs });
+  // A worker the profile already knew keeps the code it was started with, even after
+  // loadUnpacked (the hint rules ran stale once); reloading the extension starts it
+  // again from the files on disk.
+  if (chrome) {
+    const restarted = context.waitForEvent('serviceworker', { predicate: isOurs, timeout: 15000 }).catch(() => null);
+    await worker.evaluate(() => chrome.runtime.reload()).catch(() => {});
+    worker = await restarted;
+    if (!worker) {
+      // Asleep after the reload: the popup's first message wakes it.
+      const waking = context.waitForEvent('serviceworker', { predicate: isOurs, timeout: 15000 }).catch(() => null);
+      const popup = await context.newPage();
+      await popup.goto(`chrome-extension://${extensionId}/src/popup/popup.html`).catch(() => {});
+      worker = (await waking) || context.serviceWorkers().filter(isOurs).pop();
+      await popup.close();
+    }
+  }
   // Hint on every click from the start: "active" strength.
   await worker.evaluate(async () => {
     const { qh_settings } = await chrome.storage.sync.get('qh_settings');
