@@ -1,15 +1,15 @@
 // Builds the hand-out for testers: ../dist/손빠르미-테스트판-<version>.zip with
-// the guide (../testers/설치 안내.txt) and the extension in a "손빠르미" folder
-// to load unpacked. Names are stored as UTF-8 (flag 0x800), which Windows' own
-// unzip, 7-Zip and Bandizip read correctly; the guide gets a BOM and Windows
-// line ends so Notepad shows it right.
+// the guide (../testers/설치 안내.html, opened with a double-click) and the
+// extension in a "손빠르미" folder to load unpacked. Names are stored as UTF-8
+// (flag 0x800), which Windows' own unzip, 7-Zip and Bandizip read correctly.
 import fs from 'node:fs';
 import path from 'node:path';
 import zlib from 'node:zlib';
 import { ROOT, packageFiles, version as readVersion } from './package-files.mjs';
 
 const version = readVersion();
-const GUIDE = path.resolve(ROOT, '../testers/설치 안내.txt');
+const GUIDE = path.resolve(ROOT, '../testers/설치 안내.html');
+const MASCOT = path.join(ROOT, 'assets/mascot/main.png');
 const out = path.resolve(ROOT, `../dist/손빠르미-테스트판-${version}.zip`);
 
 const CRC_TABLE = Array.from({ length: 256 }, (_, n) => {
@@ -67,8 +67,11 @@ function zip(entries) {
 }
 
 const now = new Date();
-const guide = fs.readFileSync(GUIDE, 'utf8').replace(/^﻿/, '').replace(/\r\n/g, '\n').replaceAll('{version}', version);
-const entries = [{ name: '설치 안내.txt', data: Buffer.from('﻿' + guide.replace(/\n/g, '\r\n'), 'utf8'), date: now }];
+// The page is one file: the mascot goes in as image data.
+const guide = fs.readFileSync(GUIDE, 'utf8')
+  .replaceAll('{version}', version)
+  .replaceAll('{mascot}', 'data:image/png;base64,' + fs.readFileSync(MASCOT).toString('base64'));
+const entries = [{ name: '설치 안내.html', data: Buffer.from(guide, 'utf8'), date: now }];
 for (const rel of packageFiles()) {
   const abs = path.join(ROOT, rel);
   entries.push({ name: '손빠르미/' + rel, data: fs.readFileSync(abs), date: fs.statSync(abs).mtime });

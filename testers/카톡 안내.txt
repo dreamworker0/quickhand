@@ -21,7 +21,7 @@ https://drive.google.com/drive/folders/1_pEiRxZdR8szG1h4UuiuRTbit62EA6D0
 
 ✅ 설치 (PC 크롬에서)
 1. 아래 ZIP 파일을 PC에서 받아 압축을 풀어 주세요 (휴대폰에서는 설치가 안 돼요)
-2. 안에 있는 「설치 안내.txt」를 따라 하면 3분이면 끝나요
+2. 안에 있는 「설치 안내.html」을 열어 따라 하면 3분이면 끝나요
 
 ✅ 써 보기
 유튜브, Gmail, 구글 문서·시트를 평소처럼 쓰시면 돼요.
@@ -44,7 +44,7 @@ https://drive.google.com/drive/folders/1_pEiRxZdR8szG1h4UuiuRTbit62EA6D0
 
 📁 받기 (PC에서 열어 주세요)
 https://drive.google.com/drive/folders/1_pEiRxZdR8szG1h4UuiuRTbit62EA6D0
-폴더 안의 ZIP을 내려받아 압축을 풀고, 「설치 안내.txt」를 따라 하면 3분이면 끝나요.
+폴더 안의 ZIP을 내려받아 압축을 풀고, 「설치 안내.html」을 열어 따라 하면 3분이면 끝나요.
 어떻게 보이는지는 폴더 안 '10단계' 그림에서 볼 수 있어요.
 
 💬 의견은 크롬 툴바 손빠르미 아이콘 › '의견 보내기'나 이 카톡방에 남겨 주세요.

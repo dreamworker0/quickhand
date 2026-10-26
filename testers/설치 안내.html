@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>손빠르미 테스트판 설치 안내</title>
+<!-- npm run pack:testers fills in {version} and the mascot picture. -->
+<style>
+  :root {
+    --bg: #f6f7f9;
+    --card: #ffffff;
+    --text: #1d232b;
+    --quiet: #5b6573;
+    --line: #e2e6eb;
+    --accent: #1f8a70;
+    --accent-soft: #e5f4ef;
+    --warn: #9a5b00;
+    --warn-soft: #fff4e0;
+    --kbd: #f1f3f5;
+    --kbd-edge: #c9ced4;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #15181c;
+      --card: #1e2227;
+      --text: #e8ebee;
+      --quiet: #a3acb7;
+      --line: #313740;
+      --accent: #4cc3a0;
+      --accent-soft: #1d3a32;
+      --warn: #f2b65a;
+      --warn-soft: #3a2e1a;
+      --kbd: #2a2f36;
+      --kbd-edge: #49515c;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: 17px/1.7 "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", "맑은 고딕", system-ui, sans-serif;
+    word-break: keep-all;
+  }
+  main { max-width: 760px; margin: 0 auto; padding: 32px 16px 64px; }
+  header { display: flex; gap: 20px; align-items: center; margin-bottom: 8px; }
+  header img { width: 96px; height: 96px; flex: none; }
+  h1 { font-size: 30px; line-height: 1.3; margin: 0; }
+  .version { display: inline-block; margin-top: 6px; padding: 2px 10px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); font-size: 14px; font-weight: 600; }
+  .lead { color: var(--quiet); margin: 16px 0 24px; }
+  nav { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 28px; }
+  nav a { padding: 6px 14px; border: 1px solid var(--line); border-radius: 999px; background: var(--card); color: var(--text); text-decoration: none; font-size: 15px; }
+  nav a:hover { border-color: var(--accent); color: var(--accent); }
+  section { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 24px 24px 12px; margin-bottom: 20px; }
+  h2 { font-size: 22px; margin: 0 0 16px; display: flex; align-items: center; gap: 10px; }
+  h2 .num { display: inline-grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; background: var(--accent); color: #fff; font-size: 17px; }
+  h2 .time { margin-left: auto; font-size: 14px; font-weight: 500; color: var(--quiet); }
+  ol.steps { list-style: none; counter-reset: step; padding: 0; margin: 0; }
+  ol.steps > li { counter-increment: step; position: relative; padding: 0 0 18px 44px; }
+  ol.steps > li::before {
+    content: counter(step); position: absolute; left: 0; top: 2px;
+    width: 28px; height: 28px; border-radius: 8px; display: grid; place-items: center;
+    background: var(--accent-soft); color: var(--accent); font-weight: 700; font-size: 15px;
+  }
+  ul { padding-left: 22px; margin: 0 0 16px; }
+  ul li { margin-bottom: 8px; }
+  p { margin: 0 0 14px; }
+  .sub { color: var(--quiet); font-size: 15px; }
+  b { font-weight: 700; }
+  kbd {
+    display: inline-block; min-width: 1.6em; padding: 0 7px; margin: 0 1px;
+    border: 1px solid var(--kbd-edge); border-bottom-width: 2px; border-radius: 6px;
+    background: var(--kbd); font: 600 15px/1.6 ui-monospace, "Cascadia Mono", Consolas, monospace; text-align: center;
+  }
+  .copy { display: inline-flex; align-items: center; gap: 8px; margin: 4px 0 8px; }
+  .copy code { padding: 4px 10px; border-radius: 8px; background: var(--kbd); border: 1px solid var(--line); font: 600 16px ui-monospace, Consolas, monospace; user-select: all; }
+  .copy button {
+    padding: 5px 12px; border: 1px solid var(--accent); border-radius: 8px; background: var(--card); color: var(--accent);
+    font: inherit; font-size: 14px; font-weight: 600; cursor: pointer;
+  }
+  .copy button:hover { background: var(--accent-soft); }
+  .note { border-radius: 12px; padding: 12px 16px; margin: 4px 0 16px; background: var(--accent-soft); }
+  .note.warn { background: var(--warn-soft); }
+  .note.warn strong { color: var(--warn); }
+  .try { display: grid; gap: 12px; margin-bottom: 16px; }
+  .try div { border: 1px solid var(--line); border-radius: 12px; padding: 12px 16px; }
+  .try h3 { font-size: 16px; margin: 0 0 4px; }
+  .try p { margin: 0; }
+  .mail { font-weight: 600; color: var(--accent); }
+  footer { text-align: center; color: var(--quiet); font-size: 14px; margin-top: 28px; }
+  @media (max-width: 560px) {
+    body { font-size: 16px; }
+    header img { width: 72px; height: 72px; }
+    h1 { font-size: 24px; }
+    section { padding: 20px 16px 8px; }
+    h2 .time { display: none; }
+  }
+  @media print {
+    body { background: #fff; }
+    nav, .copy button { display: none; }
+    section { break-inside: avoid; border-color: #ccc; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <img src="{mascot}" alt="" onerror="this.remove()">
+    <div>
+      <h1>손빠르미 테스트판 설치 안내</h1>
+      <span class="version">버전 {version}</span>
+    </div>
+  </header>
+  <p class="lead">
+    손빠르미는 유튜브, Gmail, 구글 캘린더·드라이브·문서·시트·슬라이드에서 마우스로 한 동작에
+    키보드 단축키가 있으면 화면 오른쪽 아래에 살짝 알려 주는 크롬 확장 프로그램입니다.
+    아직 웹스토어에 공개되기 전이라 직접 설치해 주셔야 합니다.
+  </p>
+
+  <nav aria-label="목차">
+    <a href="#install">① 설치하기</a>
+    <a href="#try">② 써 보기</a>
+    <a href="#feedback">③ 의견 보내기</a>
+    <a href="#notes">④ 알아 두실 점</a>
+    <a href="#update">⑤ 새 버전·지우기</a>
+  </nav>
+
+  <section id="install">
+    <h2><span class="num">1</span>설치하기<span class="time">3분이면 끝나요</span></h2>
+    <ol class="steps">
+      <li>
+        받은 압축 파일을 <b>지우지 않을 곳</b>(예: 문서 폴더)에 풉니다. 압축을 풀면 <b>「손빠르미」 폴더</b>가 나옵니다.
+        <div class="note warn"><strong>주의</strong> 이 폴더를 지우거나 옮기면 손빠르미가 꺼집니다.</div>
+      </li>
+      <li>
+        크롬 주소창에 아래 주소를 넣고 <kbd>Enter</kbd>를 누릅니다.
+        <div class="copy"><code id="ext-url">chrome://extensions</code><button type="button" data-copy="ext-url">복사</button></div>
+        <p class="sub">이 주소는 눌러서 열 수 없게 크롬이 막아 두었습니다. 복사해서 주소창에 붙여 넣어 주세요.</p>
+      </li>
+      <li>오른쪽 위의 <b>「개발자 모드」</b>를 켭니다.</li>
+      <li>
+        왼쪽 위의 <b>「압축해제된 확장 프로그램을 로드합니다」</b>를 누르고, 1번에서 나온 「손빠르미」 폴더를 골라 <b>「폴더 선택」</b>을 누릅니다.
+        <p class="sub">폴더 안에 manifest.json 파일이 있는 폴더입니다.</p>
+      </li>
+      <li>환영 페이지가 열리면 알림 강도를 고릅니다. 처음에는 <b>「보통」</b>을 추천합니다.</li>
+      <li>크롬 오른쪽 위 퍼즐 모양 아이콘을 누르고, 손빠르미 옆 핀(📌)을 눌러 고정해 두면 팝업을 열기 편합니다.</li>
+    </ol>
+  </section>
+
+  <section id="try">
+    <h2><span class="num">2</span>이렇게 써 보세요</h2>
+    <div class="try">
+      <div>
+        <h3>유튜브</h3>
+        <p>영상 아래의 재생 버튼을 마우스로 눌러 보세요. 처음에는 「손빠르미가 작동 중이에요」 카드가 뜨고, 3번째에 단축키 <kbd>K</kbd>를 알려 줍니다.
+          그다음 키보드로 <kbd>K</kbd>를 눌러 보면 「좋아요!」 칭찬 카드가 뜹니다. 단축키를 연달아 5번 쓰면 콤보 카드도 뜹니다.</p>
+      </div>
+      <div>
+        <h3>구글 문서</h3>
+        <p>툴바의 「굵게」(B) 버튼을 마우스로 3번 눌러 보세요. <kbd>Ctrl</kbd>+<kbd>B</kbd>를 알려 줍니다.</p>
+      </div>
+      <div>
+        <h3>Gmail</h3>
+        <p>한 글자 단축키(보관 <kbd>E</kbd>, 답장 <kbd>R</kbd> 등)는 <b>Gmail 설정 › 바로가기 키 사용</b>을 켜야 작동합니다.
+          받은편지함 목록에서는 <kbd>X</kbd>로 메일을 고른 다음에 <kbd>E</kbd>를 눌러야 보관됩니다.</p>
+      </div>
+    </div>
+    <div class="note">
+      <p><b>알림이 귀찮으면</b> 팝업 › 설정에서 강도를 「조금씩」으로 바꾸거나,
+        <kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>U</kbd>(Mac은 <kbd>Option</kbd>+<kbd>Shift</kbd>+<kbd>U</kbd>)로 잠시 끌 수 있습니다.</p>
+      <p style="margin:0"><b>응원 메시지가 필요 없으면</b> 팝업 › 설정 › 응원 메시지에서 끌 수 있습니다.</p>
+    </div>
+  </section>
+
+  <section id="feedback">
+    <h2><span class="num">3</span>의견 보내기</h2>
+    <ul>
+      <li>크롬 툴바의 손빠르미 아이콘 › <b>「의견 보내기」</b>를 누르면 내용이 채워진 Gmail 편지쓰기 창이 열립니다. 확인하고 보내 주세요.</li>
+      <li>알림이 안 뜨면 팝업의 <b>「알림이 안 떴나요? 최근 동작 보기」</b>를 펼친 화면을 캡처해서 함께 보내 주세요. 알림을 띄우지 않은 이유가 적혀 있습니다.</li>
+      <li>메일 주소: <span class="mail">ehsheh@gmail.com</span></li>
+    </ul>
+    <div class="note">
+      <p><b>특히 궁금한 것</b></p>
+      <ul style="margin-bottom:4px">
+        <li>카드가 너무 자주 뜨거나, 너무 안 뜨지 않나요?</li>
+        <li>마우스로 눌렀는데 카드가 안 뜬 버튼이 있나요? (사이트와 버튼 이름을 알려 주세요)</li>
+        <li>실제로 단축키를 쓰게 되었나요?</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="notes">
+    <h2><span class="num">4</span>알아 두실 점</h2>
+    <ul>
+      <li>크롬을 켤 때 <b>「개발자 모드 확장 프로그램 사용 중지」</b> 안내가 뜰 수 있습니다. <b>「닫기」</b>를 누르세요. 「사용 중지」를 누르면 손빠르미가 꺼집니다.</li>
+      <li>회사·기관 컴퓨터에서 「개발자 모드」를 켤 수 없게 막혀 있으면 이 방법으로는 설치할 수 없습니다. 웹스토어에 공개되면 다시 알려 드리겠습니다.</li>
+      <li>기록(동작 이름, 마우스/단축키 여부, 횟수)은 이 컴퓨터의 크롬에만 저장되고 어디로도 보내지 않습니다. 입력한 글자나 문서·메일 내용은 기록하지 않습니다.
+        팝업 › 저장된 기록 보기 › 기록 모두 지우기로 언제든 지울 수 있습니다.</li>
+    </ul>
+  </section>
+
+  <section id="update">
+    <h2><span class="num">5</span>새 테스트판을 받았을 때 · 지울 때</h2>
+    <ul>
+      <li><b>새 테스트판</b>: 같은 「손빠르미」 폴더에 덮어쓴 뒤, <code>chrome://extensions</code>에서 손빠르미 카드의 새로고침(↻) 버튼을 누릅니다.</li>
+      <li><b>지우기</b>: <code>chrome://extensions</code>에서 손빠르미의 「삭제」를 누르고, 폴더를 지웁니다.</li>
+      <li>웹스토어판이 나오면 이 테스트판을 먼저 삭제하고 스토어판을 설치해 주세요. 둘 다 켜 두면 카드가 두 번씩 뜹니다.</li>
+    </ul>
+  </section>
+
+  <footer>만든 곳: 소셜프리즘 · 문의 ehsheh@gmail.com</footer>
+</main>
+<script>
+  // chrome:// addresses can't be opened from a page, so the button copies one instead.
+  for (const button of document.querySelectorAll('[data-copy]')) {
+    button.addEventListener('click', async () => {
+      const text = document.getElementById(button.dataset.copy).textContent;
+      try {
+        await navigator.clipboard.writeText(text);
+      } catch (e) {
+        const box = document.createElement('textarea');
+        box.value = text;
+        document.body.append(box);
+        box.select();
+        document.execCommand('copy');
+        box.remove();
+      }
+      button.textContent = '복사됨 ✓';
+      setTimeout(() => { button.textContent = '복사'; }, 2000);
+    });
+  }
+</script>
+</body>
+</html>
