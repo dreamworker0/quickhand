@@ -154,8 +154,10 @@
     if (byLabel[tip.label]) return action(byLabel[tip.label]);
     const rule = tip.label && tip.label.length <= 30 && LABEL_RULES.find(([re]) => re.test(tip.label));
     if (rule) return action(rule[1]);
-    const text = (el.textContent || '').trim(); // the Compose button shows its name as text
-    if (text.length <= 12 && byLabel[text]) return action(byLabel[text]);
+    // The Compose button shows its name as text. A button with a name of its own is
+    // not guessed from its text: the sidebar's "라벨 더보기" only shows "더보기".
+    const text = (el.textContent || '').trim();
+    if (!aria && text.length <= 12 && byLabel[text]) return action(byLabel[text]);
     return null;
   }
 

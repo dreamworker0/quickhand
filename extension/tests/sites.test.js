@@ -611,6 +611,14 @@ test('Gmail: reply, message and conversation-view keys count only in an open con
   for (const [code, key, name, mods] of keys) assert.equal(id(code, key, mods), 'gmail:' + name, key);
 });
 
+test("Gmail: the sidebar's \"더보기\" (more labels) is not the toolbar's More actions (.)", () => {
+  const { site } = siteEnv('gmail');
+  const click = (attrs, text) => { const r = site.fromMouse({ target: new Element({ control: true, role: 'button', ...attrs }, text) }, false); return r && r.id; };
+  assert.equal(click({ 'aria-label': '라벨 더보기' }, '더보기'), null);
+  assert.equal(click({ 'aria-label': '이메일 옵션 더보기', 'data-tooltip': '더보기' }, ''), 'gmail:more');
+  assert.equal(click({}, '편지쓰기'), 'gmail:compose'); // a name shown only as text still counts
+});
+
 test('Gmail: z counts only while Gmail offers to undo', () => {
   const { site, ctx } = siteEnv('gmail');
   const id = () => { const r = site.fromKey(event('KeyZ', 'z'), false); return r && r.id; };
