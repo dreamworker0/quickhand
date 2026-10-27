@@ -135,6 +135,13 @@
     return msg.site === 'gmail' && !first.includes('Ctrl') && !first.includes('⌘');
   }
 
+  // Sheets' column select on a Mac is Control+Space, which macOS often keeps for
+  // switching input sources (한/영), so the key may never reach the page.
+  function controlSpaceOnMac(msg) {
+    const first = (msg.display && msg.display[0]) || [];
+    return msg.site === 'sheets' && first.some((k, i) => k === 'Control' && first[i + 1] === 'Space');
+  }
+
   function hide() {
     clearTimeout(hideTimer);
     if (host) host.remove();
@@ -251,6 +258,7 @@
         el('p', 'sub', t(msg.kind === 'reminder' ? 'cardReminder' : 'cardTry'))
       );
       if (needsGmailSetting(msg)) body.append(el('p', 'sub', t('cardGmailNote')));
+      if (controlSpaceOnMac(msg)) body.append(el('p', 'sub', t('cardMacInputSource')));
       if (msg.id) body.append(muteButton(msg.id, body));
     }
 

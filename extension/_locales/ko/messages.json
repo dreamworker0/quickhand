@@ -10,6 +10,7 @@
   "cardOr": { "message": "또는" },
   "cardThen": { "message": "다음" },
   "cardGmailNote": { "message": "Gmail 설정 > 바로가기 키 사용을 켜야 작동해요." },
+  "cardMacInputSource": { "message": "Mac에서 Control+Space로 입력 소스(한/영)를 바꾸도록 되어 있으면 시트에 전달되지 않아요." },
   "cardClose": { "message": "닫기" },
   "cardMute": { "message": "이 단축키는 그만 알리기" },
   "cardMuted": { "message": "이 단축키는 이제 알리지 않을게요." },

@@ -233,11 +233,12 @@ export async function launch({ headless = true } = {}) {
       await popup.close();
     }
   }
-  // Hint on every click from the start: "active" strength.
+  // Hint on every click from the start: "active" strength. Cheers on, as installed
+  // (docs-shortcuts.mjs turns them off for itself).
   await worker.evaluate(async () => {
     const { qh_settings } = await chrome.storage.sync.get('qh_settings');
     await chrome.storage.sync.set({
-      qh_settings: Object.assign({}, qh_settings, { enabled: true, pauseUntil: 0, strength: 'active', onboarded: true, disabledSites: [] }),
+      qh_settings: Object.assign({}, qh_settings, { enabled: true, pauseUntil: 0, strength: 'active', praise: true, onboarded: true, disabledSites: [] }),
     });
   });
   // The first install opens the welcome tab; it isn't part of the check.

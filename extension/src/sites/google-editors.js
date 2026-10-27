@@ -205,6 +205,31 @@
           n: ['셀 위치 읽기', 'Speak cell location'], r: ['행 머리글 읽기', 'Speak row header'], c: ['열 머리글 읽기', 'Speak column header'],
         },
       },
+      // Keys pressed on a Mac that mean something else there, or are the Mac's own key
+      // for an action (the help page's Mac table). null: not a shortcut on a Mac.
+      macNames: {
+        'mod+shift+x': ['취소선', 'Strikethrough'],
+        'ctrl+shift+f': ['메뉴 숨기기', 'Hide the menus'],
+        'ctrl+shift+arrowup': ['단락 위로 이동', 'Move paragraph up'],
+        'ctrl+shift+arrowdown': ['단락 아래로 이동', 'Move paragraph down'],
+        'mod+shift+arrowup': ['문서 처음까지 선택', 'Select to the start of the document'],
+        'mod+shift+arrowdown': ['문서 끝까지 선택', 'Select to the end of the document'],
+        // Option+Shift+←/→ selects by word (it also turns a selected image by 1°).
+        'alt+shift+arrowleft': ['단어 단위로 선택', 'Select by word'],
+        'alt+shift+arrowright': ['단어 단위로 선택', 'Select by word'],
+        // Option+←/→ moves by word, like Ctrl+←/→ on Windows, which isn't counted either.
+        'alt+arrowleft': null,
+        'alt+arrowright': null,
+        'mod+ctrl+k': ['이미지 크게', 'Enlarge image'],
+        'mod+ctrl+b': ['이미지 가로로 크게', 'Enlarge image horizontally'],
+        'mod+ctrl+i': ['이미지 세로로 크게', 'Enlarge image vertically'],
+        'mod+ctrl+j': ['이미지 작게', 'Shrink image'],
+        'mod+ctrl+w': ['이미지 가로로 작게', 'Shrink image horizontally'],
+        'mod+ctrl+q': ['이미지 세로로 작게', 'Shrink image vertically'],
+        'ctrl+alt+z': ['메뉴 검색', 'Search the menus'],
+        'mod+ctrl+shift+arrowleft': ['여러 부분 선택', 'Select multiple sections'],
+        'mod+ctrl+shift+arrowright': ['여러 부분 선택', 'Select multiple sections'],
+      },
       rules: [],
     },
     {
@@ -465,6 +490,13 @@
     return { id: app.id + ':' + id, label: QH.names.pick(app.names[id] || COMMON_NAMES[id]) || label, combos: [combo] };
   }
 
+  // The `sequences` entry for a two-step key's first step. On a Mac the editors hold
+  // Control+⌘ where Windows holds Ctrl+Alt (Docs' help page, Mac table).
+  function sequenceKey(combo, mac) {
+    const held = mac && combo.mod && combo.ctrl && !combo.alt ? { ctrl: false, alt: true } : {};
+    return K.toId(Object.assign({}, combo, held, { then: null }));
+  }
+
   function describe(app, control, mac) {
     if (control.getAttribute('aria-disabled') === 'true' || control.classList.contains('goog-menuitem-disabled')) return null;
     let label;
@@ -479,8 +511,8 @@
       label = tip.label;
     }
     const combo = K.parse(shortcut, mac);
-    // A menu's "Ctrl+Alt+O Ctrl+Alt+U" is the same two-step key as pressing O, then U.
-    if (combo && combo.then && app.sequences && app.sequences[K.toId(Object.assign({}, combo, { then: null }))]) {
+    // A menu's "Ctrl+Alt+O Ctrl+Alt+U" (Mac: "⌃⌘O ⌃⌘U") is the same two-step key as pressing O, then U.
+    if (combo && combo.then && app.sequences && app.sequences[sequenceKey(combo, mac)]) {
       combo.then = K.combo(combo.then.key);
     }
     // Function keys count with or without Shift (Sheets' Insert › Sheet is
@@ -799,23 +831,23 @@
   const SEQUENCE_MS = 1500;
   let firstStep = null;
   let firstAt = 0;
-  function sequenceStep(app, combo) {
+  function sequenceStep(app, combo, mac) {
     const id = K.toId(combo);
     const now = Date.now();
     if (firstStep && now - firstAt <= SEQUENCE_MS) {
       const first = firstStep;
       firstStep = null;
-      // The second key may come with Ctrl+Alt (+Shift) still held, or on its own.
-      const held = first.shift ? { mod: true, alt: true, shift: true } : { mod: true, alt: true };
+      // The second key may come with Ctrl+Alt (Mac: Control+⌘) (+Shift) still held, or on its own.
+      const held = Object.assign(mac ? { mod: true, ctrl: true } : { mod: true, alt: true }, first.shift ? { shift: true } : {});
       const plain = Object.keys(held).every((m) => combo[m] === held[m]) || !K.hasModifier(combo);
-      const names = app.sequences[K.toId(first)];
+      const names = app.sequences[sequenceKey(first, mac)];
       const name = plain && names[combo.key];
       if (!name) return undefined; // not a sequence after all; treat the key on its own
       const second = K.combo(combo.key);
       return { id: app.id + ':' + K.toId(K.sequence(first, second)), label: QH.names.pick(name), fallbackLabel: true, combos: [K.sequence(first, second)] };
     }
     firstStep = null;
-    if (!app.sequences[id]) return undefined;
+    if (!app.sequences[sequenceKey(combo, mac)]) return undefined;
     firstStep = combo;
     firstAt = now;
     const alone = app.names[id] || COMMON_NAMES[id];
@@ -900,7 +932,7 @@
       if (K.toId(combo) === K.toId(lineSelect('column', mac)) || K.toId(combo) === 'shift+space') headerPick = null; // picked by keyboard
     }
     if (app.sequences) {
-      const step = sequenceStep(app, combo);
+      const step = sequenceStep(app, combo, mac);
       if (step !== undefined) return step;
     }
     let id = K.toId(combo);
@@ -921,7 +953,10 @@
       if (COMPAT_KEYS[id]) id = COMPAT_KEYS[id];
     }
     const seen = detected.get(app.id + ':' + id);
-    const name = seen || QH.names.pick(app.names[id] || COMMON_NAMES[id] || (pressed && COMPAT_NAMES[id]));
+    // A key that means something else on a Mac (macNames) is named for that; null: not a shortcut there.
+    const macName = mac && app.macNames && id in app.macNames ? app.macNames[id] : undefined;
+    if (macName === null) return null;
+    const name = seen || QH.names.pick(macName || app.names[id] || COMMON_NAMES[id] || (pressed && COMPAT_NAMES[id]));
     if (!name) return null;
     const result = { id: app.id + ':' + id, label: name, fallbackLabel: !seen, combos: [pressed && COMPAT_KEYS[K.toId(pressed)] ? comboFromId(id) : combo] };
     if (pressed) result.pressed = pressed;

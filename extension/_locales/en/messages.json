@@ -10,6 +10,7 @@
   "cardOr": { "message": "or" },
   "cardThen": { "message": "then" },
   "cardGmailNote": { "message": "Turn on Settings > Keyboard shortcuts in Gmail first." },
+  "cardMacInputSource": { "message": "On a Mac, if Control+Space switches input sources, it won't reach Sheets." },
   "cardClose": { "message": "Close" },
   "cardMute": { "message": "Stop hinting this shortcut" },
   "cardMuted": { "message": "I won't hint this shortcut anymore." },

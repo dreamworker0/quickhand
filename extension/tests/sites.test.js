@@ -751,6 +751,46 @@ test("Docs: two-step keys count with the second key held or on its own", () => {
   assert.equal(press('KeyX', 'x', ca).id, 'docs:mod+alt+x');
 });
 
+test('Docs on Mac: two-step keys are held with Control+⌘ (help page, Mac)', () => {
+  const { site } = siteEnv('docs');
+  const press = (code, key, mods = {}) => site.fromKey(event(code, key, mods), true);
+  const cc = { ctrlKey: true, metaKey: true };
+  assert.equal(press('KeyN', 'n', cc), null);
+  const next = press('KeyH', 'h', cc);
+  assert.equal(next.id, 'docs:mod+ctrl+n>h');
+  assert.equal(next.label, '다음 제목');
+  assert.deepEqual(JSON.parse(JSON.stringify(next.combos[0])), { mod: true, ctrl: true, alt: false, shift: false, key: 'n', then: { mod: false, ctrl: false, alt: false, shift: false, key: 'h' } });
+  press('KeyN', 'n', cc);
+  assert.equal(press('KeyH', 'h').id, 'docs:mod+ctrl+n>h'); // second key on its own
+  press('KeyT', 't', { ...cc, shiftKey: true });
+  assert.equal(press('KeyM', 'm', { ...cc, shiftKey: true }).id, 'docs:mod+ctrl+shift+t>m');
+  // ⌘+Option+N is not the Mac's two-step key.
+  assert.equal(press('KeyN', 'n', { metaKey: true, altKey: true }), null);
+  assert.equal(press('KeyH', 'h', { metaKey: true, altKey: true })?.id ?? null, 'docs:mod+alt+h');
+  // The menu prints the same key as "⌃⌘O ⌃⌘U".
+  const clicked = site.fromMouse({ target: new Element({ control: true, 'aria-label': '제안된 수정 사항 검토 (⌃⌘O ⌃⌘U)' }) }, true);
+  assert.equal(clicked.id, 'docs:mod+ctrl+o>u');
+  press('KeyO', 'o', cc);
+  assert.equal(press('KeyU', 'u', cc).id, clicked.id);
+});
+
+test('Docs on Mac: keys named for what they do there; Windows keeps its names', () => {
+  const { site } = siteEnv('docs');
+  const name = (code, key, mods, mac) => { const r = site.fromKey(event(code, key, mods), mac); return r && r.label; };
+  assert.equal(name('KeyX', 'x', { metaKey: true, shiftKey: true }, true), '취소선');
+  assert.equal(name('KeyX', 'x', { ctrlKey: true, shiftKey: true }, false), '컨텍스트 메뉴');
+  assert.equal(name('ArrowUp', 'ArrowUp', { ctrlKey: true, shiftKey: true }, true), '단락 위로 이동');
+  assert.equal(name('ArrowUp', 'ArrowUp', { metaKey: true, shiftKey: true }, true), '문서 처음까지 선택');
+  assert.equal(name('ArrowUp', 'ArrowUp', { ctrlKey: true, shiftKey: true }, false), '단락 위로 이동');
+  assert.equal(name('KeyF', 'f', { ctrlKey: true, shiftKey: true }, true), '메뉴 숨기기');
+  assert.equal(name('ArrowRight', 'ArrowRight', { altKey: true, shiftKey: true }, true), '단어 단위로 선택');
+  assert.equal(name('ArrowRight', 'ArrowRight', { altKey: true, shiftKey: true }, false), '이미지 시계 방향 1° 회전');
+  assert.equal(name('ArrowRight', 'ArrowRight', { altKey: true }, true), null); // moving by word
+  assert.equal(name('ArrowRight', 'ArrowRight', { altKey: true }, false), '이미지 시계 방향 15° 회전');
+  assert.equal(name('KeyK', 'k', { ctrlKey: true, metaKey: true }, true), '이미지 크게');
+  assert.equal(name('KeyB', 'b', { metaKey: true }, true), '굵게');
+});
+
 test('Docs: the rest of the help page is named, plus Shift selection and page keys', () => {
   const { site } = siteEnv('docs');
   const id = (code, key, mods) => { const r = site.fromKey(event(code, key, mods), false); return r && r.id; };

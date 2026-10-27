@@ -27,6 +27,13 @@ const OUT = path.join(RESULTS, process.argv.includes('--part3') ? 'docs-shortcut
 const IMAGE = path.join(RESULTS, '..', '..', 'extension', 'assets', 'icons', 'icon-128.png');
 
 const { context, worker } = await launch({ headless: false });
+// No cheer cards: with one on screen, keys pressed by Playwright sometimes left Docs
+// saying its changes weren't saved (Mac, 2026-10-27; not when typing by hand). This
+// check reads what Quickhand counted from its record, not from cards.
+await worker.evaluate(async () => {
+  const { qh_settings } = await chrome.storage.sync.get('qh_settings');
+  await chrome.storage.sync.set({ qh_settings: Object.assign({}, qh_settings, { praise: false }) });
+});
 // Print would open Chrome's print dialog; record the call instead.
 await context.addInitScript(() => { window.print = () => { window.__printed = (window.__printed || 0) + 1; }; });
 const page = await context.newPage();
@@ -116,7 +123,20 @@ async function quickhandSaw(since) {
 // modifiers: ['Control+Alt+KeyN', 'Control+Alt+KeyH']). `expect`: a regexp the
 // announcements should match, or state field names that should change. `body`:
 // also compare the document content.
+// Docs' "unsaved changes" / "try reloading" message: reload the test document and go on.
+async function recoverDocs() {
+  const broken = await page.evaluate(() => /변경사항이 저장되지 않았는데|새로고침해 보세요/.test(document.body.innerText)).catch(() => false);
+  if (!broken) return false;
+  console.log('Docs reported unsaved changes; reloading');
+  await closeExtraPages();
+  await page.goto(docUrl, { waitUntil: 'domcontentloaded' });
+  await page.waitForSelector('#boldButton', { timeout: 60000 });
+  await page.waitForTimeout(3000);
+  return true;
+}
+
 async function test(n, keyLabel, action, keys, { prepare, expect, body = false, after, wait = 1500, note = '', alt } = {}) {
+  if (docUrl && (await recoverDocs())) note = (note ? note + ' / ' : '') + '문서 오류 뒤 새로고침';
   const r = { n, key: shownFor(keyLabel, 'docs'), action, docs: null, live: [], changed: [], quickhand: null, error: null, note };
   try {
     if (prepare) await prepare();
