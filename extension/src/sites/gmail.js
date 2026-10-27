@@ -38,7 +38,8 @@
     more: { name: ['추가 작업 메뉴 열기', 'More actions'], combo: key('.'), labels: ['더보기', 'More'] },
     expandAll: { name: ['모두 펼치기', 'Expand all'], combo: key(';'), labels: ['모두 펼치기', 'Expand all'] },
     select: { name: ['메일 선택', 'Select conversation'], combo: key('x') },
-    selectAll: { name: ['모두 선택', 'Select all'], combo: K.sequence(key('8', { shift: true }), key('a')), labels: ['선택', 'Select'] },
+    // Only the box above the list; its "선택" arrow opens a menu (all, none, read, …), not select all.
+    selectAll: { name: ['모두 선택', 'Select all'], combo: K.sequence(key('8', { shift: true }), key('a')) },
     nextPage: { name: ['다음 페이지', 'Next page'], combo: go('n') },
     prevPage: { name: ['이전 페이지', 'Previous page'], combo: go('p') },
     snoozed: { name: ['다시 알림 항목으로 이동', 'Go to Snoozed'], combo: go('b'), folder: 'snoozed' },

@@ -768,6 +768,10 @@
     if (!(e.target instanceof Element)) return null;
     const menu = menuBar(app, e.target, mac);
     if (menu) return menu;
+    // The arrow beside the name box lists named ranges; its tooltip shows the name box's
+    // Ctrl+J, which only moves the cursor into the box.
+    const named = e.target.closest('[aria-label]');
+    if (named && /^(이름 상자 메뉴|Name box menu)/.test(named.getAttribute('aria-label') || '')) return null;
     if (app.id === 'sheets') readCompatSoon(); // the click may open the shortcuts window or flip its switch
     // The file name box is titled "이름 바꾸기" (rename the file), not the sheet's Alt+1.
     const title = e.target.closest('.docs-title-widget, .docs-title-input');

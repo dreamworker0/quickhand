@@ -634,6 +634,23 @@ test("Gmail: one of the person's labels clicked in the left list hints G then L,
   assert.equal(site.fromMouse({ target: link('https://mail.google.com/mail/u/0/#inbox') }, false).id, 'gmail:inbox');
 });
 
+test("Gmail: the \"선택\" arrow beside the select-all box opens a menu, not select all", () => {
+  const { site } = siteEnv('gmail');
+  const click = (attrs, text) => { const r = site.fromMouse({ target: new Element({ control: true, ...attrs }, text) }, false); return r && r.id; };
+  assert.equal(click({ role: 'button', 'aria-label': '선택' }), null);
+  const box = new Element({ role: 'checkbox' });
+  box.closest = (sel) => (sel === 'tr.zA' || sel.startsWith('input') || sel.startsWith('a[') || sel === '.TO' ? null : box);
+  assert.equal(site.fromMouse({ target: box }, false).id, 'gmail:selectAll'); // the box itself
+});
+
+test('Sheets: the arrow beside the name box (named ranges) is not Ctrl+J', () => {
+  const { site } = siteEnv('sheets');
+  const arrow = new Element({ control: true, role: 'button', 'aria-label': '이름 상자 메뉴 버튼입니다. 메뉴 항목 중 하나를 선택하여 해당하는 이름', 'data-tooltip': '이름 상자 (Ctrl + J)' });
+  assert.equal(site.fromMouse({ target: arrow, button: 0, clientX: 5, clientY: 5 }, false), null);
+  const box = new Element({ control: true, role: 'button', 'aria-label': '이름 상자 (Ctrl + J)' });
+  assert.equal(site.fromMouse({ target: box, button: 0, clientX: 5, clientY: 5 }, false).id, 'sheets:mod+j');
+});
+
 test('Gmail: z counts only while Gmail offers to undo', () => {
   const { site, ctx } = siteEnv('gmail');
   const id = () => { const r = site.fromKey(event('KeyZ', 'z'), false); return r && r.id; };

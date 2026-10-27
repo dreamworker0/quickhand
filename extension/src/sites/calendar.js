@@ -56,7 +56,6 @@
   // "일정" is the 만들기 menu's quick event dialog (Shift+C); the view menu's "일정 A" has its key.
   const MENU_LABELS = { 설정: 'settings', Settings: 'settings', 인쇄: 'print', Print: 'print', 일정: 'quickCreate', Event: 'quickCreate', '키보드 단축키': 'help', 'Keyboard shortcuts': 'help' };
   const PEOPLE_BOX = /^(사용자 검색|Search for people)$/;
-  const SIDE_PANEL = /^(측면 패널|Side panel)$/;
   const DISCARD = /^(일정 변경 취소|Discard changes)$/; // the full event page's X button
   const VIEWS = new Set(['day', 'week', 'month', 'year', 'schedule', 'custom']);
   const BY_JSNAME = { P6mm8: 'today', VfNHU: 'prev', OCpkoe: 'next' }; // header buttons only
@@ -90,8 +89,9 @@
     if (box) return PEOPLE_BOX.test(box.getAttribute('aria-label') || '') ? action('people') : null;
     const btn = e.target.closest('button, [role="button"], [role="menuitem"], [role="radio"], [role="link"], [role="tab"]');
     if (!btn) return null;
-    const panel = btn.closest('[role="complementary"]');
-    if (btn.getAttribute('role') === 'tab') return panel && SIDE_PANEL.test(panel.getAttribute('aria-label') || '') ? action('sidePanel') : null;
+    // The side panel's app tabs (Keep, Tasks, add-ons, "부가기능 설치하기") open an app;
+    // Ctrl+Alt+. only moves the focus there, so a tab is not that shortcut.
+    if (btn.getAttribute('role') === 'tab') return null;
     // The mini calendar's month arrows share the header's jsnames; only the header counts.
     const inHeader = !!btn.closest('[role="banner"], header');
     const jsname = btn.getAttribute('jsname');

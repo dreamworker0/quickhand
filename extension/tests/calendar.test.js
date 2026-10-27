@@ -131,7 +131,7 @@ test('Calendar: clicks that match the new shortcuts', () => {
   const panel = new Node({ role: 'complementary', 'aria-label': '측면 패널' });
   const tab = new Node({ role: 'tab', 'aria-label': 'Keep' }, '', { '[role="complementary"]': panel });
   tab.parents.button = tab;
-  assert.equal(click(site, tab), 'calendar:sidePanel');
+  assert.equal(click(site, tab), null); // opens that app; Ctrl+Alt+. only moves the focus
   const elsewhere = new Node({ role: 'tab', 'aria-label': '일반' });
   elsewhere.parents = { button: elsewhere };
   assert.equal(click(site, elsewhere), null);
