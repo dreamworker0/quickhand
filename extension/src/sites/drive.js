@@ -71,7 +71,8 @@
   }
 
   function nameFor(id) {
-    return QH.names.pick(NAMES[id] || NAMES[id.replace(/^ctrl\+/, 'alt+')] || QH.names.EDITING[id]);
+    // A Mac holds Control where Windows holds Alt (Ctrl+Alt+R: ⌘+Control+R).
+    return QH.names.pick(NAMES[id] || NAMES[id.replace(/(^|\+)ctrl\+/, '$1alt+')] || QH.names.EDITING[id]);
   }
 
   // Menus also list keys without a modifier, such as F2 and Delete.

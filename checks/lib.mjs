@@ -41,12 +41,27 @@ const MAC_RULES = [
   { sites: EDITORS, when: (c) => c.mod && c.alt && /,/.test(c.key), to: { ctrl: true, alt: false } },
   // Image size (Ctrl+Alt+K, B, I, J, W, Q): ⌘+Control.
   { sites: ['docs', 'slides'], when: (c) => c.mod && c.alt && !c.shift && /^[kbijwq]$/.test(c.key), to: { ctrl: true, alt: false } },
-  // The rest of Docs' help page where the Mac key is not just ⌘ for Ctrl, Option for Alt.
-  { sites: ['docs'], when: (c) => c.mod && !c.alt && !c.shift && c.key === 'h', to: { shift: true } }, // find and replace
-  { sites: ['docs'], when: (c) => c.mod && !c.alt && c.shift && c.key === 'f', to: { mod: false, ctrl: true } }, // compact mode
-  { sites: ['docs'], when: (c) => c.alt && c.shift && !c.mod && c.key === '5', to: { alt: false, mod: true, key: 'x' } }, // strikethrough
-  { sites: ['docs'], when: (c) => c.mod && !c.alt && !c.shift && c.key === 'space', to: { key: '\\' } }, // clear formatting
-  { sites: ['docs'], when: (c) => c.mod && !c.alt && c.shift && c.key === 'x', to: { key: '\\' } }, // context menu
+  // The rest of the help pages where the Mac key is not just ⌘ for Ctrl, Option for Alt.
+  { sites: EDITORS, when: (c) => c.mod && !c.alt && !c.shift && c.key === 'h', to: { shift: true } }, // find and replace
+  { sites: EDITORS, when: (c) => c.mod && !c.alt && c.shift && c.key === 'f', to: { mod: false, ctrl: true } }, // compact mode
+  { sites: EDITORS, when: (c) => c.alt && c.shift && !c.mod && c.key === '5', to: { alt: false, mod: true, key: 'x' } }, // strikethrough
+  { sites: ['docs', 'slides'], when: (c) => c.mod && !c.alt && !c.shift && c.key === 'space', to: { key: '\\' } }, // clear formatting
+  { sites: ['docs', 'slides'], when: (c) => c.mod && !c.alt && c.shift && c.key === 'x', to: { key: '\\' } }, // context menu
+  // Sheets: number formats, all formulas, the filter menu and leaving the grid hold Control.
+  { sites: ['sheets'], when: (c) => c.mod && !c.alt && c.shift && /^[1-6]$/.test(c.key), to: { mod: false, ctrl: true } },
+  { sites: ['sheets'], when: (c) => c.mod && !c.alt && !c.shift && c.key === 'backquote', to: { mod: false, ctrl: true } },
+  { sites: ['sheets'], when: (c) => c.mod && c.alt && ((c.key === 'r' && !c.shift) || (c.key === 'm' && c.shift)), to: { ctrl: true, alt: false } },
+  // Slides: new slide, present, full screen, speak selection / from cursor, shrink vertically.
+  { sites: ['slides'], when: (c) => c.mod && !c.alt && !c.shift && c.key === 'm', to: { mod: false, ctrl: true } },
+  { sites: ['slides'], when: (c) => c.mod && !c.alt && !c.shift && c.key === 'f5', to: { key: 'enter' } },
+  { sites: ['slides'], when: (c) => c.mod && !c.alt && !c.shift && c.key === 'enter', to: { mod: false, ctrl: true } }, // enter the comment (⌘+Enter presents)
+  { sites: ['slides'], when: (c) => !c.mod && !c.alt && !c.shift && c.key === 'f11', to: { mod: true, shift: true, key: 'f' } },
+  { sites: ['slides'], when: (c) => c.mod && c.alt && !c.shift && /^[xr]$/.test(c.key), to: { ctrl: true, alt: false } },
+  { sites: ['slides'], when: (c) => c.mod && c.alt && !c.shift && c.key === '9', to: { mod: false, ctrl: true } },
+  // Drive: the menus Windows opens with Alt (create Alt+C, new Alt+N, more Alt+A, sort Alt+R,
+  // density Alt+T) take Control; Ctrl+Alt+R (add shortcut) is ⌘+Control+R. Alt+G stays Option.
+  { sites: ['drive'], when: (c) => c.alt && !c.mod && (/^[cnrt]$/.test(c.key) || c.key === 'a'), to: { alt: false, ctrl: true } },
+  { sites: ['drive'], when: (c) => c.mod && c.alt && !c.shift && c.key === 'r', to: { ctrl: true, alt: false } },
   { sites: ['docs'], when: (c) => c.mod && !c.alt && c.shift && /^arrow(up|down)$/.test(c.key), to: { mod: false, ctrl: true } }, // move paragraph
   { sites: ['docs'], when: (c) => c.mod && !c.alt && /^(home|end)$/.test(c.key), to: { key: (c) => (c.key === 'home' ? 'arrowup' : 'arrowdown') } }, // start / end of the document
   { sites: ['docs'], when: (c) => c.mod && !c.alt && /^arrow/.test(c.key), to: { mod: false, alt: true } }, // by word or paragraph

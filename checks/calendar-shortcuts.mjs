@@ -9,7 +9,7 @@
 // Results: results/calendar-shortcuts.json
 import fs from 'node:fs';
 import path from 'node:path';
-import { launch, RESULTS } from './lib.mjs';
+import { launch, RESULTS, keyFor, shownFor } from './lib.mjs';
 
 const MARK = '[손빠르미 점검]';
 const TITLE = `${MARK} 시험 일정`;
@@ -18,6 +18,9 @@ const OUT = path.join(RESULTS, 'calendar-shortcuts.json');
 
 const { context, worker } = await launch({ headless: false });
 const page = await context.newPage();
+// Keys are written as on Windows; on a Mac every press goes through keyFor() (lib.mjs).
+const pressKey = page.keyboard.press.bind(page.keyboard);
+page.keyboard.press = (k, opts) => pressKey(keyFor(k, 'calendar'), opts);
 page.setDefaultTimeout(10000);
 const results = [];
 const extra = {};
@@ -110,7 +113,7 @@ async function test(n, section, keyLabel, action, keys, { prepare, guarded = fal
   } catch (e) {
     error = (error ? error + ' / ' : '') + '정리 실패: ' + e.message.split('\n')[0];
   }
-  const r = { n, section, key: keyLabel, action, calendar: works, changed, quickhand, error };
+  const r = { n, section, key: shownFor(keyLabel, 'calendar'), action, calendar: works, changed, quickhand, error };
   results.push(r);
   console.log(JSON.stringify(r));
   save();

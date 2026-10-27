@@ -14,7 +14,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
-import { launch, RESULTS } from './lib.mjs';
+import { launch, RESULTS, keyFor, shownFor, twoStep } from './lib.mjs';
 
 const TITLE = '손빠르미 단축키 점검 문서 (지워도 됨)';
 const OUT = path.join(RESULTS, 'slides-shortcuts.json');
@@ -22,8 +22,17 @@ const IMAGE = path.join(RESULTS, '..', '..', 'extension', 'assets', 'icons', 'ic
 const VIDEO = 'https://www.youtube.com/watch?v=arj7oStGLkU';
 
 const { context, worker } = await launch({ headless: false });
+// No cheer cards, as in docs-shortcuts.mjs: with one on screen, keys pressed by
+// Playwright sometimes left the editor saying its changes weren't saved (Mac).
+await worker.evaluate(async () => {
+  const { qh_settings } = await chrome.storage.sync.get('qh_settings');
+  await chrome.storage.sync.set({ qh_settings: Object.assign({}, qh_settings, { praise: false }) });
+});
 await context.addInitScript(() => { window.print = () => { window.__printed = (window.__printed || 0) + 1; }; });
 const page = await context.newPage();
+// Keys are written as on Windows; on a Mac every press goes through keyFor() (lib.mjs).
+const pressKey = page.keyboard.press.bind(page.keyboard);
+page.keyboard.press = (k, opts) => pressKey(keyFor(k, 'slides'), opts);
 page.setDefaultTimeout(10000);
 page.on('dialog', (d) => (d.type() === 'beforeunload' ? d.accept() : d.dismiss()).catch(() => {}));
 await page.setViewportSize({ width: 1700, height: 950 });
@@ -124,7 +133,7 @@ async function quickhandSaw(since) {
 async function test(n, keyLabel, action, keys, { prepare, expect, body = false, after, wait = 1500, alt } = {}) {
   if (!started && n === FROM) started = true;
   if (!started || (ONLY.length && !picked(n))) return { n, slides: null };
-  const r = { n, key: keyLabel, action, slides: null, live: [], changed: [], quickhand: null, error: null };
+  const r = { n, key: shownFor(keyLabel, 'slides'), action, slides: null, live: [], changed: [], quickhand: null, error: null };
   try {
     await recover();
     if (prepare) await prepare();
@@ -175,9 +184,9 @@ function skip(n, key, action, why) {
 // ---------------------------------------------------------------- moving around
 const esc = async () => { await page.keyboard.press('Escape'); await page.waitForTimeout(400); };
 const visible = (sel, opts) => page.locator(sel, opts).filter({ visible: true }).first();
-const seq = (a, b) => [`Control+Alt+${a}`, `Control+Alt+${b}`];
-const seqShift = (a, b) => [`Control+Alt+Shift+${a}`, `Control+Alt+Shift+${b}`];
-const loose = (keys) => [keys[0], keys[1].replace(/^Control\+Alt\+(Shift\+)?/, '')];
+const seq = (a, b) => twoStep(a, b); // Ctrl+Alt held (Mac: Control+⌘)
+const seqShift = (a, b) => twoStep(a, b, { shift: true });
+const loose = (keys) => [keys[0], keys[1].replace(/^Control\+(Alt|Meta)\+(Shift\+)?/, '')];
 async function closeExtraPages() { for (const p of context.pages()) if (p !== page) await p.close().catch(() => {}); }
 // Slides sometimes answers a run of quick edits with a save error that blocks the page.
 async function recover() {

@@ -339,6 +339,20 @@
       // Previous sheet counts as the same action as next sheet.
       keyAlias: { 'alt+arrowup': 'alt+arrowdown' },
       plainKeys: ['home', 'end'],
+      // Keys pressed on a Mac that are the Mac's own key for an action (help page, Mac table).
+      macNames: {
+        'ctrl+shift+1': ['숫자 서식', 'Number format'],
+        'ctrl+shift+2': ['시간 형식', 'Time format'],
+        'ctrl+shift+3': ['날짜 형식', 'Date format'],
+        'ctrl+shift+4': ['통화 서식', 'Currency format'],
+        'ctrl+shift+5': ['퍼센트 서식', 'Percent format'],
+        'ctrl+shift+6': ['지수 형식', 'Scientific format'],
+        'ctrl+shift+f': ['컨트롤 숨기기', 'Hide the menus'],
+        'mod+alt+r': ['메뉴 표시/숨기기', 'Show or hide the menus'],
+        'ctrl+`': ['모든 수식 표시', 'Show all formulas'],
+        'mod+ctrl+shift+m': ['스프레드시트 밖으로 이동', 'Move focus out of the spreadsheet'],
+      },
+      // Mac: Control+Shift+1~6 (Control, not ⌘).
       numberFormats: {
         숫자: 'Ctrl+Shift+1', Number: 'Ctrl+Shift+1', 시간: 'Ctrl+Shift+2', Time: 'Ctrl+Shift+2',
         날짜: 'Ctrl+Shift+3', Date: 'Ctrl+Shift+3', 통화: 'Ctrl+Shift+4', Currency: 'Ctrl+Shift+4',
@@ -461,6 +475,26 @@
         u: ['댓글에서 나가기', 'Leave the comment'],
       },
       plainKeys: ['pageup', 'pagedown'],
+      // Keys pressed on a Mac that mean something else there, or are the Mac's own key
+      // for an action (help page, Mac table).
+      macNames: {
+        'ctrl+m': ['새 슬라이드', 'New slide'],
+        'mod+enter': ['슬라이드쇼 시작', 'Start slideshow'],
+        'mod+shift+enter': ['처음부터 슬라이드쇼', 'Slideshow from the beginning'],
+        'mod+shift+f': ['전체 화면', 'Full screen'],
+        'ctrl+shift+f': ['메뉴 숨기기', 'Hide the menus'],
+        'mod+shift+x': ['취소선', 'Strikethrough'],
+        'alt+shift+arrowup': ['위 단락 선택', 'Select the paragraph above'],
+        'alt+shift+arrowdown': ['아래 단락 선택', 'Select the paragraph below'],
+        'mod+ctrl+b': ['가로로 크게', 'Enlarge horizontally'],
+        'mod+ctrl+i': ['세로로 크게', 'Enlarge vertically'],
+        'mod+ctrl+j': ['작게', 'Shrink'],
+        'mod+ctrl+k': ['크게', 'Enlarge'],
+        'mod+ctrl+w': ['가로로 작게', 'Shrink horizontally'],
+        'mod+ctrl+x': ['선택 영역 읽기', 'Speak selection'],
+        'mod+ctrl+r': ['커서부터 읽기', 'Speak from cursor'],
+        'ctrl+alt+z': ['메뉴 검색', 'Search the menus'],
+      },
       sequences: {
         'mod+alt+u': { a: ['선택 해제', 'Select none'] },
         // The help page says Ctrl+Enter for "enter the current comment", but Slides
@@ -523,7 +557,7 @@
     // Sheets' Format › Number items show a sample ("1,000.12", "10.12%") where other
     // items show their key; the help page gives Ctrl+Shift+1~6 for six of them.
     if (app.numberFormats && accel && /\d/.test(shortcut) && app.numberFormats[label]) {
-      return found(app, K.parse(mac ? app.numberFormats[label].replace(/Ctrl/g, 'Command') : app.numberFormats[label], mac), label);
+      return found(app, K.parse(app.numberFormats[label], mac), label);
     }
     return fromRules(app, control, mac);
   }
@@ -759,6 +793,7 @@
   const PICK_MS = 30000;
   const ON_LINES = new Set(['mod+b', 'mod+i', 'mod+u', 'alt+shift+5', 'mod+\\', 'mod+shift+l', 'mod+shift+e', 'mod+shift+r', 'mod+shift+j',
     'mod+shift+1', 'mod+shift+2', 'mod+shift+3', 'mod+shift+4', 'mod+shift+5', 'mod+shift+6', 'mod+shift+7',
+    'ctrl+shift+1', 'ctrl+shift+2', 'ctrl+shift+3', 'ctrl+shift+4', 'ctrl+shift+5', 'ctrl+shift+6', // Mac number formats
     'alt+shift+1', 'alt+shift+2', 'alt+shift+3', 'alt+shift+4', 'alt+shift+6', 'alt+shift+7',
     'mod+alt+=', 'mod+alt+-', 'mod+alt+9', 'mod+alt+0', 'mod+c', 'mod+x']);
   function afterHeaderPick(app, result, mac) {
@@ -912,8 +947,13 @@
     return K.combo(key, Object.fromEntries(parts.map((m) => [m, true])));
   }
 
+  // Option+key also types a character on a Mac (Option+/ is ÷); these are the editors' own
+  // Option shortcuts there all the same (help pages, Mac tables): menu search, small caps, borders.
+  const MAC_OPTION_KEYS = new Set(['alt+/', 'alt+shift+k', 'alt+shift+1', 'alt+shift+2', 'alt+shift+3', 'alt+shift+4', 'alt+shift+6', 'alt+shift+7']);
+
   function fromKey(app, e, mac) {
-    if (K.isModifierOnly(e) || K.isTextEntry(e, mac)) return null;
+    if (K.isModifierOnly(e)) return null;
+    if (K.isTextEntry(e, mac) && !(mac && MAC_OPTION_KEYS.has(K.toId(K.fromEvent(e, mac))))) return null;
     const combo = K.fromEvent(e, mac);
     const fnKey = /^f\d+$/.test(combo.key);
     if (app.id === 'sheets') {

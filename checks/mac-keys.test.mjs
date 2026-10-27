@@ -72,3 +72,26 @@ test('Mac: Docs keys from the help page (support.google.com/docs/answer/179738, 
   assert.equal(keyFor('Control+ArrowRight', 'sheets', true), 'Meta+ArrowRight');
   assert.equal(keyFor('Control+Home', 'sheets', true), 'Meta+Home');
 });
+
+test('Mac: Sheets, Slides and Drive keys from their help pages', () => {
+  assert.equal(keyFor('Control+Shift+Digit1', 'sheets', true), 'Control+Shift+Digit1'); // number format
+  assert.equal(keyFor('Control+Backquote', 'sheets', true), 'Control+Backquote'); // all formulas
+  assert.equal(keyFor('Control+Alt+KeyR', 'sheets', true), 'Control+Meta+KeyR'); // filter menu
+  assert.equal(keyFor('Control+Alt+KeyM', 'sheets', true), 'Meta+Alt+KeyM'); // comment
+  assert.equal(keyFor('Control+Alt+Shift+KeyM', 'sheets', true), 'Control+Meta+Shift+KeyM');
+  assert.equal(keyFor('Alt+Shift+Digit5', 'sheets', true), 'Meta+Shift+KeyX');
+  assert.equal(keyFor('Control+KeyH', 'sheets', true), 'Meta+Shift+KeyH');
+  assert.equal(keyFor('Control+KeyM', 'slides', true), 'Control+KeyM'); // new slide
+  assert.equal(keyFor('Control+F5', 'slides', true), 'Meta+Enter'); // present
+  assert.equal(keyFor('Control+Enter', 'slides', true), 'Control+Enter'); // enter the comment
+  assert.equal(keyFor('F11', 'slides', true), 'Meta+Shift+KeyF'); // full screen
+  assert.equal(keyFor('Control+Alt+KeyX', 'slides', true), 'Control+Meta+KeyX'); // speak selection
+  assert.equal(keyFor('Control+Alt+KeyB', 'slides', true), 'Control+Meta+KeyB'); // image size
+  assert.equal(keyFor('Control+Shift+KeyX', 'slides', true), 'Meta+Shift+Backslash');
+  assert.equal(keyFor('Alt+KeyC', 'drive', true), 'Control+KeyC'); // create menu
+  assert.equal(keyFor('Alt+Shift+KeyA', 'drive', true), 'Control+Shift+KeyA');
+  assert.equal(keyFor('Alt+KeyG', 'drive', true), 'Alt+KeyG'); // go to: Option
+  assert.equal(keyFor('Control+Alt+KeyR', 'drive', true), 'Control+Meta+KeyR');
+  assert.equal(keyFor('Control+Alt+KeyA', 'drive', true), 'Meta+Alt+KeyA'); // share
+  for (const [k, site] of [['Control+F5', 'slides'], ['Alt+KeyC', 'drive'], ['Control+Shift+Digit1', 'sheets']]) assert.equal(keyFor(k, site, false), k);
+});

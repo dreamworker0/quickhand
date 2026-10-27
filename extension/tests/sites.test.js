@@ -791,6 +791,45 @@ test('Docs on Mac: keys named for what they do there; Windows keeps its names', 
   assert.equal(name('KeyB', 'b', { metaKey: true }, true), '굵게');
 });
 
+test('Sheets and Slides on Mac: the Mac keys from their help pages; Windows keeps its names', () => {
+  const sheets = siteEnv('sheets').site;
+  const slides = siteEnv('slides').site;
+  const name = (site, code, key, mods, mac) => { const r = site.fromKey(event(code, key, mods), mac); return r && r.label; };
+  // Number formats are Control+Shift+1~6 on a Mac, also from the Format › Number menu.
+  assert.equal(name(sheets, 'Digit1', '!', { ctrlKey: true, shiftKey: true }, true), '숫자 서식');
+  const menu = sheets.fromMouse({ target: new Element({ control: true, 'aria-label': '숫자' }) }, true);
+  assert.equal(menu, null); // a plain button named 숫자 is not the Format › Number item
+  assert.equal(name(sheets, 'Backquote', '`', { ctrlKey: true }, true), '모든 수식 표시');
+  assert.equal(name(slides, 'KeyM', 'm', { ctrlKey: true }, true), '새 슬라이드');
+  assert.equal(name(slides, 'KeyM', 'm', { ctrlKey: true }, false), '새 슬라이드');
+  assert.equal(name(slides, 'KeyF', 'f', { metaKey: true, shiftKey: true }, true), '전체 화면');
+  assert.equal(name(slides, 'KeyF', 'f', { ctrlKey: true, shiftKey: true }, false), '메뉴 숨기기');
+  assert.equal(name(slides, 'KeyX', 'x', { metaKey: true, shiftKey: true }, true), '취소선');
+  assert.equal(name(slides, 'KeyX', 'x', { ctrlKey: true, shiftKey: true }, false), '컨텍스트 메뉴');
+  assert.equal(name(slides, 'Enter', 'Enter', { metaKey: true }, true), '슬라이드쇼 시작');
+  assert.equal(name(slides, 'KeyX', 'x', { ctrlKey: true, metaKey: true }, true), '선택 영역 읽기');
+  assert.equal(name(slides, 'ArrowUp', 'ArrowUp', { altKey: true, shiftKey: true }, true), '위 단락 선택');
+  assert.equal(name(slides, 'ArrowUp', 'ArrowUp', { altKey: true, shiftKey: true }, false), '단락 위로 이동');
+});
+
+test('Editors on Mac: their own Option shortcuts count while typing; other Option keys are characters', () => {
+  const docs = siteEnv('docs').site;
+  const sheets = siteEnv('sheets').site;
+  const typing = () => new Element({ typing: true });
+  const name = (site, code, key, mods, mac) => { const r = site.fromKey(event(code, key, { ...mods, target: typing() }), mac); return r && r.label; };
+  assert.equal(name(docs, 'Slash', '÷', { altKey: true }, true), '메뉴 검색');
+  assert.equal(name(docs, 'KeyK', 'K', { altKey: true, shiftKey: true }, true), '작은 대문자');
+  assert.equal(name(docs, 'KeyZ', 'Ω', { altKey: true }, true), null); // Option+Z types Ω
+  assert.equal(name(sheets, 'Digit7', '‡', { altKey: true, shiftKey: true }, true) !== null, true);
+  assert.equal(name(docs, 'Slash', '/', { altKey: true }, false), '메뉴 검색'); // Windows as before
+});
+
+test('Drive on Mac: ⌘+Control+R is Ctrl+Alt+R (add shortcut)', () => {
+  const { site } = siteEnv('drive');
+  const r = site.fromKey(event('KeyR', 'r', { metaKey: true, ctrlKey: true, target: new Element({ control: true }) }), true);
+  assert.equal(r && r.label, '바로가기 추가');
+});
+
 test('Docs: the rest of the help page is named, plus Shift selection and page keys', () => {
   const { site } = siteEnv('docs');
   const id = (code, key, mods) => { const r = site.fromKey(event(code, key, mods), false); return r && r.id; };

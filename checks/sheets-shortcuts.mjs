@@ -15,14 +15,23 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
-import { launch, RESULTS } from './lib.mjs';
+import { launch, RESULTS, keyFor, shownFor, twoStep } from './lib.mjs';
 
 const TITLE = '손빠르미 단축키 점검 문서 (지워도 됨)';
 const OUT = path.join(RESULTS, 'sheets-shortcuts.json');
 
 const { context, worker } = await launch({ headless: false });
+// No cheer cards, as in docs-shortcuts.mjs: with one on screen, keys pressed by
+// Playwright sometimes left the editor saying its changes weren't saved (Mac).
+await worker.evaluate(async () => {
+  const { qh_settings } = await chrome.storage.sync.get('qh_settings');
+  await chrome.storage.sync.set({ qh_settings: Object.assign({}, qh_settings, { praise: false }) });
+});
 await context.addInitScript(() => { window.print = () => { window.__printed = (window.__printed || 0) + 1; }; });
 const page = await context.newPage();
+// Keys are written as on Windows; on a Mac every press goes through keyFor() (lib.mjs).
+const pressKey = page.keyboard.press.bind(page.keyboard);
+page.keyboard.press = (k, opts) => pressKey(keyFor(k, 'sheets'), opts);
 page.setDefaultTimeout(10000);
 // Leaving version history asks "나가시겠습니까?"; answer yes so the check gets back to the sheet.
 page.on('dialog', (d) => (d.type() === 'beforeunload' ? d.accept() : d.dismiss()).catch(() => {}));
@@ -102,7 +111,7 @@ async function quickhandSaw(since) {
 async function test(n, keyLabel, action, keys, { prepare, expect, body = false, after, wait = 1500, note = '', alt } = {}) {
   if (!started && n === FROM) started = true;
   if (!started) return { n, sheets: null };
-  const r = { n, key: keyLabel, action, sheets: null, live: [], changed: [], quickhand: null, error: null, note };
+  const r = { n, key: shownFor(keyLabel, 'sheets'), action, sheets: null, live: [], changed: [], quickhand: null, error: null, note };
   try {
     if (prepare) await prepare();
     const before = await state();
@@ -163,8 +172,8 @@ async function cell(ref) {
   await page.waitForTimeout(500);
 }
 const visible = (sel, opts) => page.locator(sel, opts).filter({ visible: true }).first();
-const seq = (a, b) => [`Control+Alt+${a}`, `Control+Alt+${b}`];
-const loose = (keys) => [keys[0], keys[1].replace(/^Control\+Alt\+(Shift\+)?/, '')];
+const seq = (a, b) => twoStep(a, b); // Ctrl+Alt held (Mac: Control+⌘)
+const loose = (keys) => [keys[0], keys[1].replace(/^Control\+(Alt|Meta)\+(Shift\+)?/, '')];
 
 async function screenReader(on) {
   for (let i = 0; i < 2; i++) {
@@ -321,7 +330,7 @@ await test('M3', 'Ctrl + Alt + Shift + A', '댓글 대화목록 열기', 'Contro
 await test('M5', 'Ctrl + Alt + N, C', '다음 댓글로', seq('KeyN', 'KeyC'), { prepare: () => cell('A1'), expect: /./, alt: loose(seq('KeyN', 'KeyC')) });
 await test('M6', 'Ctrl + Alt + P, C', '이전 댓글로', seq('KeyP', 'KeyC'), { prepare: () => cell('A5'), expect: /./, alt: loose(seq('KeyP', 'KeyC')) });
 await test('M4', 'Ctrl + Alt + E, C', '현재 댓글 입력', seq('KeyE', 'KeyC'), { prepare: () => cell('A3'), expect: ['active'], alt: loose(seq('KeyE', 'KeyC')) });
-const inComment = async () => { await cell('A3'); await page.keyboard.press('Control+Alt+KeyE'); await page.keyboard.press('Control+Alt+KeyC'); await page.waitForTimeout(1200); };
+const inComment = async () => { await cell('A3'); for (const k of seq('KeyE', 'KeyC')) await page.keyboard.press(k); await page.waitForTimeout(1200); };
 await test('M8', 'J', '다음 댓글 (댓글 선택 시)', 'KeyJ', { prepare: inComment, expect: ['active'], body: true });
 await test('M9', 'K', '이전 댓글 (댓글 선택 시)', 'KeyK', { prepare: inComment, expect: ['active'], body: true });
 await test('M7', 'R', '답글 작성 (댓글 선택 시)', 'KeyR', { prepare: inComment, expect: ['active', 'dialogs'], body: true, after: esc });

@@ -9,7 +9,7 @@
 // goes to the trash at the end (cleanup.mjs). Results: results/drive-shortcuts.json
 import fs from 'node:fs';
 import path from 'node:path';
-import { launch, RESULTS } from './lib.mjs';
+import { launch, RESULTS, keyFor, shownFor } from './lib.mjs';
 
 const TITLE = '손빠르미 단축키 점검 문서 (지워도 됨)';
 const SUB = '손빠르미 하위 폴더 (지워도 됨)';
@@ -23,6 +23,9 @@ const OUT = path.join(RESULTS, 'drive-shortcuts.json');
 const { context, worker } = await launch({ headless: false });
 await context.addInitScript(() => { window.print = () => { window.__printed = (window.__printed || 0) + 1; }; });
 const page = await context.newPage();
+// Keys are written as on Windows; on a Mac every press goes through keyFor() (lib.mjs).
+const pressKey = page.keyboard.press.bind(page.keyboard);
+page.keyboard.press = (k, opts) => pressKey(keyFor(k, 'drive'), opts);
 page.setDefaultTimeout(10000);
 await page.setViewportSize({ width: 1500, height: 900 });
 // To read what Ctrl+Alt+L and Ctrl+Shift+C copied.
@@ -165,7 +168,7 @@ async function test(n, section, keyLabel, action, keys, { prepare, expect, after
   } catch (e) {
     error = (error ? error + ' / ' : '') + '정리 실패: ' + e.message.split('\n')[0];
   }
-  const r = { n, section, key: keyLabel, action, drive: works, changed, quickhand, error };
+  const r = { n, section, key: shownFor(keyLabel, 'drive'), action, drive: works, changed, quickhand, error };
   results.push(r);
   console.log(JSON.stringify(r));
   save();
