@@ -161,11 +161,14 @@
     return null;
   }
 
-  // Folder links in the left menu end in "#inbox", "#sent", … whatever the UI language.
+  // Folder links in the left menu end in "#inbox", "#sent", … whatever the UI language;
+  // the person's own labels in "#label/<name>", the way G then L goes (the hint names
+  // the shortcut, never the label).
   function folderOf(el) {
     const box = el.closest('.TO');
     const link = el.closest('a[href*="#"]') || (box && box.querySelector('a[href*="#"]'));
     const hash = link ? (link.getAttribute('href') || '').split('#')[1] : '';
+    if (/^label\/./.test(hash || '')) return action('goLabel');
     return byFolder[hash] ? action(byFolder[hash]) : null;
   }
 

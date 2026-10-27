@@ -619,6 +619,21 @@ test("Gmail: the sidebar's \"더보기\" (more labels) is not the toolbar's More
   assert.equal(click({}, '편지쓰기'), 'gmail:compose'); // a name shown only as text still counts
 });
 
+test("Gmail: one of the person's labels clicked in the left list hints G then L, without its name", () => {
+  const { site, ctx } = siteEnv('gmail');
+  const link = (href) => {
+    const a = new Element({ href }, '1.업무');
+    a.closest = (sel) => (sel.startsWith('a[') ? a : null);
+    return a;
+  };
+  const r = site.fromMouse({ target: link('https://mail.google.com/mail/u/0/#label/1.%EC%97%85%EB%AC%B4') }, false);
+  assert.equal(r.id, 'gmail:goLabel');
+  assert.equal(r.label, '라벨로 이동');
+  assert.ok(!JSON.stringify(r).includes('업무')); // the label's own name goes nowhere
+  assert.deepEqual(JSON.parse(JSON.stringify(ctx.QH.keys.display(r.combos[0], false))), ['G', '→', 'L']);
+  assert.equal(site.fromMouse({ target: link('https://mail.google.com/mail/u/0/#inbox') }, false).id, 'gmail:inbox');
+});
+
 test('Gmail: z counts only while Gmail offers to undo', () => {
   const { site, ctx } = siteEnv('gmail');
   const id = () => { const r = site.fromKey(event('KeyZ', 'z'), false); return r && r.id; };
