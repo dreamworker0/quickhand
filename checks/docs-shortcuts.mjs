@@ -15,7 +15,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
-import { launch, RESULTS } from './lib.mjs';
+import { launch, RESULTS, keyFor, shownFor, twoStep } from './lib.mjs';
 
 const TITLE = '손빠르미 단축키 점검 문서 (지워도 됨)';
 const PART2 = process.argv.includes('--part2') || process.argv.includes('--part3');
@@ -31,6 +31,10 @@ const { context, worker } = await launch({ headless: false });
 await context.addInitScript(() => { window.print = () => { window.__printed = (window.__printed || 0) + 1; }; });
 const page = await context.newPage();
 page.setDefaultTimeout(10000);
+// Keys are written as on Windows; on a Mac every press goes through keyFor() (lib.mjs),
+// which presses Docs' Mac key instead. Two-step keys come from seq() below.
+const pressKey = page.keyboard.press.bind(page.keyboard);
+page.keyboard.press = (k, opts) => pressKey(keyFor(k, 'docs'), opts);
 await page.setViewportSize({ width: 1600, height: 950 });
 const results = [];
 const save = () => fs.writeFileSync(OUT, JSON.stringify(results, null, 2));
@@ -113,7 +117,7 @@ async function quickhandSaw(since) {
 // announcements should match, or state field names that should change. `body`:
 // also compare the document content.
 async function test(n, keyLabel, action, keys, { prepare, expect, body = false, after, wait = 1500, note = '', alt } = {}) {
-  const r = { n, key: keyLabel, action, docs: null, live: [], changed: [], quickhand: null, error: null, note };
+  const r = { n, key: shownFor(keyLabel, 'docs'), action, docs: null, live: [], changed: [], quickhand: null, error: null, note };
   try {
     if (prepare) await prepare();
     const before = await state();
@@ -211,13 +215,12 @@ async function postComment() {
   else await page.keyboard.press('Control+Enter');
   await page.waitForTimeout(2500);
 }
-const mod = (k) => `Control+Alt+${k}`; // Docs' two-step keys keep Ctrl+Alt held
-const seq = (a, b) => [mod(a), mod(b)];
+const seq = (a, b) => twoStep(a, b); // Docs' two-step keys keep Ctrl+Alt (Mac: Control+⌘) held
 // The same two steps with the second key pressed on its own.
-const loose = (keys) => [keys[0], keys[1].replace(/^Control\+Alt\+(Shift\+)?/, '')];
+const loose = (keys) => [keys[0], keys[1].replace(/^Control\+(Alt|Meta)\+(Shift\+)?/, '')];
 // A move from paragraph `from`: any announcement counts as Docs reacting.
 const nav = (n, key, action, keys, from = 0) => test(n, key, action, keys, { prepare: () => para(from), expect: /./, alt: loose(keys) });
-const seqShift = (a, b) => [`Control+Alt+Shift+${a}`, `Control+Alt+Shift+${b}`];
+const seqShift = (a, b) => twoStep(a, b, { shift: true });
 
 // ---------------------------------------------------------------- the test document
 await page.goto('https://docs.new', { waitUntil: 'domcontentloaded' });
@@ -269,8 +272,8 @@ if (PART3) {
   await (await chooser3).setFiles(IMAGE);
   await page.waitForTimeout(5000);
   // Docs' own keys put the cursor on the comment / select the image.
-  const toComment = async () => { await editor(); await page.keyboard.press('Control+Home'); await page.keyboard.press('Control+Alt+KeyN'); await page.keyboard.press('Control+Alt+KeyC'); await page.waitForTimeout(800); };
-  const intoComment = async () => { await toComment(); await page.keyboard.press('Control+Alt+KeyE'); await page.keyboard.press('Control+Alt+KeyC'); await page.waitForTimeout(1000); };
+  const toComment = async () => { await editor(); await page.keyboard.press('Control+Home'); for (const k of seq('KeyN', 'KeyC')) await page.keyboard.press(k); await page.waitForTimeout(800); };
+  const intoComment = async () => { await toComment(); for (const k of seq('KeyE', 'KeyC')) await page.keyboard.press(k); await page.waitForTimeout(1000); };
   await test('SR12', 'Ctrl + Alt + A, C', '댓글 읽기', seq('KeyA', 'KeyC'), { prepare: toComment });
   await test('SR13', 'Ctrl + Alt + A, A', '댓글 앵커 읽기', seq('KeyA', 'KeyA'), { prepare: toComment });
   await test('C3', 'Ctrl + Alt + E, C', '현재 댓글 입력', seq('KeyE', 'KeyC'), { prepare: toComment, expect: ['active'] });
@@ -279,9 +282,9 @@ if (PART3) {
   await test('C14', 'R', '답글 작성 (댓글 선택 시)', 'KeyR', { prepare: intoComment, expect: ['active', 'dialogs'], body: true, after: esc });
   await test('C18', 'U', '현재 댓글 종료 (댓글 선택 시)', 'KeyU', { prepare: intoComment, expect: ['active'], body: true });
   await test('C17', 'E', '현재 댓글 해결 (댓글 선택 시)', 'KeyE', { prepare: intoComment, expect: /해결|panels|active/, body: true });
-  const toFootnote = async () => { await editor(); await page.keyboard.press('Control+Home'); await page.keyboard.press('Control+Alt+KeyN'); await page.keyboard.press('Control+Alt+KeyF'); await page.waitForTimeout(800); };
+  const toFootnote = async () => { await editor(); await page.keyboard.press('Control+Home'); for (const k of seq('KeyN', 'KeyF')) await page.keyboard.press(k); await page.waitForTimeout(800); };
   await test('C5', 'Ctrl + Alt + E, F', '현재 각주로 이동', seq('KeyE', 'KeyF'), { prepare: toFootnote, expect: /각주|scroll|size/, alt: loose(seq('KeyE', 'KeyF')) });
-  const toImage = async () => { await editor(); await page.keyboard.press('Control+Home'); await page.keyboard.press('Control+Alt+KeyN'); await page.keyboard.press('Control+Alt+KeyG'); await page.waitForTimeout(800); };
+  const toImage = async () => { await editor(); await page.keyboard.press('Control+Home'); for (const k of seq('KeyN', 'KeyG')) await page.keyboard.press(k); await page.waitForTimeout(800); };
   const img3 = (n, key, action, k) => test(n, key, action, k, { prepare: toImage, expect: ['image', 'dialogs', 'panels'] });
   await img3('I1', 'Ctrl + Alt + Y', '대체 텍스트', 'Control+Alt+KeyY');
   await esc();
@@ -523,8 +526,8 @@ await test('C3', 'Ctrl + Alt + E, C', '현재 댓글 입력', seq('KeyE', 'KeyC'
 await test('C15', 'J', '다음 댓글 (댓글 선택 시)', 'KeyJ', { expect: ['active'] });
 await test('C16', 'K', '이전 댓글 (댓글 선택 시)', 'KeyK', { expect: ['active'] });
 await test('C14', 'R', '답글 작성 (댓글 선택 시)', 'KeyR', { expect: ['active', 'dialogs'], after: async () => { await esc(); } });
-await test('C18', 'U', '현재 댓글 종료 (댓글 선택 시)', 'KeyU', { prepare: async () => { await selectWord(1); await page.keyboard.press('ArrowLeft'); await page.keyboard.press('ArrowRight'); await page.keyboard.press('Control+Alt+KeyE'); await page.keyboard.press('Control+Alt+KeyC'); await page.waitForTimeout(800); }, expect: ['active'] });
-await test('C17', 'E', '현재 댓글 해결 (댓글 선택 시)', 'KeyE', { prepare: async () => { await selectWord(6); await page.keyboard.press('ArrowLeft'); await page.keyboard.press('ArrowRight'); await page.keyboard.press('Control+Alt+KeyE'); await page.keyboard.press('Control+Alt+KeyC'); await page.waitForTimeout(800); }, expect: /해결|panels|active/ });
+await test('C18', 'U', '현재 댓글 종료 (댓글 선택 시)', 'KeyU', { prepare: async () => { await selectWord(1); await page.keyboard.press('ArrowLeft'); await page.keyboard.press('ArrowRight'); for (const k of seq('KeyE', 'KeyC')) await page.keyboard.press(k); await page.waitForTimeout(800); }, expect: ['active'] });
+await test('C17', 'E', '현재 댓글 해결 (댓글 선택 시)', 'KeyE', { prepare: async () => { await selectWord(6); await page.keyboard.press('ArrowLeft'); await page.keyboard.press('ArrowRight'); for (const k of seq('KeyE', 'KeyC')) await page.keyboard.press(k); await page.waitForTimeout(800); }, expect: /해결|panels|active/ });
 
 // Suggestions: two, typed in suggestion mode.
 await editor(); await page.keyboard.press('Control+Alt+Shift+KeyX'); await page.waitForTimeout(800);
@@ -552,7 +555,7 @@ if (PART2) {
   await test('SR12', 'Ctrl + Alt + A, C', '댓글 읽기', seq('KeyA', 'KeyC'), { prepare: onComment, alt: loose(seq('KeyA', 'KeyC')) });
   await test('C3', 'Ctrl + Alt + E, C', '현재 댓글 입력', seq('KeyE', 'KeyC'), { prepare: onComment, expect: ['active'], alt: loose(seq('KeyE', 'KeyC')) });
   await test('C14', 'R', '답글 작성 (댓글 선택 시)', 'KeyR', { expect: ['active', 'dialogs'], after: esc });
-  const inComment = async () => { await onComment(); await page.keyboard.press('Control+Alt+KeyE'); await page.keyboard.press('Control+Alt+KeyC'); await page.waitForTimeout(1000); };
+  const inComment = async () => { await onComment(); for (const k of seq('KeyE', 'KeyC')) await page.keyboard.press(k); await page.waitForTimeout(1000); };
   await test('C15', 'J', '다음 댓글 (댓글 선택 시)', 'KeyJ', { prepare: inComment, expect: ['active'] });
   await test('C16', 'K', '이전 댓글 (댓글 선택 시)', 'KeyK', { prepare: inComment, expect: ['active'] });
   await test('C18', 'U', '현재 댓글 종료 (댓글 선택 시)', 'KeyU', { prepare: inComment, expect: ['active'] });

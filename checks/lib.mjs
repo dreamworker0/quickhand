@@ -35,7 +35,21 @@ const MAC_RULES = [
   // Previous / next chapter: Option+←/→.
   { sites: ['youtube'], when: (c) => c.mod && !c.alt && !c.shift && /^arrow(left|right)$/.test(c.key), to: { mod: false, alt: true } },
   // Menu access (Alt+F file, Alt+Shift+F in other browsers): Control+Option+F.
-  { sites: EDITORS, when: (c) => c.alt && !c.mod && !c.ctrl && /^[a-z]$/.test(c.key), to: { ctrl: true } },
+  { sites: EDITORS, when: (c) => c.alt && !c.mod && !c.ctrl && /^[a-z]$/.test(c.key), to: { ctrl: true, shift: false } },
+  // Docs' two-step keys ("Ctrl + Alt + N, H") are held with Control+⌘. Only labels say
+  // both steps; a check presses them through its own helper (docs-shortcuts.mjs: seq()).
+  { sites: EDITORS, when: (c) => c.mod && c.alt && /,/.test(c.key), to: { ctrl: true, alt: false } },
+  // Image size (Ctrl+Alt+K, B, I, J, W, Q): ⌘+Control.
+  { sites: ['docs', 'slides'], when: (c) => c.mod && c.alt && !c.shift && /^[kbijwq]$/.test(c.key), to: { ctrl: true, alt: false } },
+  // The rest of Docs' help page where the Mac key is not just ⌘ for Ctrl, Option for Alt.
+  { sites: ['docs'], when: (c) => c.mod && !c.alt && !c.shift && c.key === 'h', to: { shift: true } }, // find and replace
+  { sites: ['docs'], when: (c) => c.mod && !c.alt && c.shift && c.key === 'f', to: { mod: false, ctrl: true } }, // compact mode
+  { sites: ['docs'], when: (c) => c.alt && c.shift && !c.mod && c.key === '5', to: { alt: false, mod: true, key: 'x' } }, // strikethrough
+  { sites: ['docs'], when: (c) => c.mod && !c.alt && !c.shift && c.key === 'space', to: { key: '\\' } }, // clear formatting
+  { sites: ['docs'], when: (c) => c.mod && !c.alt && c.shift && c.key === 'x', to: { key: '\\' } }, // context menu
+  { sites: ['docs'], when: (c) => c.mod && !c.alt && c.shift && /^arrow(up|down)$/.test(c.key), to: { mod: false, ctrl: true } }, // move paragraph
+  { sites: ['docs'], when: (c) => c.mod && !c.alt && /^(home|end)$/.test(c.key), to: { key: (c) => (c.key === 'home' ? 'arrowup' : 'arrowdown') } }, // start / end of the document
+  { sites: ['docs'], when: (c) => c.mod && !c.alt && /^arrow/.test(c.key), to: { mod: false, alt: true } }, // by word or paragraph
 ];
 // Playwright names for keys, and the arrows the card and labels print.
 const PRESS_NAMES = { space: 'Space', enter: 'Enter', escape: 'Escape', tab: 'Tab', backspace: 'Backspace', delete: 'Delete',
@@ -43,6 +57,9 @@ const PRESS_NAMES = { space: 'Space', enter: 'Enter', escape: 'Escape', tab: 'Ta
   home: 'Home', end: 'End', pageup: 'PageUp', pagedown: 'PageDown' };
 const ARROWS = { '←': 'arrowleft', '→': 'arrowright', '↑': 'arrowup', '↓': 'arrowdown' };
 const keyOf = (part) => ARROWS[part] || part.toLowerCase().replace(/^key([a-z])$/, '$1').replace(/^digit(\d)$/, '$1');
+const SYMBOLS = { '\\': 'Backslash' };
+const pressName = (k) => PRESS_NAMES[k] || SYMBOLS[k] || (/^[a-z]$/.test(k) ? 'Key' + k.toUpperCase() : k);
+const cardName = (k) => Object.keys(ARROWS).find((a) => ARROWS[a] === k) || (k.length === 1 ? k.toUpperCase() : k);
 
 // "Control+Shift+KeyC", "Ctrl + Shift + C" or "mod+shift+c" → { mod, ctrl, alt, shift, key, own },
 // where own is the key as the caller spelled it.
@@ -62,14 +79,19 @@ function readCombo(text) {
 }
 function toMac(c, site) {
   const rule = MAC_RULES.find((r) => r.sites.includes(site) && r.when(c));
-  return rule ? Object.assign({}, c, rule.to) : c;
+  if (!rule) return c;
+  const to = Object.assign({}, rule.to);
+  if (typeof to.key === 'function') to.key = to.key(c);
+  if (to.key) to.own = ''; // another key: named afresh
+  return Object.assign({}, c, to);
 }
 
 // A Playwright key ("Control+Shift+KeyC") for page.keyboard.press(); site picks MAC_RULES.
+// A key that already says Meta is a Mac key and is pressed as written.
 export function keyFor(win, site, mac = MAC) {
-  if (!mac) return win;
+  if (!mac || /\bMeta\b/.test(win)) return win;
   const c = toMac(readCombo(win), site);
-  return [c.ctrl && 'Control', c.mod && 'Meta', c.alt && 'Alt', c.shift && 'Shift', c.own || PRESS_NAMES[c.key]].filter(Boolean).join('+');
+  return [c.ctrl && 'Control', c.mod && 'Meta', c.alt && 'Alt', c.shift && 'Shift', c.own || pressName(c.key)].filter(Boolean).join('+');
 }
 
 // A key as the card shows it ("Ctrl + B" → "⌘ + B"); "A 다음 B" for two steps.
@@ -77,8 +99,15 @@ export function shownFor(win, site, mac = MAC) {
   if (!mac) return win;
   return win.split(/\s+다음\s+/).map((step) => {
     const c = toMac(readCombo(step), site);
-    return [c.ctrl && 'Control', c.mod && '⌘', c.alt && 'Option', c.shift && 'Shift', c.own].filter(Boolean).join(' + ');
+    return [c.ctrl && 'Control', c.mod && '⌘', c.alt && 'Option', c.shift && 'Shift', c.own || cardName(c.key)].filter(Boolean).join(' + ');
   }).join(' 다음 ');
+}
+
+// Docs' two-step keys hold Ctrl+Alt (Windows) or Control+⌘ (Mac) through both steps:
+// twoStep('N', 'H') → ['Control+Alt+KeyN', 'Control+Alt+KeyH'].
+export function twoStep(first, second, { shift = false, mac = MAC } = {}) {
+  const hold = (mac ? 'Control+Meta+' : 'Control+Alt+') + (shift ? 'Shift+' : '');
+  return [first, second].map((k) => hold + (/^[A-Z]$/.test(k) ? 'Key' + k : /^\d$/.test(k) ? 'Digit' + k : k));
 }
 
 // An action ID Quickhand logs ("sheets:mod+space" → "sheets:ctrl+space"). Most IDs say
