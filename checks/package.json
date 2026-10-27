@@ -5,6 +5,7 @@
   "description": "손빠르미를 설치한 점검용 크롬으로 실제 사이트에서 알림 카드를 확인하는 스크립트",
   "type": "module",
   "scripts": {
+    "test": "node --test \"*.test.mjs\"",
     "offline": "node offline.mjs",
     "youtube": "node youtube.mjs",
     "login": "node login.mjs",

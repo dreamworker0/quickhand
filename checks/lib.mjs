@@ -21,6 +21,78 @@ export const PROFILES = process.env.LOCALAPPDATA
 export const PROFILE = path.resolve(PROFILES, process.env.QH_PROFILE || (BROWSER === 'chrome' ? '.profile' : `.profile-${BROWSER}`));
 export const RESULTS = path.join(here, 'results');
 
+// The checks are written with Windows keys ("Control+Shift+KeyC", "Ctrl + B",
+// "sheets:mod+space"). On a Mac, keyFor(), shownFor() and idFor() turn them into the key Google
+// and Quickhand use there; elsewhere they return their input unchanged, so a Windows
+// run presses and expects exactly what it did before.
+// Rule of thumb: Ctrl becomes ⌘ and Alt becomes Option. MAC_RULES lists where a
+// site uses another key on a Mac (Quickhand's sites/*.js make the same choice).
+export const MAC = process.platform === 'darwin';
+const EDITORS = ['docs', 'sheets', 'slides'];
+const MAC_RULES = [
+  // Select column: ⌘+Space is Spotlight, so Sheets uses Control+Space.
+  { sites: ['sheets'], when: (c) => c.mod && !c.alt && !c.shift && c.key === 'space', to: { mod: false, ctrl: true } },
+  // Previous / next chapter: Option+←/→.
+  { sites: ['youtube'], when: (c) => c.mod && !c.alt && !c.shift && /^arrow(left|right)$/.test(c.key), to: { mod: false, alt: true } },
+  // Menu access (Alt+F file, Alt+Shift+F in other browsers): Control+Option+F.
+  { sites: EDITORS, when: (c) => c.alt && !c.mod && !c.ctrl && /^[a-z]$/.test(c.key), to: { ctrl: true } },
+];
+// Playwright names for keys, and the arrows the card and labels print.
+const PRESS_NAMES = { space: 'Space', enter: 'Enter', escape: 'Escape', tab: 'Tab', backspace: 'Backspace', delete: 'Delete',
+  arrowleft: 'ArrowLeft', arrowright: 'ArrowRight', arrowup: 'ArrowUp', arrowdown: 'ArrowDown',
+  home: 'Home', end: 'End', pageup: 'PageUp', pagedown: 'PageDown' };
+const ARROWS = { '←': 'arrowleft', '→': 'arrowright', '↑': 'arrowup', '↓': 'arrowdown' };
+const keyOf = (part) => ARROWS[part] || part.toLowerCase().replace(/^key([a-z])$/, '$1').replace(/^digit(\d)$/, '$1');
+
+// "Control+Shift+KeyC", "Ctrl + Shift + C" or "mod+shift+c" → { mod, ctrl, alt, shift, key, own },
+// where own is the key as the caller spelled it.
+function readCombo(text) {
+  const c = { mod: false, ctrl: false, alt: false, shift: false, key: '', own: '' };
+  const parts = text.trim().endsWith('+') && /\+\s*\+$/.test(text.trim())
+    ? text.trim().slice(0, -1).split(/\s*\+\s*/).filter(Boolean).concat('+') // "Ctrl + +"
+    : text.split(/\s*\+\s*/);
+  for (const part of parts) {
+    const lower = part.toLowerCase();
+    if (lower === 'control' || lower === 'ctrl' || lower === 'mod') c.mod = true;
+    else if (lower === 'alt') c.alt = true;
+    else if (lower === 'shift') c.shift = true;
+    else { c.own = part; c.key = keyOf(part); }
+  }
+  return c;
+}
+function toMac(c, site) {
+  const rule = MAC_RULES.find((r) => r.sites.includes(site) && r.when(c));
+  return rule ? Object.assign({}, c, rule.to) : c;
+}
+
+// A Playwright key ("Control+Shift+KeyC") for page.keyboard.press(); site picks MAC_RULES.
+export function keyFor(win, site, mac = MAC) {
+  if (!mac) return win;
+  const c = toMac(readCombo(win), site);
+  return [c.ctrl && 'Control', c.mod && 'Meta', c.alt && 'Alt', c.shift && 'Shift', c.own || PRESS_NAMES[c.key]].filter(Boolean).join('+');
+}
+
+// A key as the card shows it ("Ctrl + B" → "⌘ + B"); "A 다음 B" for two steps.
+export function shownFor(win, site, mac = MAC) {
+  if (!mac) return win;
+  return win.split(/\s+다음\s+/).map((step) => {
+    const c = toMac(readCombo(step), site);
+    return [c.ctrl && 'Control', c.mod && '⌘', c.alt && 'Option', c.shift && 'Shift', c.own].filter(Boolean).join(' + ');
+  }).join(' 다음 ');
+}
+
+// An action ID Quickhand logs ("sheets:mod+space" → "sheets:ctrl+space"). Most IDs say
+// "mod", which means Ctrl or ⌘, and stay the same.
+export function idFor(win, mac = MAC) {
+  if (!mac || !win) return win;
+  const [site, keys] = win.split(':');
+  if (!keys || !/[+>]/.test(keys)) return win; // "sheets:range", "sheets:f2" and other one-word IDs
+  return site + ':' + keys.split('>').map((step) => {
+    const c = toMac(readCombo(step), site);
+    return [c.mod && 'mod', c.ctrl && 'ctrl', c.alt && 'alt', c.shift && 'shift', c.key].filter(Boolean).join('+');
+  }).join('>');
+}
+
 // Runs in every page before its own scripts: keeps each card that appears, with
 // its text and whether it was on top of the page a moment later.
 function watchCards() {
@@ -45,6 +117,24 @@ function watchCards() {
   }).observe(document, { childList: true, subtree: true });
 }
 
+// Turns Quickhand back on from chrome://extensions if Chrome has turned it off, and
+// returns its new worker; null when it was on already (or would not start).
+async function enable(context, extensionId, isOurs) {
+  const page = await context.newPage();
+  try {
+    await page.goto('chrome://extensions');
+    const on = await page.evaluate((id) => new Promise((ok) => chrome.management.get(id, (i) => ok(!i || i.enabled))), extensionId);
+    if (on) return null;
+    const started = context.waitForEvent('serviceworker', { predicate: isOurs, timeout: 15000 }).catch(() => null);
+    await page.evaluate((id) => new Promise((ok) => chrome.management.setEnabled(id, true, ok)), extensionId);
+    return await started;
+  } catch (e) {
+    return null;
+  } finally {
+    await page.close();
+  }
+}
+
 // Google Chrome (137+) ignores --load-extension; it loads an unpacked extension
 // through the DevTools protocol instead, once started with
 // --enable-unsafe-extension-debugging. Edge still takes the flag.
@@ -56,7 +146,9 @@ export async function launch({ headless = true } = {}) {
     headless,
     viewport: { width: 1280, height: 800 },
     locale: 'ko-KR',
-    ignoreDefaultArgs: ['--disable-extensions'],
+    // On a Mac, Playwright's stand-in keychain can't read the cookies the login
+    // window (npm run login) saved with the real one, so the check looked signed out.
+    ignoreDefaultArgs: MAC ? ['--disable-extensions', '--use-mock-keychain'] : ['--disable-extensions'],
     args: chrome
       ? ['--enable-unsafe-extension-debugging']
       : [`--disable-extensions-except=${EXTENSION}`, `--load-extension=${EXTENSION}`],
@@ -74,6 +166,7 @@ export async function launch({ headless = true } = {}) {
     worker = await fresh;
   }
   if (!worker) worker = context.serviceWorkers().filter(isOurs).pop();
+  if (!worker && extensionId) worker = await enable(context, extensionId, isOurs); // left off by an earlier run
   if (!worker && extensionId) {
     // Already known to this profile, so its worker may be asleep: the popup's
     // first message wakes it.
@@ -99,6 +192,9 @@ export async function launch({ headless = true } = {}) {
     const restarted = context.waitForEvent('serviceworker', { predicate: isOurs, timeout: 15000 }).catch(() => null);
     await worker.evaluate(() => chrome.runtime.reload()).catch(() => {});
     worker = await restarted;
+    // Chrome 156 turns the extension off instead (seen on a Mac, 2026-10-27): turning it
+    // back on starts it from the files on disk, with its storage kept.
+    if (!worker) worker = await enable(context, extensionId, isOurs);
     if (!worker) {
       // Asleep after the reload: the popup's first message wakes it.
       const waking = context.waitForEvent('serviceworker', { predicate: isOurs, timeout: 15000 }).catch(() => null);

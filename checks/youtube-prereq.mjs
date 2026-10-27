@@ -7,7 +7,7 @@
 // account. Results: results/youtube-prereq.json
 import fs from 'node:fs';
 import path from 'node:path';
-import { launch, RESULTS } from './lib.mjs';
+import { launch, RESULTS, keyFor, shownFor } from './lib.mjs';
 
 const TALK = 'https://www.youtube.com/watch?v=arj7oStGLkU';
 const BUNNY = 'https://www.youtube.com/watch?v=aqz-KE-bpKQ';
@@ -80,14 +80,14 @@ console.log('playlist:', PLAYLIST);
 
 const results = [];
 for (const [shown, key, what] of KEYS) {
-  const row = { key: shown, action: what, states: {} };
+  const row = { key: shownFor(shown, 'youtube'), action: what, states: {} };
   for (const [name, prepare] of Object.entries(STATES)) {
     let cell;
     try {
       await prepare();
       const b = await state();
       const since = Date.now();
-      await page.keyboard.press(key);
+      await page.keyboard.press(keyFor(key, 'youtube'));
       await page.waitForTimeout(1500);
       const a = await state();
       // While playing, time moves on by itself; only what differs from that counts.

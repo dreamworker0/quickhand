@@ -9,8 +9,10 @@ const pf = process.env.ProgramFiles;
 const pf86 = process.env['ProgramFiles(x86)'];
 const local = process.env.LOCALAPPDATA;
 const CANDIDATES = {
-  chrome: [`${pf}\\Google\\Chrome\\Application\\chrome.exe`, `${pf86}\\Google\\Chrome\\Application\\chrome.exe`, `${local}\\Google\\Chrome\\Application\\chrome.exe`],
-  msedge: [`${pf86}\\Microsoft\\Edge\\Application\\msedge.exe`, `${pf}\\Microsoft\\Edge\\Application\\msedge.exe`],
+  chrome: [`${pf}\\Google\\Chrome\\Application\\chrome.exe`, `${pf86}\\Google\\Chrome\\Application\\chrome.exe`, `${local}\\Google\\Chrome\\Application\\chrome.exe`,
+    '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'],
+  msedge: [`${pf86}\\Microsoft\\Edge\\Application\\msedge.exe`, `${pf}\\Microsoft\\Edge\\Application\\msedge.exe`,
+    '/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge'],
 };
 const exe = (CANDIDATES[BROWSER] || []).find((p) => fs.existsSync(p));
 if (!exe) throw new Error(`${BROWSER} not found`);

@@ -4,7 +4,7 @@
 // Results: results/youtube-shortcuts.json
 import fs from 'node:fs';
 import path from 'node:path';
-import { launch, RESULTS } from './lib.mjs';
+import { launch, RESULTS, keyFor, shownFor } from './lib.mjs';
 
 const VIDEO = 'https://www.youtube.com/watch?v=arj7oStGLkU'; // TED talk with chapters and captions
 
@@ -73,7 +73,7 @@ async function test(n, keyLabel, action, keys, { prepare, focus = focusPlayer, j
     await focus();
     before = await state();
     const since = Date.now();
-    for (const k of [].concat(keys)) await page.keyboard.press(k);
+    for (const k of [].concat(keys)) await page.keyboard.press(keyFor(k, 'youtube'));
     await page.waitForTimeout(wait);
     after = await state();
     quickhand = await quickhandSaw(since);
@@ -81,7 +81,7 @@ async function test(n, keyLabel, action, keys, { prepare, focus = focusPlayer, j
   } catch (e) {
     error = e.message.split('\n')[0];
   }
-  const r = { n, key: keyLabel, action, youtube: works, note, quickhand, error };
+  const r = { n, key: shownFor(keyLabel, 'youtube'), action, youtube: works, note, quickhand, error };
   results.push(r);
   console.log(JSON.stringify(r));
 }

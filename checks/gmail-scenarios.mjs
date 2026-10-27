@@ -10,7 +10,7 @@
 // Results: results/gmail-scenarios.json and a table in the console.
 import fs from 'node:fs';
 import path from 'node:path';
-import { launch, check, RESULTS } from './lib.mjs';
+import { launch, check, RESULTS, keyFor } from './lib.mjs';
 
 const MARK = '손빠르미 점검';
 const SUBJECT = `[${MARK}] 시나리오 메일`;
@@ -91,7 +91,7 @@ if (!(await rows().count())) {
   await visible('[role="dialog"] input[name="subjectbox"]').fill(SUBJECT);
   await visible('div[aria-label="메일 본문"]').click();
   await page.keyboard.type('손빠르미 Gmail 시나리오 점검용 시험 메일입니다. 지워도 됩니다.');
-  await page.keyboard.press('Control+Enter');
+  await page.keyboard.press(keyFor('Control+Enter', 'gmail'));
   for (let i = 0; i < 12 && !(await rows().count()); i++) await go('#search/' + encodeURIComponent(QUERY));
 }
 console.log('test mail found:', await rows().count());

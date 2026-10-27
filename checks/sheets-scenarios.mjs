@@ -10,7 +10,7 @@
 // Results: results/sheets-scenarios.json and a table in the console.
 import fs from 'node:fs';
 import path from 'node:path';
-import { launch, check, RESULTS } from './lib.mjs';
+import { launch, check, RESULTS, keyFor, idFor } from './lib.mjs';
 
 const TITLE = '손빠르미 단축키 점검 문서 (지워도 됨)';
 const OUT = path.join(RESULTS, 'sheets-scenarios.json');
@@ -78,7 +78,7 @@ async function shiftClick(at) {
   await page.mouse.click(at.x, at.y);
   await page.keyboard.up('Shift');
 }
-const press = (...keys) => async () => { for (const k of keys) { await page.keyboard.press(k); await page.waitForTimeout(350); } };
+const press = (...keys) => async () => { for (const k of keys) { await page.keyboard.press(keyFor(k, 'sheets')); await page.waitForTimeout(350); } };
 
 // ---------------------------------------------------------------- the test file
 await page.goto('https://sheets.new', { waitUntil: 'domcontentloaded', timeout: 60000 });
@@ -86,7 +86,7 @@ await page.waitForSelector('#t-name-box', { timeout: 60000 });
 await page.waitForTimeout(4000);
 console.log('test file:', page.url());
 await page.locator('.docs-title-input').click();
-await page.keyboard.press('Control+A');
+await page.keyboard.press(keyFor('Control+A', 'sheets'));
 await page.keyboard.type(TITLE);
 await page.keyboard.press('Enter');
 await page.waitForTimeout(800);
@@ -113,6 +113,7 @@ if (calibration !== 'C5') {
 
 // ---------------------------------------------------------------- the flows
 // [name, start cell (selected through the name box) or null to keep, step, expected id or null]
+// Keys and IDs are the Windows ones; press() and idFor() give the Mac ones on a Mac.
 const FLOWS = [
   ['마우스: 셀을 가로로 끌기 B3→E3', 'A12', () => drag(cell('B3'), cell('E3')), RANGE],
   ['마우스: 셀을 세로로 끌기 C3→C9', 'A12', () => drag(cell('C3'), cell('C9')), RANGE],
@@ -170,9 +171,9 @@ for (const [name, start, step, expected] of FLOWS) {
   const r = await check(page, worker, name, step, { wait: 1300 });
   // The last thing Quickhand recorded for this step: keyboard use is logged too.
   const box = await nameBox();
-  const ok = r.recognized === expected;
-  results.push({ name, expected, recognized: r.recognized, outcome: r.outcome, card: r.card, nameBox: box, ok, error: r.error });
-  if (name.includes('채우기 핸들') || name.includes('열 너비')) { await page.keyboard.press('Escape'); await page.keyboard.press('Control+Z'); await page.waitForTimeout(500); }
+  const ok = r.recognized === idFor(expected);
+  results.push({ name, expected: idFor(expected), recognized: r.recognized, outcome: r.outcome, card: r.card, nameBox: box, ok, error: r.error });
+  if (name.includes('채우기 핸들') || name.includes('열 너비')) { await page.keyboard.press('Escape'); await page.keyboard.press(keyFor('Control+Z', 'sheets')); await page.waitForTimeout(500); }
 }
 await page.keyboard.press('Escape');
 
@@ -193,7 +194,7 @@ const TWO_STEP = [
     await page.waitForTimeout(800);
     await visibleOne('.goog-menuitem', { hasText: /^오른쪽/ }).click();
   }, 'sheets:mod+shift+r', /Shift[\s\S]*Space[\s\S]*다음[\s\S]*R/],
-  ['키보드로 고른 열(Ctrl+Space) 뒤 굵게 버튼', async () => { await go('E3'); await page.keyboard.press('Control+Space'); }, () => visibleOne('#t-bold').click(), 'sheets:mod+b', /^(?![\s\S]*Space)/],
+  ['키보드로 고른 열(Ctrl+Space) 뒤 굵게 버튼', async () => { await go('E3'); await page.keyboard.press(keyFor('Control+Space', 'sheets')); }, () => visibleOne('#t-bold').click(), 'sheets:mod+b', /^(?![\s\S]*Space)/],
 ];
 for (const [name, pick, step, expected, cardShows] of TWO_STEP) {
   // Sheets' error dialog ("오류 발생 … 새로고침") can come up in between: reload and try again.
@@ -210,9 +211,9 @@ for (const [name, pick, step, expected, cardShows] of TWO_STEP) {
     await recover();
   }
   const cardOk = !!r.card && cardShows.test(r.card);
-  results.push({ name, expected, recognized: r.recognized, outcome: r.outcome, card: r.card, nameBox: await nameBox(), ok: r.recognized === expected && cardOk, error: r.error || (cardOk ? undefined : '카드 내용이 기대와 다름: ' + (r.card || '(카드 없음)').replace(/\s+/g, ' ').slice(0, 60)) });
+  results.push({ name, expected: idFor(expected), recognized: r.recognized, outcome: r.outcome, card: r.card, nameBox: await nameBox(), ok: r.recognized === idFor(expected) && cardOk, error: r.error || (cardOk ? undefined : '카드 내용이 기대와 다름: ' + (r.card || '(카드 없음)').replace(/\s+/g, ' ').slice(0, 60)) });
   await page.keyboard.press('Escape');
-  await page.keyboard.press('Control+KeyZ');
+  await page.keyboard.press(keyFor('Control+KeyZ', 'sheets'));
   await page.waitForTimeout(500);
 }
 
