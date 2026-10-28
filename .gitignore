@@ -7,3 +7,6 @@ checks/results/
 
 # Store upload built by `npm run pack`
 dist/
+
+# Video editing: raw recordings (GBs), edit work files and renders — never upload
+동영상편집/
