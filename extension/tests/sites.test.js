@@ -283,7 +283,7 @@ test("Sheets: Excel-style keys count only once the shortcuts window showed the c
   assert.equal(id('KeyB', 'b', ctrl).id, 'sheets:mod+b'); // the usual key always counts
 });
 
-test('Docs, Sheets, Slides: opening a menu bar menu with the mouse hints its Alt key (Windows)', () => {
+test('Docs, Sheets, Slides: opening a menu bar menu with the mouse hints its Alt key (Mac: Control+Option)', () => {
   const bar = (text) => {
     const item = new Element({ role: 'menuitem' }, text);
     item.closest = (sel) => (sel.includes('#docs-menubar') ? item : null);
@@ -297,7 +297,15 @@ test('Docs, Sheets, Slides: opening a menu bar menu with the mouse hints its Alt
   assert.equal(click('slides', '삽입'), 'slides:alt+i');
   assert.equal(click('docs', '데이터'), null); // not measured in Docs
   assert.equal(click('slides', '슬라이드'), null); // nor Slides' own menus
-  assert.equal(click('sheets', '데이터', true), null); // Mac: other keys
+  // Mac: Control+Option+letter, named after the menu.
+  assert.equal(click('sheets', '데이터', true), 'sheets:ctrl+alt+d');
+  assert.equal(click('docs', '파일', true), 'docs:ctrl+alt+f');
+  assert.equal(siteEnv('docs').site.fromMouse({ target: bar('파일'), button: 0, clientX: 5, clientY: 5 }, true).label, '파일 메뉴');
+  assert.equal(click('docs', '데이터', true), null);
+  const key = siteEnv('docs').site.fromKey(event('KeyF', 'f', { ctrlKey: true, altKey: true }), true);
+  assert.equal(key.id, 'docs:ctrl+alt+f');
+  assert.equal(key.label, '파일 메뉴');
+  assert.deepEqual([...siteEnv('docs').ctx.QH.keys.display(key.combos[0], true)], ['Control', 'Option', 'F']);
 });
 
 test('Sheets: dragging a header (resize or move) is not a column/row select', async () => {
@@ -822,6 +830,34 @@ test('Editors on Mac: their own Option shortcuts count while typing; other Optio
   assert.equal(name(docs, 'KeyZ', 'Ω', { altKey: true }, true), null); // Option+Z types Ω
   assert.equal(name(sheets, 'Digit7', '‡', { altKey: true, shiftKey: true }, true) !== null, true);
   assert.equal(name(docs, 'Slash', '/', { altKey: true }, false), '메뉴 검색'); // Windows as before
+});
+
+test('On a Mac, buttons whose key Chrome takes get no hint (Gmail Bcc, Drive copy link)', () => {
+  const gmail = siteEnv('gmail').site;
+  const bcc = (tip, mac) => gmail.fromMouse({ target: new Element({ control: true, 'data-tooltip': tip }), button: 0 }, mac);
+  assert.deepEqual(JSON.parse(JSON.stringify(bcc('숨은참조 추가 (⌘+Shift+B)', true))), { quiet: true });
+  assert.equal(bcc('숨은참조 추가 (Ctrl+Shift+B)', false).id, 'gmail:mod+shift+b');
+  assert.equal(bcc('참조 추가 (⌘+Shift+C)', true).id, 'gmail:mod+shift+c');
+  const drive = siteEnv('drive').site;
+  const link = (tip, mac) => drive.fromMouse({ target: new Element({ control: true, 'data-tooltip': tip }), button: 0 }, mac);
+  assert.deepEqual(JSON.parse(JSON.stringify(link('링크 복사 (⌘+Option+L)', true))), { quiet: true });
+  assert.equal(link('링크 복사 (Ctrl+Alt+L)', false).id, 'drive:mod+alt+l');
+});
+
+test('content/main.js: a quiet answer sends nothing, not even an unknown button', () => {
+  const env = siteEnv('calendar');
+  env.site.fromMouse = () => ({ quiet: true });
+  env.start();
+  env.listeners.click({ target: new Element({ control: true, 'aria-label': '숨은참조 추가' }), button: 0, isTrusted: true, detail: 1 });
+  assert.equal(env.messages.length, 0);
+});
+
+test('Gmail on Mac: next / previous compose window are Control+. and Control+,', () => {
+  const { site } = siteEnv('gmail');
+  const name = (code, key, mods, mac) => { const r = site.fromKey(event(code, key, mods), mac); return r && r.label; };
+  assert.equal(name('Period', '.', { ctrlKey: true }, true), '다음 채팅·편지쓰기 창으로');
+  assert.equal(name('Comma', ',', { ctrlKey: true }, true), '이전 채팅·편지쓰기 창으로');
+  assert.equal(name('Period', '.', { ctrlKey: true }, false), '다음 채팅·편지쓰기 창으로'); // Windows Ctrl+.
 });
 
 test('Drive on Mac: ⌘+Control+R is Ctrl+Alt+R (add shortcut)', () => {

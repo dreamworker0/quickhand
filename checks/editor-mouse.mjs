@@ -8,7 +8,7 @@
 // clicked. Print is stubbed. Results: results/<app>-mouse.json
 import fs from 'node:fs';
 import path from 'node:path';
-import { launch, check, RESULTS } from './lib.mjs';
+import { launch, check, RESULTS, keyFor } from './lib.mjs';
 
 const APP = process.argv[2] && !process.argv[2].startsWith('--') ? process.argv[2] : 'docs';
 const NEW = { docs: 'https://docs.new', sheets: 'https://sheets.new', slides: 'https://slides.new' }[APP];
@@ -22,6 +22,9 @@ const SKIP = /스크린 리더|점자|음성 입력|음성기록|Gemini|확장 �
 const { context, worker } = await launch({ headless: false });
 await context.addInitScript(() => { window.print = () => {}; });
 const page = await context.newPage();
+// Keys are written as on Windows; on a Mac every press goes through keyFor() (lib.mjs).
+const pressKey = page.keyboard.press.bind(page.keyboard);
+page.keyboard.press = (k, opts) => pressKey(keyFor(k, APP), opts);
 page.setDefaultTimeout(8000);
 // Leaving version history asks "나가시겠습니까?"; answer yes.
 page.on('dialog', (d) => (d.type() === 'beforeunload' ? d.accept() : d.dismiss()).catch(() => {}));

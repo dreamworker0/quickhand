@@ -173,6 +173,10 @@
     return byFolder[hash] ? action(byFolder[hash]) : null;
   }
 
+  // Keys Chrome on a Mac takes before Gmail sees them (⌘+Shift+B shows the bookmarks bar;
+  // checked by hand, 2026-10-28): not hinted there.
+  const CHROME_TAKES_ON_MAC = new Set(['mod+shift+b']);
+
   function fromMouse(e, mac) {
     if (!(e.target instanceof Element)) return null;
     const el = e.target;
@@ -184,6 +188,7 @@
     for (let depth = 0; control && depth < 4; depth++) {
       const found = describe(control, mac);
       if (found) {
+        if (mac && CHROME_TAKES_ON_MAC.has(found.id.slice('gmail:'.length))) return { quiet: true };
         detected.set(found.id, found.label);
         // In the list the key alone does nothing: the conversation is ticked with x first.
         const name = found.id.slice('gmail:'.length);
@@ -231,7 +236,9 @@
     if (id === 'enter' && e.target instanceof Element && (e.target.closest('tr.zA') || e.target.tagName === 'BODY')) return action('open');
     if (K.hasModifier(c) && !c.then) {
       const seen = detected.get('gmail:' + id);
-      const name = seen || QH.names.pick(COMPOSE_NAMES[id]);
+      // Next / previous chat or compose window are Control+. and Control+, on a Mac too (help page).
+      const named = mac && /^ctrl\+[.,]$/.test(id) ? id.replace(/^ctrl/, 'mod') : id;
+      const name = seen || QH.names.pick(COMPOSE_NAMES[named]);
       return name ? { id: 'gmail:' + id, label: name, fallbackLabel: !seen, combos: [c] } : null;
     }
     return null;

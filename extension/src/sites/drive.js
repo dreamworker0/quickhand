@@ -104,6 +104,10 @@
     return combo && K.hasModifier(combo) && tip.label ? found(combo, tip.label) : null;
   }
 
+  // Keys Chrome on a Mac takes before Drive sees them (⌘+Option+L opens downloads;
+  // checked by hand, 2026-10-28): not hinted there.
+  const CHROME_TAKES_ON_MAC = new Set(['mod+alt+l']);
+
   function fromMouse(e, mac) {
     if (!(e.target instanceof Element)) return null;
     const el = e.target;
@@ -115,6 +119,7 @@
     for (let depth = 0; control && depth < 4; depth++) {
       const result = describe(control, mac);
       if (result) {
+        if (mac && CHROME_TAKES_ON_MAC.has(result.id.slice('drive:'.length))) return { quiet: true };
         detected.set(result.id, result.label);
         return result;
       }

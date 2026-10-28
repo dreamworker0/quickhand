@@ -4,7 +4,7 @@
 // it has no guests, so no mail goes out. Results: results/calendar-mouse.json
 import fs from 'node:fs';
 import path from 'node:path';
-import { launch, check, RESULTS } from './lib.mjs';
+import { launch, check, RESULTS, keyFor } from './lib.mjs';
 
 const MARK = '[손빠르미 점검]';
 const TITLE = `${MARK} 시험 일정 (마우스)`;
@@ -12,6 +12,9 @@ const BASE = 'https://calendar.google.com/calendar/u/0/r';
 
 const { context, worker } = await launch({ headless: false });
 const page = await context.newPage();
+// Keys are written as on Windows; on a Mac every press goes through keyFor() (lib.mjs).
+const pressKey = page.keyboard.press.bind(page.keyboard);
+page.keyboard.press = (k, opts) => pressKey(keyFor(k, 'calendar'), opts);
 page.setDefaultTimeout(10000);
 const results = [];
 const run = async (name, step, opts) => results.push(await check(page, worker, '캘린더 ' + name, step, opts));

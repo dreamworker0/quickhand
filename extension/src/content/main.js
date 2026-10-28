@@ -75,6 +75,7 @@
     if (mouseEvent === 'click' && e.detail === 0) return; // keyboard activation of a button
     if (!alive()) return stop();
     const found = site.fromMouse(e, mac);
+    if (found && found.quiet) return; // known, but not hinted here (e.g. Chrome takes the key on a Mac)
     const suppress = !!document.fullscreenElement;
     // A site may need a moment to tell (Sheets' header drag) and answer later.
     if (found && typeof found.then === 'function') found.then((later) => (later ? send({ type: 'qh-mouse', action: toAction(later), suppress }) : noteUnknown(e)));

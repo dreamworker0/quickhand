@@ -62,6 +62,8 @@ const MAC_RULES = [
   // density Alt+T) take Control; Ctrl+Alt+R (add shortcut) is ⌘+Control+R. Alt+G stays Option.
   { sites: ['drive'], when: (c) => c.alt && !c.mod && (/^[cnrt]$/.test(c.key) || c.key === 'a'), to: { alt: false, ctrl: true } },
   { sites: ['drive'], when: (c) => c.mod && c.alt && !c.shift && c.key === 'r', to: { ctrl: true, alt: false } },
+  // Gmail: next / previous chat or compose window are Ctrl+. and Ctrl+, on a Mac too (help page).
+  { sites: ['gmail'], when: (c) => c.mod && !c.alt && !c.shift && /^(period|comma|\.|,)$/.test(c.key), to: { mod: false, ctrl: true } },
   { sites: ['docs'], when: (c) => c.mod && !c.alt && c.shift && /^arrow(up|down)$/.test(c.key), to: { mod: false, ctrl: true } }, // move paragraph
   { sites: ['docs'], when: (c) => c.mod && !c.alt && /^(home|end)$/.test(c.key), to: { key: (c) => (c.key === 'home' ? 'arrowup' : 'arrowdown') } }, // start / end of the document
   { sites: ['docs'], when: (c) => c.mod && !c.alt && /^arrow/.test(c.key), to: { mod: false, alt: true } }, // by word or paragraph

@@ -290,7 +290,8 @@ await test('C14', 'Ctrl + K', '링크 삽입', 'Control+KeyK', { prepare: () => 
 await test('C15', 'Ctrl + Shift + ;', '시간 삽입', 'Control+Shift+Semicolon', { prepare: () => cell('G2'), expect: ['formula', 'editing'], after: async () => { await page.keyboard.press('Enter'); } });
 await test('C16', 'Ctrl + ;', '날짜 삽입', 'Control+Semicolon', { prepare: () => cell('G3'), expect: ['formula', 'editing'], after: async () => { await page.keyboard.press('Enter'); } });
 await test('C17', 'Ctrl + Alt + Shift + ;', '날짜 및 시간 삽입', 'Control+Alt+Shift+Semicolon', { prepare: () => cell('G4'), expect: ['formula', 'editing'], after: async () => { await page.keyboard.press('Enter'); } });
-const num = (n, key, action, k) => test(n, key, action, k, { prepare: () => cell('B2:B4'), body: true, expect: /content|형식|서식/ });
+// When Sheets has made the numbers a table it says "테이블 열 유형이 … 유형으로 업데이트됨" instead (Mac, 2026-10-28).
+const num = (n, key, action, k) => test(n, key, action, k, { prepare: () => cell('B2:B4'), body: true, expect: /content|형식|서식|유형으로 업데이트/ });
 await num('C18', 'Ctrl + Shift + 1', '소수점 형식', 'Control+Shift+Digit1');
 await num('C19', 'Ctrl + Shift + 2', '시간 형식', 'Control+Shift+Digit2');
 await num('C20', 'Ctrl + Shift + 3', '날짜 형식', 'Control+Shift+Digit3');

@@ -21,6 +21,8 @@
     cmd: 'mod', command: 'mod', meta: 'mod', '⌘': 'mod',
     alt: 'alt', option: 'alt', opt: 'alt', '⌥': 'alt',
     shift: 'shift', '⇧': 'shift',
+    // Korean Mac tooltips spell Option out: "⌘+옵션+X" (Docs, Slides; seen 2026-10-28).
+    옵션: 'alt',
   };
 
   const KEY_NAMES = {

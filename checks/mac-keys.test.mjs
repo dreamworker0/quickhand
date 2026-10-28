@@ -93,5 +93,8 @@ test('Mac: Sheets, Slides and Drive keys from their help pages', () => {
   assert.equal(keyFor('Alt+KeyG', 'drive', true), 'Alt+KeyG'); // go to: Option
   assert.equal(keyFor('Control+Alt+KeyR', 'drive', true), 'Control+Meta+KeyR');
   assert.equal(keyFor('Control+Alt+KeyA', 'drive', true), 'Meta+Alt+KeyA'); // share
+  assert.equal(keyFor('Control+Period', 'gmail', true), 'Control+Period'); // next compose window
+  assert.equal(shownFor('Ctrl + .', 'gmail', true), 'Control + .');
+  assert.equal(keyFor('Control+Shift+KeyB', 'gmail', true), 'Meta+Shift+KeyB');
   for (const [k, site] of [['Control+F5', 'slides'], ['Alt+KeyC', 'drive'], ['Control+Shift+Digit1', 'sheets']]) assert.equal(keyFor(k, site, false), k);
 });

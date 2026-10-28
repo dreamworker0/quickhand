@@ -122,3 +122,12 @@ test('reads two combos side by side as a two-step key, but not spaced-out single
   assert.equal(K.toId(K.parse('Ctrl + Shift + B', false)), 'mod+shift+b');
   assert.equal(K.toId(K.parse('Ctrl+B', false)), 'mod+b');
 });
+
+test('Korean Mac tooltips: "⌘+옵션+X" is Command+Option+X', () => {
+  const K = keys;
+  const c = K.parse('⌘+옵션+X', true);
+  assert.equal(K.toId(c), 'mod+alt+x');
+  assert.deepEqual(K.display(c, true), ['⌘', 'Option', 'X']);
+  assert.equal(K.toId(K.parse('⌘+옵션+Shift+W ⌘+옵션+Shift+E', true)), 'mod+alt+shift+w>mod+alt+shift+e');
+  assert.equal(K.toId(K.parse('Ctrl+Alt+X', false)), 'mod+alt+x');
+});

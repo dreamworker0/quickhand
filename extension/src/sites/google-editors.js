@@ -817,9 +817,9 @@
     return result;
   }
 
-  // The menu bar's menus open with Alt+letter in Chrome on Windows (measured in
-  // checks/*-shortcuts.mjs for each editor's own menus; an editor without the name of
-  // that key, like Docs' Data, gets no hint). Mac uses other keys there, not checked yet.
+  // The menu bar's menus open with Alt+letter in Chrome on Windows and Control+Option+letter
+  // on a Mac (measured in checks/*-shortcuts.mjs for each editor's own menus, on Windows and
+  // on a Mac; an editor without the name of that key, like Docs' Data, gets no hint).
   const MENU_BAR = {
     파일: 'f', File: 'f', 수정: 'e', Edit: 'e', 보기: 'v', View: 'v', 삽입: 'i', Insert: 'i', 서식: 'o', Format: 'o',
     데이터: 'd', Data: 'd', 도구: 't', Tools: 't', '확장 프로그램': 'n', Extensions: 'n', 도움말: 'h', Help: 'h',
@@ -828,7 +828,8 @@
   function menuBar(app, el, mac) {
     const item = el.closest('#docs-menubar [role="menuitem"], #docs-menubar .menu-button');
     const letter = item && MENU_BAR[(item.textContent || '').trim()];
-    return letter && !mac && app.names['alt+' + letter] ? found(app, K.combo(letter, { alt: true })) : null;
+    if (!letter || !app.names['alt+' + letter]) return null;
+    return mac ? found(app, K.combo(letter, { ctrl: true, alt: true }), QH.names.pick(app.names['alt+' + letter])) : found(app, K.combo(letter, { alt: true }));
   }
 
   function fromMouse(app, e, mac) {
@@ -996,7 +997,9 @@
     // A key that means something else on a Mac (macNames) is named for that; null: not a shortcut there.
     const macName = mac && app.macNames && id in app.macNames ? app.macNames[id] : undefined;
     if (macName === null) return null;
-    const name = seen || QH.names.pick(macName || app.names[id] || COMMON_NAMES[id] || (pressed && COMPAT_NAMES[id]));
+    // A menu bar menu opened with Control+Option+letter on a Mac has the name of its Alt+letter.
+    const macMenu = mac && /^ctrl\+alt\+[a-z]$/.test(id) ? app.names[id.replace(/^ctrl\+/, '')] : undefined;
+    const name = seen || QH.names.pick(macName || macMenu || app.names[id] || COMMON_NAMES[id] || (pressed && COMPAT_NAMES[id]));
     if (!name) return null;
     const result = { id: app.id + ':' + id, label: name, fallbackLabel: !seen, combos: [pressed && COMPAT_KEYS[K.toId(pressed)] ? comboFromId(id) : combo] };
     if (pressed) result.pressed = pressed;

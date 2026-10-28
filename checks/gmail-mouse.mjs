@@ -9,7 +9,7 @@
 // --only=32,49,...: click only these (by help-page number), keeping the other results.
 import fs from 'node:fs';
 import path from 'node:path';
-import { launch, check, RESULTS } from './lib.mjs';
+import { launch, check, RESULTS, keyFor } from './lib.mjs';
 
 const MARK = '손빠르미 점검';
 const QUERY = `subject:(${MARK}) in:inbox newer_than:2d`;
@@ -17,6 +17,9 @@ const ALL = `subject:(${MARK}) newer_than:2d`;
 
 const { context, worker } = await launch({ headless: false });
 const page = await context.newPage();
+// Keys are written as on Windows; on a Mac every press goes through keyFor() (lib.mjs).
+const pressKey = page.keyboard.press.bind(page.keyboard);
+page.keyboard.press = (k, opts) => pressKey(keyFor(k, 'gmail'), opts);
 page.setDefaultTimeout(10000);
 // Wide enough that Gmail keeps every toolbar button out of its "더보기" menu.
 await page.setViewportSize({ width: 1800, height: 950 });

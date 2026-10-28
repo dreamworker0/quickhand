@@ -8,7 +8,7 @@
 // (Drive throws those away). Results: results/drive-mouse.json
 import fs from 'node:fs';
 import path from 'node:path';
-import { launch, check, RESULTS } from './lib.mjs';
+import { launch, check, RESULTS, keyFor } from './lib.mjs';
 
 const FOLDER = JSON.parse(fs.readFileSync(path.join(RESULTS, 'drive-shortcuts.json'), 'utf8')).folder;
 if (!FOLDER) throw new Error('run drive-shortcuts.mjs first: it makes the test folder');
@@ -17,6 +17,9 @@ const ITEM = '[role="row"][data-id], [role="gridcell"][data-id]';
 
 const { context, worker } = await launch({ headless: false });
 const page = await context.newPage();
+// Keys are written as on Windows; on a Mac every press goes through keyFor() (lib.mjs).
+const pressKey = page.keyboard.press.bind(page.keyboard);
+page.keyboard.press = (k, opts) => pressKey(keyFor(k, 'drive'), opts);
 page.setDefaultTimeout(8000);
 await page.setViewportSize({ width: 1500, height: 900 });
 page.on('dialog', (d) => d.dismiss().catch(() => {}));
@@ -119,7 +122,8 @@ try {
   // ---- 항목을 고르면 나오는 툴바와 오른쪽 위 버튼 (tooltip에 단축키)
   await selectImage();
   const buttons = await page.evaluate(() => [...document.querySelectorAll('[data-tooltip]')]
-    .filter((b) => b.offsetWidth && /\((?=[^)]*(Ctrl|Alt|Shift|Delete|다음|→|F\d))[^)]+\)\s*$/.test(b.getAttribute('data-tooltip')))
+    // Mac tooltips print ⌘ ⌥ ⌃ or Command, Option, Control.
+    .filter((b) => b.offsetWidth && /\((?=[^)]*(Ctrl|Alt|Shift|Delete|다음|→|F\d|⌘|⌥|⌃|⇧|Command|Option|Control))[^)]+\)\s*$/.test(b.getAttribute('data-tooltip')))
     .map((b) => b.getAttribute('data-tooltip')));
   console.log('buttons with a shortcut:', buttons);
   for (const tip of [...new Set(buttons)]) {

@@ -14,7 +14,7 @@
 // of the earlier run are kept.
 import fs from 'node:fs';
 import path from 'node:path';
-import { launch, RESULTS } from './lib.mjs';
+import { launch, RESULTS, keyFor, shownFor } from './lib.mjs';
 
 const MARK = '손빠르미 점검';
 // Inbox only, so unsent drafts of test mails never show up among them.
@@ -24,6 +24,9 @@ const OUT = path.join(RESULTS, 'gmail-shortcuts.json');
 
 const { context, worker } = await launch({ headless: false });
 const page = await context.newPage();
+// Keys are written as on Windows; on a Mac every press goes through keyFor() (lib.mjs).
+const pressKey = page.keyboard.press.bind(page.keyboard);
+page.keyboard.press = (k, opts) => pressKey(keyFor(k, 'gmail'), opts);
 page.setDefaultTimeout(10000);
 const REUSE = process.argv.includes('--reuse');
 // Shortcuts tried in the compose part (and "/" right after it).
@@ -127,7 +130,7 @@ async function test(n, keyLabel, action, keys, { prepare, safe = false, expect, 
   } catch (e) {
     error = (error ? error + ' / ' : '') + '정리 실패: ' + e.message.split('\n')[0];
   }
-  const r = { n, key: keyLabel, action, gmail: works, changed, quickhand, error };
+  const r = { n, key: shownFor(keyLabel, 'gmail'), action, gmail: works, changed, quickhand, error };
   results.push(r);
   console.log(JSON.stringify(r));
   save();
