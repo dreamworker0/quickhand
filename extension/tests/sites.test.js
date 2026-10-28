@@ -680,6 +680,39 @@ test('Gmail: a toolbar click in the list hints x then the key; in an open conver
   assert.deepEqual(shown(archive()), [['E']]);
 });
 
+test('Gmail: a long search term or label name is not an open conversation', () => {
+  const { site, ctx } = siteEnv('gmail');
+  const remove = () => site.fromMouse({ target: new Element({ control: true, act: '10' }) }, false);
+  const shown = (r) => JSON.parse(JSON.stringify(r.combos.map((c) => ctx.QH.keys.display(c, false))));
+  const key = (code, k, patch) => { const r = site.fromKey(event(code, k, patch), false); return r && r.id; };
+  // These lists all end in one long word, which used to read as a conversation id: the
+  // hint lost its x step and Shift+3 was counted though Gmail only says "No conversations
+  // selected". 16 letters was enough; the search box and nested labels make that common.
+  for (const hash of ['#search/dreamworker0quickhand', '#search/abcdefghijklmnop', '#label/newsletter2024abc', '#inbox/p2']) {
+    ctx.location.hash = hash;
+    assert.deepEqual(shown(remove()), [['X', '→', 'Shift', '3']], hash);
+    assert.equal(key('Digit3', '#', { shiftKey: true }), null, hash);
+  }
+});
+
+test('Gmail: a drawn message body says a conversation is open, list rows say it is not', () => {
+  const { site, ctx } = siteEnv('gmail');
+  const remove = () => site.fromMouse({ target: new Element({ control: true, act: '10' }) }, false);
+  const shown = (r) => JSON.parse(JSON.stringify(r.combos.map((c) => ctx.QH.keys.display(c, false))));
+  const box = (seen) => ({ getClientRects: () => (seen ? [{}] : []) });
+  // The screen wins over the address: an opened conversation keeps its body drawn even
+  // where the address holds no id, and a list stays a list under a conversation-like one.
+  ctx.location.hash = '#search/report';
+  ctx.document.querySelectorAll = (sel) => (sel === '.adn' ? [box(true)] : []);
+  assert.deepEqual(shown(remove()), [['Shift', '3']]);
+  ctx.location.hash = '#inbox/FMfcgzQXJWDsKlmBhQZHJTrzvNZsxwlL';
+  ctx.document.querySelectorAll = (sel) => (sel === 'tr.zA' ? [box(true)] : []);
+  assert.deepEqual(shown(remove()), [['X', '→', 'Shift', '3']]);
+  // A body that is in the page but not drawn (Gmail keeps it around) is not an open one.
+  ctx.document.querySelectorAll = (sel) => (sel === '.adn' ? [box(false)] : sel === 'tr.zA' ? [box(true)] : []);
+  assert.deepEqual(shown(remove()), [['X', '→', 'Shift', '3']]);
+});
+
 test("Gmail: every key on Gmail's help page that changes something is counted", () => {
   const { site, ctx } = siteEnv('gmail');
   const id = (code, key, patch) => { const r = site.fromKey(event(code, key, patch), false); return r && r.id; };

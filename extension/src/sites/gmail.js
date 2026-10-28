@@ -208,8 +208,16 @@
   const IN_CONVERSATION = new Set(['reply', 'replyAll', 'forward', 'replyWindow', 'replyAllWindow', 'forwardWindow', 'nextMessage', 'prevMessage',
     'expandAll', 'collapseAll', 'unreadFrom', 'refresh', 'back', 'archiveNewer', 'archiveOlder']);
   const visible = (el) => el.getClientRects().length > 0;
-  const isOpen = () => /\/[A-Za-z0-9]{16,}$/.test(location.hash); // "#inbox/FMfcgz…"
-  const ticked = () => [...document.querySelectorAll('tr.zA [role="checkbox"][aria-checked="true"]')].some(visible);
+  const onScreen = (selector) => [...document.querySelectorAll(selector)].some(visible);
+  // A conversation is open when its message body is drawn; in the reading pane the list is
+  // there too, and the key still acts on the opened conversation. The address alone cannot
+  // say: "#search/<query>" and "#label/<name>" also end in one long word, so a 16-letter
+  // search term looked like a conversation id — the hint then dropped the x step and keys
+  // that do nothing in the list were counted. The list rows answer it when no body is
+  // drawn; the address is the last resort, and a conversation id mixes upper and lower case.
+  const idLike = /\/(?=[A-Za-z0-9]*[a-z])(?=[A-Za-z0-9]*[A-Z])[A-Za-z0-9]{20,}$/; // "#inbox/FMfcgz…"
+  const isOpen = () => (onScreen('.adn') ? true : onScreen('tr.zA') ? false : idLike.test(location.hash));
+  const ticked = () => onScreen('tr.zA [role="checkbox"][aria-checked="true"]');
   // z only undoes while Gmail offers it ("대화가 보관처리되었습니다. 실행취소").
   const undoOffered = () => [...document.querySelectorAll('.bAq, .vh, [role="alert"]')].some((el) => visible(el) && /실행취소|Undo/.test(el.textContent || ''));
   function works(name) {
