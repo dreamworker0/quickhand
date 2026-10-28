@@ -456,6 +456,41 @@ test('Sheets: Ctrl+Space then Ctrl+Shift+→ (to the edge) also counts as severa
   assert.notEqual(other && other.id, 'sheets:mod+space>shift+arrowright');
 });
 
+test('Sheets: a column picked with the mouse, then Shift+→ counts the second step with the keyboard', async () => {
+  const { site, ctx, click, box } = sheetsWithHeaders();
+  ctx.setTimeout = (fn) => { if (box.next !== null) box.value = box.next; box.next = null; fn(); };
+  const key = (code, k, after, patch = { shiftKey: true }) => { box.next = after; return site.fromKey(event(code, k, patch), false); };
+  box.next = 'E:E';
+  assert.equal(click(300, 150).id, 'sheets:mod+space');
+  const wider = await key('ArrowRight', 'ArrowRight', 'E:F');
+  assert.equal(wider.id, 'sheets:mod+space>shift+arrowright');
+  assert.equal(wider.label, '여러 열 선택');
+  assert.equal(wider.pressed.key, 'arrowright'); // the cheer shows Shift+→
+  assert.equal(await key('ArrowRight', 'ArrowRight', 'E:G'), null); // widening further
+  // Rows the same way, and a key across the strip does not widen.
+  box.value = '3:3';
+  assert.equal((await key('ArrowDown', 'ArrowDown', '3:4')).id, 'sheets:shift+space>shift+arrowdown');
+  box.value = 'E:E';
+  assert.equal(await key('ArrowDown', 'ArrowDown', 'E:E'), null);
+});
+
+test('Sheets: several columns shrunk back to one, then widened the other way, count anew', async () => {
+  const { site, ctx, box } = sheetsWithHeaders();
+  ctx.setTimeout = (fn) => { if (box.next !== null) box.value = box.next; box.next = null; fn(); };
+  // The name box shows `before` at the press and `after` a moment later.
+  const key = (code, k, before, after) => { box.value = before; box.next = after; return site.fromKey(event(code, k, { shiftKey: true }), false); };
+  box.value = 'F:F';
+  site.fromKey(event('Space', ' ', { ctrlKey: true }), false);
+  assert.equal(key('ArrowRight', 'ArrowRight', 'F:F', 'F:G').id, 'sheets:mod+space>shift+arrowright'); // right after Ctrl+Space
+  assert.equal(await key('ArrowRight', 'ArrowRight', 'F:G', 'F:I'), null);
+  assert.equal(await key('ArrowLeft', 'ArrowLeft', 'F:I', 'F:H'), null); // narrower, still several
+  assert.equal(await key('ArrowLeft', 'ArrowLeft', 'F:G', 'F:F'), null); // back to one
+  const left = await key('ArrowLeft', 'ArrowLeft', 'F:F', 'E:F');
+  assert.equal(left.id, 'sheets:mod+space>shift+arrowright');
+  assert.equal(left.pressed.key, 'arrowleft'); // the cheer shows Shift+←
+  assert.equal(await key('ArrowLeft', 'ArrowLeft', 'E:F', 'D:F'), null);
+});
+
 test('Sheets: Shift+Space counts as row select only when a whole row ends up selected', async () => {
   const { site, ctx } = siteEnv('sheets');
   ctx.setTimeout = (fn) => fn();

@@ -769,6 +769,26 @@
     return result;
   }
 
+  // The same second step however the one column or row was picked: by its header with
+  // the mouse, by Ctrl+Space a while ago, or by shrinking a wider one back to one (then
+  // widening the other way is a new selection). The name box tells: one whole line
+  // before the key, several after. Changing an already wider one does not count again.
+  function lineWidened(app, combo, mac) {
+    if (!combo.shift || combo.alt || combo.ctrl || !ARROWS.includes(combo.key)) return undefined;
+    const before = lineRange(nameBox());
+    const keys = before && (before.kind === 'column' ? ['arrowright', 'arrowleft'] : ['arrowdown', 'arrowup']);
+    if (!keys || !keys.includes(combo.key)) return undefined;
+    rangeCounted = {};
+    if (before.count !== 1) return null;
+    return new Promise((resolve) => setTimeout(() => {
+      const now = lineRange(nameBox());
+      if (!now || now.kind !== before.kind || now.count < 2) return resolve(null);
+      const result = found(app, severalLinesKeys(before.kind, mac));
+      result.pressed = combo;
+      resolve(result);
+    }, 200));
+  }
+
   // Shift+Space selects the row while cells are selected, but types a space in
   // a cell being edited. Sheets sends the key to different elements depending on
   // what was done before, so look at the result instead: a moment later the name
@@ -960,6 +980,8 @@
     if (app.id === 'sheets') {
       const wider = widened(app, combo, mac);
       if (wider) return wider;
+      const line = lineWidened(app, combo, mac);
+      if (line !== undefined) return line;
       const range = rangeKey(app, combo);
       if (range !== undefined) return range;
       if (K.toId(combo) === 'shift+space') {
