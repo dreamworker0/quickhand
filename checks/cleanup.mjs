@@ -7,7 +7,10 @@ import { launch } from './lib.mjs';
 const TITLE = /손빠르미 [^()]*\(지워도 됨\)/;
 const { context } = await launch({ headless: false });
 const page = await context.newPage();
-const rows = page.locator('[role="row"]', { hasText: TITLE }).filter({ visible: true });
+// One file or folder each: in grid view a [role="row"] holds several items, so clicking a
+// row that merely contains a test name could pick (and trash) someone's own file
+// (it did, on a Mac, 2026-10-28). Only an item whose own name is the test name counts.
+const rows = page.locator('[role="row"][data-id], [role="gridcell"][data-id]', { hasText: TITLE }).filter({ visible: true });
 
 // The recent list has the files; folders (drive-shortcuts.mjs makes one) are in My Drive.
 async function open(list) {
