@@ -662,6 +662,24 @@ test("Gmail: the sidebar's \"더보기\" (more labels) is not the toolbar's More
   assert.equal(click({}, '편지쓰기'), 'gmail:compose'); // a name shown only as text still counts
 });
 
+test('Gmail: the buttons on a list row under the pointer are named by their tooltip', () => {
+  const { site, ctx } = siteEnv('gmail');
+  // `ul.bqY > li.bqX` inside `tr.zA`: no act number, no role.
+  class RowButton extends Element { closest(sel) { return sel === '.bqY' || sel === 'tr.zA' || sel.includes('[data-tooltip]') ? this : null; } }
+  const click = (tip) => site.fromMouse({ target: new RowButton({ 'data-tooltip': tip }) }, false);
+  const remove = click('삭제');
+  assert.equal(remove.id, 'gmail:remove');
+  assert.equal(ctx.QH.keys.toId(remove.combos[0]), 'x>shift+3'); // in the list the row is ticked first
+  assert.equal(click('보관처리').id, 'gmail:archive');
+  assert.equal(click('읽음으로 표시').id, 'gmail:read');
+  assert.equal(click('읽지 않음으로 표시').id, 'gmail:unread');
+  assert.equal(click('다시 알림').id, 'gmail:snooze');
+  assert.equal(click('Delete').id, 'gmail:remove');
+  // The same words elsewhere, outside a row's buttons, are not these.
+  class Elsewhere extends Element { closest(sel) { return sel.includes('[data-tooltip]') ? this : null; } }
+  assert.equal(site.fromMouse({ target: new Elsewhere({ 'data-tooltip': '삭제' }) }, false), null);
+});
+
 test("Gmail: one of the person's labels clicked in the left list hints G then L, without its name", () => {
   const { site, ctx } = siteEnv('gmail');
   const link = (href) => {

@@ -129,6 +129,14 @@
 
   const CONTROL = '[act], [role="button"], [role="link"], [role="checkbox"], [role="switch"], [role="menuitem"], button, [data-tooltip]';
 
+  // The buttons drawn on a list row under the pointer (`ul.bqY > li.bqX`) have no act
+  // number and no role; only their tooltip names them (checked in a real Gmail, 2026-10-29).
+  const ROW_BUTTONS = {
+    보관처리: 'archive', Archive: 'archive', 삭제: 'remove', Delete: 'remove',
+    '읽음으로 표시': 'read', 'Mark as read': 'read', '읽지 않음으로 표시': 'unread', 'Mark as unread': 'unread',
+    '다시 알림': 'snooze', Snooze: 'snooze',
+  };
+
   function action(name) {
     const a = ACTIONS[name];
     return { id: 'gmail:' + name, label: QH.names.pick(a.name), combos: [a.combo] };
@@ -137,6 +145,8 @@
   function describe(el, mac) {
     const act = el.getAttribute('act');
     if (act && byAct[act]) return action(byAct[act]);
+    const rowButton = el.closest('.bqY') && el.closest('tr.zA') && ROW_BUTTONS[el.getAttribute('data-tooltip') || ''];
+    if (rowButton) return action(rowButton);
     const role = el.getAttribute('role');
     const aria = el.getAttribute('aria-label') || '';
     if (role === 'checkbox') {

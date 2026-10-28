@@ -70,6 +70,12 @@ async function open() {
   await guard();
   await focusPage();
 }
+// The buttons Gmail draws on a row under the pointer (no act number, named by tooltip).
+const rowButton = (tip) => async () => {
+  await rows().first().hover();
+  await page.waitForTimeout(500);
+  await visible(`tr.zA li.bqX[data-tooltip="${tip}"]`).click();
+};
 async function undo() {
   await page.keyboard.press('KeyZ');
   await page.waitForTimeout(2000);
@@ -112,6 +118,9 @@ const FLOWS = [
   ['대화 열고 E', open, 'KeyE', 'gmail:archive', true],
   ['대화 열고 Shift+U', open, 'Shift+KeyU', 'gmail:unread', false],
   ['목록: 고르지 않고 S(별표)', list, 'KeyS', 'gmail:star', false],
+  ['목록: 줄 위 휴지통 클릭', list, rowButton('삭제'), 'gmail:remove', true],
+  ['목록: 줄 위 보관처리 클릭', list, rowButton('보관처리'), 'gmail:archive', true],
+  ['목록: 줄 위 다시 알림 클릭', list, rowButton('다시 알림'), 'gmail:snooze', false],
 ];
 
 const results = [];
@@ -120,7 +129,8 @@ for (const [name, prepare, key, expected, needsUndo] of FLOWS) {
   try { await prepare(); } catch (e) { prep = e.message.split('\n')[0]; }
   const ticks = await ticked();
   const starBefore = await stars();
-  const r = prep ? { recognized: null, card: null, error: prep } : await check(page, worker, name, () => page.keyboard.press(key), { wait: 1500 });
+  const step = typeof key === 'function' ? key : () => page.keyboard.press(key);
+  const r = prep ? { recognized: null, card: null, error: prep } : await check(page, worker, name, step, { wait: 1500 });
   const gmail = await toast();
   const star = key === 'KeyS' ? `${starBefore} → ${await stars()}` : undefined;
   if (needsUndo && r.recognized) await undo();
