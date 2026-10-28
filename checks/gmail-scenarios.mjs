@@ -118,6 +118,10 @@ const FLOWS = [
   ['대화 열고 E', open, 'KeyE', 'gmail:archive', true],
   ['대화 열고 Shift+U', open, 'Shift+KeyU', 'gmail:unread', false],
   ['목록: 고르지 않고 S(별표)', list, 'KeyS', 'gmail:star', false],
+  // x and the row's box flip: ticking and unticking are the one action "메일 선택/선택 해제".
+  ['목록: X로 고르기', list, 'KeyX', 'gmail:select', false],
+  ['목록: X로 고른 것을 X로 풀기', async () => { await list(); await tick(); }, 'KeyX', 'gmail:select', false],
+  ['목록: X로 고른 것을 체크박스 클릭으로 풀기', async () => { await list(); await tick(); }, () => visible('tr.zA [role="checkbox"]').click(), 'gmail:select', false],
   ['목록: 줄 위 휴지통 클릭', list, rowButton('삭제'), 'gmail:remove', true],
   ['목록: 줄 위 보관처리 클릭', list, rowButton('보관처리'), 'gmail:archive', true],
   ['목록: 줄 위 다시 알림 클릭', list, rowButton('다시 알림'), 'gmail:snooze', false],

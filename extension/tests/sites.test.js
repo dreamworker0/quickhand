@@ -662,6 +662,18 @@ test("Gmail: the sidebar's \"더보기\" (more labels) is not the toolbar's More
   assert.equal(click({}, '편지쓰기'), 'gmail:compose'); // a name shown only as text still counts
 });
 
+test('Gmail: x and s flip their state, so one name says both ways', () => {
+  const { site } = siteEnv('gmail');
+  const x = site.fromKey(event('KeyX', 'x'), false);
+  assert.equal(x.id, 'gmail:select');
+  assert.equal(x.label, '메일 선택/선택 해제');
+  // Unticking a row's box with the mouse is the same action as ticking it.
+  class RowBox extends Element { closest(sel) { return sel === 'tr.zA' || sel.includes('[role="checkbox"]') ? this : null; } }
+  const untick = site.fromMouse({ target: new RowBox({ role: 'checkbox', 'aria-checked': 'true' }) }, false);
+  assert.equal(untick.id, 'gmail:select');
+  assert.equal(site.fromKey(event('KeyS', 's'), false).label, '별표/별표 해제');
+});
+
 test('Gmail: the buttons on a list row under the pointer are named by their tooltip', () => {
   const { site, ctx } = siteEnv('gmail');
   // `ul.bqY > li.bqX` inside `tr.zA`: no act number, no role.

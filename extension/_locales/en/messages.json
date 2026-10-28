@@ -41,7 +41,7 @@
   },
 
   "ytPlayPause": { "message": "Play / pause" },
-  "ytMute": { "message": "Mute" },
+  "ytMute": { "message": "Mute / unmute" },
   "ytFullscreen": { "message": "Full screen" },
   "ytCaptions": { "message": "Captions" },
   "ytTheater": { "message": "Theater mode" },

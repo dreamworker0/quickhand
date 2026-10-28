@@ -41,7 +41,7 @@
   },
 
   "ytPlayPause": { "message": "재생 / 일시정지" },
-  "ytMute": { "message": "음소거" },
+  "ytMute": { "message": "음소거 / 음소거 해제" },
   "ytFullscreen": { "message": "전체 화면" },
   "ytCaptions": { "message": "자막" },
   "ytTheater": { "message": "극장 모드" },

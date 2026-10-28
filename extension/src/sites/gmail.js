@@ -27,7 +27,9 @@
     reply: { name: ['답장', 'Reply'], combo: key('r'), labels: ['답장', 'Reply'] },
     replyAll: { name: ['전체답장', 'Reply all'], combo: key('a'), labels: ['전체답장', 'Reply all'] },
     forward: { name: ['전달', 'Forward'], combo: key('f'), labels: ['전달', 'Forward'] },
-    star: { name: ['별표', 'Star'], combo: key('s') },
+    // s and x flip the state, and Gmail names the way back of its own ("별표 없음", unticking),
+    // so the name says both ways, like Drive's Shift+Space.
+    star: { name: ['별표/별표 해제', 'Star or unstar'], combo: key('s') },
     search: { name: ['메일 검색', 'Search mail'], combo: key('/') },
     send: { name: ['보내기', 'Send'], combo: key('enter', { mod: true }), labels: ['보내기', 'Send'] },
     back: { name: ['메일 목록으로 돌아가기', 'Back to the list'], combo: key('u') },
@@ -37,7 +39,7 @@
     mute: { name: ['알림 끄기', 'Mute'], combo: key('m'), labels: ['알림 끄기', 'Mute'] },
     more: { name: ['추가 작업 메뉴 열기', 'More actions'], combo: key('.'), labels: ['더보기', 'More'] },
     expandAll: { name: ['모두 펼치기', 'Expand all'], combo: key(';'), labels: ['모두 펼치기', 'Expand all'] },
-    select: { name: ['메일 선택', 'Select conversation'], combo: key('x') },
+    select: { name: ['메일 선택/선택 해제', 'Select or deselect conversation'], combo: key('x') },
     // Only the box above the list; its "선택" arrow opens a menu (all, none, read, …), not select all.
     selectAll: { name: ['모두 선택', 'Select all'], combo: K.sequence(key('8', { shift: true }), key('a')) },
     nextPage: { name: ['다음 페이지', 'Next page'], combo: go('n') },
