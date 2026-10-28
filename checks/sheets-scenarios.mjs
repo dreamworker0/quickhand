@@ -23,6 +23,14 @@ const ROWS = 'sheets:shift+space>shift+arrowdown';
 const { context, worker } = await launch({ headless: false });
 // A fresh record, so what an earlier check pressed (Ctrl+B …) doesn't make a shortcut "known".
 await worker.evaluate(() => chrome.storage.local.remove('qh_state'));
+// --no-cheers: no cheer cards for the keyboard steps (hint cards for clicks stay, the
+// two-step checks read them). Trying whether Sheets then asks to reload less often.
+if (process.argv.includes('--no-cheers')) {
+  await worker.evaluate(async () => {
+    const { qh_settings } = await chrome.storage.sync.get('qh_settings');
+    await chrome.storage.sync.set({ qh_settings: Object.assign({}, qh_settings, { praise: false }) });
+  });
+}
 const page = await context.newPage();
 page.setDefaultTimeout(15000);
 await page.setViewportSize({ width: 1600, height: 900 });

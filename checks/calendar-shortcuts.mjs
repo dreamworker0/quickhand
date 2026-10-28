@@ -14,7 +14,9 @@ import { launch, RESULTS, keyFor, shownFor } from './lib.mjs';
 const MARK = '[손빠르미 점검]';
 const TITLE = `${MARK} 시험 일정`;
 const BASE = 'https://calendar.google.com/calendar/u/0/r';
-const OUT = path.join(RESULTS, 'calendar-shortcuts.json');
+// --only=28,29,30: just those help-page numbers (the rest are skipped), into their own file.
+const ONLY = (process.argv.find((a) => a.startsWith('--only=')) || '').slice('--only='.length).split(',').filter(Boolean).map(Number);
+const OUT = path.join(RESULTS, ONLY.length ? 'calendar-shortcuts-only.json' : 'calendar-shortcuts.json');
 
 const { context, worker } = await launch({ headless: false });
 const page = await context.newPage();
@@ -87,6 +89,7 @@ async function guard() {
 
 // One shortcut. `expect` names the fields that show Calendar reacted; without it any change counts.
 async function test(n, section, keyLabel, action, keys, { prepare, guarded = false, expect, after, wait = 1500 } = {}) {
+  if (ONLY.length && !ONLY.includes(n) && n !== 20) return; // 20 (?) also shows the shortcut setting is on
   let error = null;
   let changed = [];
   let works = null;
