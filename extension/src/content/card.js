@@ -78,6 +78,8 @@
     .title { margin: 0; font-size: 12px; color: var(--quiet); }
     .label { margin: 2px 0 6px; font-size: 15px; font-weight: 600; overflow-wrap: anywhere; }
     .keys { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
+    .step { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+    .break { flex-basis: 100%; height: 0; }
     kbd {
       font: 600 13px/1 ui-monospace, "Cascadia Mono", Menlo, Consolas, monospace;
       padding: 5px 8px; border-radius: 6px; color: var(--ink);
@@ -112,18 +114,28 @@
   }
 
   // display: alternatives, each a list of keys; "→" marks the second step of a
-  // sequence ("G then I").
+  // sequence ("G then I"). A step never wraps inside itself, and a sequence with a
+  // combination in it ("Ctrl + Space then Shift + →") puts its second step on a line
+  // of its own, so "then" ends the first line; "G then I" stays on one line.
   function keysNode(display) {
     const wrap = el('div', 'keys');
     (display || []).forEach((combo, i) => {
       if (i) wrap.append(el('span', 'sep', t('cardOr')));
+      const steps = [[]];
       combo.forEach((k, j) => {
-        if (k === '→' && j < combo.length - 1) { // a trailing "→" is the arrow key itself
-          wrap.append(el('span', 'sep', t('cardThen')));
-          return;
-        }
-        if (j && combo[j - 1] !== '→') wrap.append(el('span', 'sep', '+'));
-        wrap.append(el('kbd', null, k));
+        if (k === '→' && j < combo.length - 1) steps.push([]); // a trailing "→" is the arrow key itself
+        else steps[steps.length - 1].push(k);
+      });
+      const ownLines = steps.length > 1 && steps.some((step) => step.length > 1);
+      steps.forEach((step, s) => {
+        if (s && ownLines) wrap.append(el('span', 'break'));
+        const group = el('span', 'step');
+        step.forEach((k, j) => {
+          if (j) group.append(el('span', 'sep', '+'));
+          group.append(el('kbd', null, k));
+        });
+        if (s < steps.length - 1) group.append(el('span', 'sep', t('cardThen')));
+        wrap.append(group);
       });
     });
     return wrap;
