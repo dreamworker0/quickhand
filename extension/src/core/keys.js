@@ -96,6 +96,13 @@
         (keyFromEvent(e).length === 1 || keyFromEvent(e) === 'space')));
   }
 
+  // The Korean input source on a Mac sends the jamo as the key ("ㅎ" for G) even outside
+  // a text field. The physical key still reads as G, but a page that looks at the
+  // character does nothing with it (Gmail's single keys; checked on a real Mac, 2026-10-29).
+  function typedHangul(e) {
+    return /^[ㄱ-ㆎ가-힣]$/.test(e.key || '');
+  }
+
   function toId(c) {
     return MODS.filter((m) => c[m]).concat(c.key).join('+') + (c.then ? '>' + toId(c.then) : '');
   }
@@ -201,7 +208,7 @@
   }
 
   QH.keys = {
-    THEN, isMac, combo, sequence, fromEvent, isModifierOnly, isTyping, isTextEntry, toId, parse, splitLabel,
+    THEN, isMac, combo, sequence, fromEvent, isModifierOnly, isTyping, isTextEntry, typedHangul, toId, parse, splitLabel,
     hasModifier, display, sequencer,
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = QH.keys;

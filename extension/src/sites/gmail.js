@@ -247,6 +247,8 @@
     if (K.isTextEntry(e, mac)) { nextKey.reset(); return null; }
     let c = K.fromEvent(e, mac);
     if (!K.hasModifier(c) && K.isTyping(e)) { nextKey.reset(); return null; }
+    // With the Korean input source on, Gmail gets "ㅎ" for g and does nothing. Keys with ⌘ or Control are left as they were.
+    if (!K.hasModifier(c) && K.typedHangul(e)) { nextKey.reset(); return null; }
     c = nextKey(c, Date.now());
     if (!c) return null;
     const id = K.toId(c);

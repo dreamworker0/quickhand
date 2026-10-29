@@ -82,6 +82,25 @@ test('Gmail and Drive normal two-step shortcuts still work', () => {
   assert.equal(drive.fromKey(event('KeyF', 'f', { altKey: true }), false).id, 'drive:alt+c>f');
 });
 
+test('Gmail on Mac: single keys typed with the Korean input source are not counted, since Gmail ignores them', () => {
+  const { site } = siteEnv('gmail');
+  const id = (code, key, mods) => { const r = site.fromKey(event(code, key, mods), true); return r && r.id; };
+  // G then I as "ㅎ", "ㅑ": Gmail stays put (checked on a real Mac, 2026-10-29).
+  assert.equal(id('KeyG', 'ㅎ'), null);
+  assert.equal(id('KeyI', 'ㅑ'), null);
+  assert.equal(id('KeyC', 'ㅊ'), null);
+  assert.equal(id('KeyI', 'ㅑ', { shiftKey: true }), null);
+  // A Hangul first step does not start G then … either: the English I after it is just I.
+  assert.equal(id('KeyG', 'ㅎ'), null);
+  assert.equal(id('KeyI', 'i'), null);
+  // Switched to English, the same keys count.
+  assert.equal(id('KeyG', 'g'), null);
+  assert.equal(id('KeyI', 'i'), 'gmail:inbox');
+  assert.equal(id('KeyC', 'c'), 'gmail:compose');
+  // ⌘ keys are left as they were.
+  assert.equal(site.fromKey(event('KeyB', 'ㅠ', { metaKey: true }), true).id, 'gmail:mod+b');
+});
+
 test('Drive: keys for the selected items count only with an item selected (focused, for rename and the item menu)', () => {
   const { site, ctx } = siteEnv('drive');
   const id = (code, key, mods, target) => { const r = site.fromKey(event(code, key, { ...mods, target }), false); return r && r.id; };
@@ -474,6 +493,24 @@ test('Sheets: a column picked with the mouse, then Shift+→ counts the second s
   assert.equal(await key('ArrowDown', 'ArrowDown', 'E:E'), null);
 });
 
+test('Sheets on Mac: a column picked with the mouse, then Shift+→ is Control+Space then Shift+→', async () => {
+  const { site, ctx, click, box } = sheetsWithHeaders('MacIntel');
+  ctx.setTimeout = (fn) => { if (box.next !== null) box.value = box.next; box.next = null; fn(); };
+  box.next = 'E:E';
+  assert.equal(click(300, 150).id, 'sheets:ctrl+space');
+  box.next = 'E:F';
+  const wider = await site.fromKey(event('ArrowRight', 'ArrowRight', { shiftKey: true }), true);
+  assert.equal(wider.id, 'sheets:ctrl+space>shift+arrowright');
+  assert.equal(wider.label, '여러 열 선택');
+  // ⌘+Shift+→ to the data's edge widens too; Control+Shift+→ is something else on a Mac.
+  box.value = 'E:E';
+  box.next = 'E:Z';
+  assert.equal((await site.fromKey(event('ArrowRight', 'ArrowRight', { shiftKey: true, metaKey: true }), true)).id, 'sheets:ctrl+space>shift+arrowright');
+  box.value = 'E:E';
+  box.next = 'E:Z';
+  assert.notEqual((await site.fromKey(event('ArrowRight', 'ArrowRight', { shiftKey: true, ctrlKey: true }), true) || {}).id, 'sheets:ctrl+space>shift+arrowright');
+});
+
 test('Sheets: several columns shrunk back to one, then widened the other way, count anew', async () => {
   const { site, ctx, box } = sheetsWithHeaders();
   ctx.setTimeout = (fn) => { if (box.next !== null) box.value = box.next; box.next = null; fn(); };
@@ -687,6 +724,9 @@ test('Gmail: the buttons on a list row under the pointer are named by their tool
   assert.equal(click('읽지 않음으로 표시').id, 'gmail:unread');
   assert.equal(click('다시 알림').id, 'gmail:snooze');
   assert.equal(click('Delete').id, 'gmail:remove');
+  // The same on a Mac: x then Shift+3 there too.
+  const mac = site.fromMouse({ target: new RowButton({ 'data-tooltip': '삭제' }) }, true);
+  assert.equal(ctx.QH.keys.toId(mac.combos[0]), 'x>shift+3');
   // The same words elsewhere, outside a row's buttons, are not these.
   class Elsewhere extends Element { closest(sel) { return sel.includes('[data-tooltip]') ? this : null; } }
   assert.equal(site.fromMouse({ target: new Elsewhere({ 'data-tooltip': '삭제' }) }, false), null);
