@@ -92,10 +92,23 @@
     return found.combos.some((c) => c.then) ? null : QH.keys.display(QH.keys.fromEvent(e, mac), mac);
   }
 
+  // A key typed with the Korean input source where the site only takes English
+  // (Gmail on a Mac): a note to switch, at most once a minute so a run of keys
+  // pressed in Korean doesn't keep bringing it back.
+  const INPUT_SOURCE_GAP_MS = 60 * 1000;
+  let inputSourceAt = 0;
+  function noteInputSource() {
+    const now = Date.now();
+    if (now - inputSourceAt < INPUT_SOURCE_GAP_MS) return;
+    inputSourceAt = now;
+    send({ type: 'qh-input-source', site: site.id });
+  }
+
   function onKey(e) {
     if (stopped || !e.isTrusted || e.repeat) return;
     if (!alive()) return stop();
     const found = site.fromKey(e, mac);
+    if (found && found.inputSource) return noteInputSource();
     // A site may need a moment to tell (Sheets' Shift+Space) and answer later.
     if (found && typeof found.then === 'function') found.then((later) => later && send({ type: 'qh-key', action: toAction(later), used: used(later, e) }));
     else if (found) send({ type: 'qh-key', action: toAction(found), used: used(found, e) });

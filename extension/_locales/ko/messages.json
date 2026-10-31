@@ -33,6 +33,9 @@
   },
   "praiseComboText": { "message": "마우스 없이 단축키를 연달아 쓰고 있어요." },
   "praiseKey": { "message": "단축키로 바로 하셨어요." },
+  "inputSourceTitle": { "message": "지금 한글 입력 상태예요" },
+  "inputSourceText": { "message": "Gmail 단축키는 영문 상태에서 눌러야 작동해요." },
+  "inputSourceHow": { "message": "Caps Lock이나 Control + Space로 영문으로 바꾸고 다시 눌러 보세요." },
   "toastOn": { "message": "알림을 켰어요" },
   "toastOff": { "message": "알림을 껐어요" },
   "toastHint": {

@@ -85,13 +85,21 @@ test('Gmail and Drive normal two-step shortcuts still work', () => {
 test('Gmail on Mac: single keys typed with the Korean input source are not counted, since Gmail ignores them', () => {
   const { site } = siteEnv('gmail');
   const id = (code, key, mods) => { const r = site.fromKey(event(code, key, mods), true); return r && r.id; };
+  const answer = (code, key, mods) => JSON.parse(JSON.stringify(site.fromKey(event(code, key, mods), true)));
   // G then I as "ㅎ", "ㅑ": Gmail stays put (checked on a real Mac, 2026-10-29).
-  assert.equal(id('KeyG', 'ㅎ'), null);
+  assert.equal(id('KeyG', 'ㅎ'), undefined);
   assert.equal(id('KeyI', 'ㅑ'), null);
-  assert.equal(id('KeyC', 'ㅊ'), null);
-  assert.equal(id('KeyI', 'ㅑ', { shiftKey: true }), null);
+  assert.equal(id('KeyC', 'ㅊ'), undefined);
+  assert.equal(id('KeyI', 'ㅑ', { shiftKey: true }), undefined);
+  // Keys that are Gmail shortcuts in English, and G that starts "G then …", ask to switch to English.
+  assert.deepEqual(answer('KeyG', 'ㅎ'), { inputSource: true });
+  assert.deepEqual(answer('KeyC', 'ㅊ'), { inputSource: true });
+  assert.deepEqual(answer('KeyI', 'ㅑ', { shiftKey: true }), { inputSource: true });
+  // I alone and H are no shortcut in English either: nothing to say.
+  assert.equal(answer('KeyI', 'ㅑ'), null);
+  assert.equal(answer('KeyH', 'ㅗ'), null);
   // A Hangul first step does not start G then … either: the English I after it is just I.
-  assert.equal(id('KeyG', 'ㅎ'), null);
+  assert.equal(id('KeyG', 'ㅎ'), undefined);
   assert.equal(id('KeyI', 'i'), null);
   // Switched to English, the same keys count.
   assert.equal(id('KeyG', 'g'), null);
@@ -988,6 +996,16 @@ test('content/main.js: a quiet answer sends nothing, not even an unknown button'
   env.start();
   env.listeners.click({ target: new Element({ control: true, 'aria-label': '숨은참조 추가' }), button: 0, isTrusted: true, detail: 1 });
   assert.equal(env.messages.length, 0);
+});
+
+test('content/main.js: a key typed in Korean asks the worker for the switch note, at most once a minute', () => {
+  const env = siteEnv('gmail');
+  env.ctx.navigator.platform = 'MacIntel';
+  env.ctx.location.hostname = 'mail.google.com';
+  env.start();
+  env.listeners.keydown(event('KeyG', 'ㅎ'));
+  env.listeners.keydown(event('KeyC', 'ㅊ'));
+  assert.deepEqual(JSON.parse(JSON.stringify(env.messages)), [{ type: 'qh-input-source', site: 'gmail' }]);
 });
 
 test('Gmail on Mac: next / previous compose window are Control+. and Control+,', () => {

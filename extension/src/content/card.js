@@ -251,6 +251,8 @@
     if (msg.variant === 'toast') {
       body.append(el('p', 'label', t(msg.on ? 'toastOn' : 'toastOff')));
       if (msg.keys) body.append(el('p', 'sub', t('toastHint', [msg.keys])));
+    } else if (msg.variant === 'inputSource') {
+      body.append(el('p', 'title', t('inputSourceTitle')), el('p', 'label', t('inputSourceText')), el('p', 'sub', t('inputSourceHow')));
     } else if (msg.variant === 'intro') {
       // Once after install: the click was recognized, the hint comes later.
       body.append(el('p', 'title', t('introTitle')), el('p', 'label', msg.label), el('p', 'sub', t('introText', [String(msg.need)])));

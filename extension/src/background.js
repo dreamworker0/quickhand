@@ -60,7 +60,7 @@ async function updateBadge(settings) {
 // it from the extension's own address is refused after the extension is
 // reloaded while the tab stays open, and that address would also let sites
 // detect the extension.
-const MASCOT = { hint: 'hint', learned: 'praise', toast: 'main', intro: 'main', praise: 'praise' };
+const MASCOT = { hint: 'hint', learned: 'praise', toast: 'main', intro: 'main', praise: 'praise', inputSource: 'hint' };
 const pictures = {};
 
 async function picture(name) {
@@ -134,6 +134,12 @@ async function handle(msg, sender) {
         }
         return { ok: true };
       });
+    case 'qh-input-source': {
+      // Nothing is counted; the page only hears how to switch to English.
+      const settings = await getSettings();
+      if (!isOff(settings) && !settings.disabledSites.includes(msg.site) && tabId !== null) showCard(tabId, { variant: 'inputSource' });
+      return { ok: true };
+    }
     case 'qh-summary':
       return serial(async () => {
         const state = await getState();

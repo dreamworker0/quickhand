@@ -29,6 +29,23 @@ test('concurrent action records survive a worker restart', async () => {
   assert.equal(bg.storage.local.qh_state.actions[msg.action.id].key, 21);
 });
 
+test('the Korean input note shows a card without counting anything, unless hints are off or the site is', async () => {
+  const bg = backgroundEnv();
+  const sender = { tab: { id: 7 } };
+  const note = () => bg.request({ type: 'qh-input-source', site: 'gmail' }, sender);
+  await note();
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.deepEqual(bg.cards.map((c) => c.variant), ['inputSource']);
+  assert.equal(bg.storage.local?.qh_state, undefined);
+
+  await bg.request({ type: 'qh-settings', patch: { disabledSites: ['gmail'] } });
+  await note();
+  await bg.request({ type: 'qh-settings', patch: { disabledSites: [], enabled: false } });
+  await note();
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.equal(bg.cards.length, 1);
+});
+
 test('the first recognized click after install sends the watching card once', async () => {
   const bg = backgroundEnv();
   const sender = { tab: { id: 7 } };

@@ -33,6 +33,9 @@
   },
   "praiseComboText": { "message": "Shortcut after shortcut, no mouse." },
   "praiseKey": { "message": "Done with the shortcut." },
+  "inputSourceTitle": { "message": "The Korean input source is on" },
+  "inputSourceText": { "message": "Gmail's shortcuts work only with English input." },
+  "inputSourceHow": { "message": "Switch to English with Caps Lock or Control + Space, then press it again." },
   "toastOn": { "message": "Hints are on" },
   "toastOff": { "message": "Hints are off" },
   "toastHint": {
