@@ -73,6 +73,7 @@
 | 스크린샷 1280×800 (순서대로) | `screenshots/1-hint-card.png` … `5-welcome.png` |
 | 작은 프로모션 타일 440×280 | `promo-440x280.png` |
 | 마키 프로모션 타일 1400×560 (선택) | `marquee-1400x560.png` |
+| 프로모션 동영상 (현지화·전 언어 공통 두 칸 모두) | https://www.youtube.com/watch?v=JGCCf3cxvcs ("스마트한 비영리" 채널의 30초 소개, 2026-11-01 넣음) |
 
 스크린샷의 영상은 Blender 재단의 Big Buck Bunny(CC BY 3.0)입니다. 다시 만들려면 `checks` 폴더에서 `node store-shots.mjs`.
 
