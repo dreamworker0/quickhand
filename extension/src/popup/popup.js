@@ -392,6 +392,7 @@ async function showToggleKeys() {
 
 function init() {
   UI.applyI18n();
+  $('version').textContent = 'v' + chrome.runtime.getManifest().version;
   showToggleKeys();
 
   for (const button of document.querySelectorAll('[data-pause]')) {
