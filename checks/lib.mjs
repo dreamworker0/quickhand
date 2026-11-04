@@ -184,20 +184,25 @@ async function enable(context, extensionId, isOurs) {
 // Google Chrome (137+) ignores --load-extension; it loads an unpacked extension
 // through the DevTools protocol instead, once started with
 // --enable-unsafe-extension-debugging. Edge still takes the flag.
-export async function launch({ headless = true } = {}) {
+// `locale` also sets Chrome's own UI language (--lang), which is what the
+// extension's chrome.i18n follows.
+export async function launch({ headless = true, locale = 'ko-KR' } = {}) {
   fs.mkdirSync(RESULTS, { recursive: true });
   const chrome = BROWSER === 'chrome';
   const context = await chromium.launchPersistentContext(PROFILE, {
     channel: BROWSER,
     headless,
     viewport: { width: 1280, height: 800 },
-    locale: 'ko-KR',
+    locale,
     // On a Mac, Playwright's stand-in keychain can't read the cookies the login
     // window (npm run login) saved with the real one, so the check looked signed out.
     ignoreDefaultArgs: MAC ? ['--disable-extensions', '--use-mock-keychain'] : ['--disable-extensions'],
-    args: chrome
-      ? ['--enable-unsafe-extension-debugging']
-      : [`--disable-extensions-except=${EXTENSION}`, `--load-extension=${EXTENSION}`],
+    args: [
+      `--lang=${locale}`,
+      ...(chrome
+        ? ['--enable-unsafe-extension-debugging']
+        : [`--disable-extensions-except=${EXTENSION}`, `--load-extension=${EXTENSION}`]),
+    ],
   });
   await context.addInitScript(watchCards);
   let extensionId = null;

@@ -24,7 +24,7 @@
 
 **카테고리**: 생산성 › 도구 (Productivity › Tools)
 
-**언어**: 한국어
+**언어**: 기본 영어, 한국어판 따로. 0.1.11부터 manifest의 `default_locale`이 `en`이라 영어가 기본 등록정보이고, 아래 한국어 내용은 대시보드의 언어 고르기에서 '한국어'를 골라 넣습니다. 영어 내용은 아래 [영어 등록정보](#영어-등록정보-english-listing)에 있습니다.
 
 **상세 설명**:
 
@@ -65,17 +65,55 @@
 그래서 지원 사이트는 예시 문장 안에서만 이름을 부릅니다. 전체 목록은 '단일 목적' 칸과 개인정보처리방침에만 둡니다.
 같은 낱말을 다섯 번 넘게 되풀이해도 스팸으로 보므로, '단축키'도 꼭 필요한 곳에만 씁니다.
 
-**이미지** (`store/` 폴더):
+**이미지** (`store/` 폴더). 언어마다 따로 넣습니다. 한국어판에 넣지 않은 칸은 기본(영어) 이미지가 대신 보입니다.
 
-| 칸 | 파일 |
-|---|---|
-| 스토어 아이콘 128×128 | `extension/assets/icons/icon-128.png` |
-| 스크린샷 1280×800 (순서대로) | `screenshots/1-hint-card.png` … `5-welcome.png` |
-| 작은 프로모션 타일 440×280 | `promo-440x280.png` |
-| 마키 프로모션 타일 1400×560 (선택) | `marquee-1400x560.png` |
-| 프로모션 동영상 (현지화·전 언어 공통 두 칸 모두) | https://www.youtube.com/watch?v=JGCCf3cxvcs ("스마트한 비영리" 채널의 30초 소개, 2026-11-01 넣음) |
+| 칸 | 기본(영어) | 한국어 |
+|---|---|---|
+| 스토어 아이콘 128×128 (언어 공통) | `extension/assets/icons/icon-128.png` | 같음 |
+| 스크린샷 1280×800 (순서대로) | `en/screenshots/1-hint-card.png` … `5-welcome.png` | `screenshots/1-hint-card.png` … `5-welcome.png` |
+| 작은 프로모션 타일 440×280 | `en/promo-440x280.png` | `promo-440x280.png` |
+| 마키 프로모션 타일 1400×560 (선택) | `en/marquee-1400x560.png` | `marquee-1400x560.png` |
+| 프로모션 동영상 | 비움 | https://www.youtube.com/watch?v=JGCCf3cxvcs ("스마트한 비영리" 채널의 30초 한국어 소개, 2026-11-01 넣음) |
 
-스크린샷의 영상은 Blender 재단의 Big Buck Bunny(CC BY 3.0)입니다. 다시 만들려면 `checks` 폴더에서 `node store-shots.mjs`.
+동영상은 한국어라서 '전 언어 공통' 칸에서는 빼고 한국어판 칸에만 둡니다. 2026-11-05 전에는 두 칸 모두에 넣어 두었습니다.
+
+스크린샷의 영상은 Blender 재단의 Big Buck Bunny(CC BY 3.0)입니다. 다시 만들려면 `checks` 폴더에서 `node store-shots.mjs`(한국어) 또는 `node store-shots.mjs en`(영어, `store/en/`에 저장)을 실행합니다.
+
+### 영어 등록정보 (English listing)
+
+**이름·요약**: manifest의 영어 문구가 자동으로 들어갑니다. "Quickhand – Shortcut Coach" / "A friendly shortcut coach that gently shows the keyboard shortcut when you do something with the mouse."
+
+**상세 설명**: 한국어판처럼 서비스 이름을 늘어놓지 않고, 'shortcut'·'hint'·'mouse'도 다섯 번을 넘기지 않게 썼습니다. 따옴표 안 문구는 확장 프로그램 화면의 영어 문구와 같습니다.
+
+```
+When you click a button with the mouse and that action has a keyboard key, Quickhand shows it in a small card at the bottom right of the screen.
+You pick it up naturally as you work, and once you've learned it, it stops bringing it up.
+
+■ For example
+Click the play button on YouTube and you'll see the K key. Drag to select cells in Google Sheets and it shows Shift+arrow keys. It works the same way in Gmail and other Google work tools, and you can turn it on or off for each site from the popup.
+
+■ How it helps
+• Works right after you install it. Things you already do from the keyboard never come up.
+• The first time it recognizes an action, a one-time "Quickhand is on" card lets you know it's working.
+• It speaks up after you repeat the same action with the mouse a few times.
+• Choose how often it speaks up: Gentle, Normal, or Active.
+• Use the suggested key and a "Nice!" card shows dots for how many more uses until it's learned. Keep going without the mouse and you get a cheer. You can turn the cheers off in settings.
+• Use the keyboard 8 or more times out of your last 10 and you get a "You've got it!" card. After that, it stays quiet about that one.
+• Don't need one? Press "Stop hinting this shortcut" on the card.
+• Wondering why nothing appeared? Open "No hint? See recent actions" in the popup to see the reason.
+• Turn Quickhand on or off anytime with one key combination. The popup shows which one.
+
+■ Privacy
+• What it records: action names (e.g. Bold, Play), whether you used the mouse or the keyboard, counts and dates, and the names and counts of buttons Quickhand didn't recognize
+• What it never records: what you type, the content of documents, emails or videos, or the addresses you visit
+• Records are saved only in Chrome on this device and are never sent anywhere. View or delete them anytime from the popup.
+• If something doesn't work well, use "Send feedback" in the popup. It shows you what will be sent and opens a Gmail draft with it filled in. Review it and send it yourself.
+
+■ Made by
+Socialprism · ehsheh@gmail.com
+
+Quickhand is not made or endorsed by Google or YouTube.
+```
 
 ## 개인정보 보호 관행 (Privacy practices)
 

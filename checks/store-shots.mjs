@@ -1,10 +1,32 @@
 // Chrome Web Store images from the real extension: five 1280x800 screenshots
-// and the 440x280 / 1400x560 promo tiles, written to ../store/.
+// and the 440x280 / 1400x560 promo tiles.
+//   node store-shots.mjs      Korean, written to ../store/
+//   node store-shots.mjs en   English, written to ../store/en/
 // The video is Big Buck Bunny (Blender Foundation, CC BY 3.0), so the listing
 // shows no one else's content.
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+
+const LANGS = {
+  ko: {
+    locale: 'ko-KR',
+    dir: '.',
+    youtube: 'hl=ko&gl=KR',
+    learned: /익혔어요/,
+    tile: { name: '손빠르미', line: '마우스로 한 동작에 단축키가 있으면<br>그 자리에서 살짝 알려 드려요' },
+  },
+  en: {
+    locale: 'en-US',
+    dir: 'en',
+    youtube: 'hl=en&gl=US',
+    learned: /got it/i,
+    tile: { name: 'Quickhand', line: 'Did that with the mouse?<br>See its keyboard shortcut, right there' },
+  },
+};
+const lang = process.argv[2] || 'ko';
+const L = LANGS[lang];
+if (!L) throw new Error(`unknown language "${lang}" (use ${Object.keys(LANGS).join(' or ')})`);
 
 // A fresh profile every run, so the cards and the popup show only this run (no
 // earlier records, no theater mode remembered by YouTube). The video needs no
@@ -14,11 +36,11 @@ const { launch, EXTENSION, PROFILE } = await import('./lib.mjs');
 fs.rmSync(PROFILE, { recursive: true, force: true });
 
 const here = path.dirname(fileURLToPath(import.meta.url));
-const STORE = path.resolve(here, '../store');
+const STORE = path.resolve(here, '../store', L.dir);
 const SHOTS = path.join(STORE, 'screenshots');
 fs.mkdirSync(SHOTS, { recursive: true });
 
-const { context, extensionId } = await launch({ headless: true });
+const { context, extensionId } = await launch({ headless: true, locale: L.locale });
 const page = await context.newPage();
 const ext = (p) => `chrome-extension://${extensionId}/${p}`;
 
@@ -37,10 +59,18 @@ async function nextCard(before) {
 }
 
 // 1. The hint card on YouTube.
-await page.goto('https://www.youtube.com/watch?v=aqz-KE-bpKQ', { waitUntil: 'domcontentloaded' });
+await page.goto(`https://www.youtube.com/watch?v=aqz-KE-bpKQ&${L.youtube}`, { waitUntil: 'domcontentloaded' });
 await page.waitForSelector('#movie_player .ytp-play-button', { timeout: 30000 });
 await page.waitForTimeout(3000);
 await skipAds();
+// Hold the title frame: by the time the card shows, the film may be in a fade
+// to a blank frame. Script pauses make no card.
+await page.evaluate(() => {
+  const v = document.querySelector('#movie_player video');
+  v.currentTime = 1;
+  v.pause();
+});
+await page.waitForTimeout(1000);
 await page.hover('#movie_player');
 let n = await page.evaluate(() => window.__qhCards.length);
 await page.locator('#movie_player .ytp-size-button').click();
@@ -48,14 +78,15 @@ await nextCard(n);
 await page.mouse.move(20, 420); // off the buttons, so no YouTube tooltip shows
 await page.waitForTimeout(800);
 await page.screenshot({ path: path.join(SHOTS, '1-hint-card.png') });
+await page.evaluate(() => document.querySelector('#movie_player video').play());
 
 // 2. "Learned!" after switching to the keyboard. Learning takes 10 recent uses,
 // mostly by key, so press T until the card shows, then once more if needed so
 // theater mode is on again as in shot 1.
 n = await page.evaluate(() => window.__qhCards.length);
-const learned = (k) => window.__qhCards.slice(k).some((c) => /익혔어요/.test(c.text));
+const learned = ([k, src, flags]) => window.__qhCards.slice(k).some((c) => new RegExp(src, flags).test(c.text));
 let presses = 0;
-while (!(await page.evaluate(learned, n))) {
+while (!(await page.evaluate(learned, [n, L.learned.source, L.learned.flags]))) {
   if (presses === 14) throw new Error('no "learned" card after 14 presses of T');
   await page.keyboard.press('t');
   presses++;
@@ -110,10 +141,10 @@ async function tile(file, w, h, big) {
   await p.setViewportSize({ width: w, height: h });
   await p.setContent(`<!doctype html><meta charset="utf-8"><style>
     body{margin:0;width:${w}px;height:${h}px;display:flex;align-items:center;gap:${big ? 56 : 12}px;padding:0 ${big ? 120 : 20}px;box-sizing:border-box;
-      background:linear-gradient(135deg,#2a9d8f,#1f7f74);color:#fff9ed;font-family:"Malgun Gothic","Apple SD Gothic Neo",system-ui,sans-serif}
+      background:linear-gradient(135deg,#2a9d8f,#1f7f74);color:#fff9ed;font-family:${lang === 'ko' ? '' : '"Segoe UI",'}"Malgun Gothic","Apple SD Gothic Neo",system-ui,sans-serif}
     img{height:${big ? 380 : 150}px} h1,p{white-space:nowrap} h1{margin:0;font-size:${big ? 96 : 38}px;letter-spacing:-1px} p{margin:${big ? 16 : 6}px 0 0;font-size:${big ? 36 : 14}px;line-height:1.45;color:#e8f6f3}
     kbd{display:inline-block;margin-top:${big ? 28 : 14}px;padding:${big ? '10px 18px' : '5px 10px'};border-radius:10px;background:#fff9ed;color:#173f4f;font:700 ${big ? 34 : 17}px Consolas,monospace;border-bottom:${big ? 6 : 3}px solid #c9d9d5}
-  </style><img src="${mascot}"><div><h1>손빠르미</h1><p>마우스로 한 동작에 단축키가 있으면<br>그 자리에서 살짝 알려 드려요</p><kbd>Ctrl + B</kbd></div>`);
+  </style><img src="${mascot}"><div><h1>${L.tile.name}</h1><p>${L.tile.line}</p><kbd>Ctrl + B</kbd></div>`);
   await p.screenshot({ path: path.join(STORE, file) });
   await p.close();
 }
