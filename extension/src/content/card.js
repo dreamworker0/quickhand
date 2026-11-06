@@ -74,6 +74,9 @@
     .dots i { width: 8px; height: 8px; border-radius: 50%; background: var(--line); }
     .dots i.on { background: var(--accent); }
     @media (prefers-reduced-motion: reduce) { .card, .card * { animation: none !important; } .burst { display: none; } }
+    /* Never on paper: the card is fixed to the window, so a print would repeat it on
+       every page (Docs' File > Print, or Ctrl+P right after a cheer). */
+    @media print { :host, .card { display: none !important; } }
     .body { min-width: 0; }
     .title { margin: 0; font-size: 12px; color: var(--quiet); }
     .label { margin: 2px 0 6px; font-size: 15px; font-weight: 600; overflow-wrap: anywhere; }
@@ -170,6 +173,18 @@
     (full && !full.matches('video, iframe, img') ? full : document.documentElement).append(host);
   }
   document.addEventListener('fullscreenchange', place);
+
+  // While the page prints, the card is also hidden from outside its shadow root, in
+  // case a page's own print styles reach the host element. It stays where it was on
+  // screen, so after the print dialog closes the card behaves as before.
+  let printing = false;
+  function paper() {
+    if (!host) return;
+    if (printing) host.style.setProperty('display', 'none', 'important');
+    else host.style.removeProperty('display');
+  }
+  window.addEventListener('beforeprint', () => { printing = true; paper(); });
+  window.addEventListener('afterprint', () => { printing = false; paper(); });
 
   function scheduleHide() {
     clearTimeout(hideTimer);
@@ -294,6 +309,7 @@
     card.addEventListener('mouseenter', () => clearTimeout(hideTimer));
     card.addEventListener('mouseleave', scheduleHide);
     root.append(style, card);
+    paper();
     place();
     scheduleHide();
   }

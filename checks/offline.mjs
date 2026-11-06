@@ -95,6 +95,35 @@ try {
     await context.close();
     console.log('PASS: range-prefixed Sheets delete/hide menus work; clear data is kept as a button not recognized'); passed++;
   }
+  {
+    // A tester's printed Docs pages carried the "인쇄 · Ctrl + P" hint on every sheet.
+    const context = await browser.newContext();
+    await context.route('**/*', (route) => route.abort());
+    const page = await context.newPage();
+    await page.setContent('<p>문서 본문</p>');
+    await page.evaluate(() => {
+      window.chrome = { i18n: { getMessage: (key) => key }, runtime: { onMessage: { addListener: (fn) => { window.deliver = fn; } } } };
+    });
+    await page.addScriptTag({ content: source('content/card.js') });
+    const seen = () => page.evaluate(() => {
+      const card = document.querySelector('quickhand-card')?.shadowRoot.querySelector('.card');
+      return !!card && card.getClientRects().length > 0;
+    });
+    await page.evaluate(() => deliver({ type: 'qh-card', variant: 'hint', id: 'docs:mod+p', label: '인쇄', display: [['Ctrl', 'P']] }));
+    assert.equal(await seen(), true);
+    await page.emulateMedia({ media: 'print' });
+    assert.equal(await seen(), false, 'print styles hide the card');
+    await page.emulateMedia({ media: 'screen' });
+    assert.equal(await seen(), true, 'the card is back on screen');
+    await page.evaluate(() => dispatchEvent(new Event('beforeprint')));
+    assert.equal(await seen(), false, 'beforeprint hides the card');
+    await page.evaluate(() => deliver({ type: 'qh-card', variant: 'praise', id: 'docs:mod+p', label: '인쇄', display: [['Ctrl', 'P']] }));
+    assert.equal(await seen(), false, 'a card that arrives during printing stays hidden');
+    await page.evaluate(() => dispatchEvent(new Event('afterprint')));
+    assert.equal(await seen(), true, 'afterprint shows it again');
+    await context.close();
+    console.log('PASS: the card is never printed and comes back after printing'); passed++;
+  }
   console.log(`${passed} offline Chrome checks passed`);
 } finally {
   await browser.close();
