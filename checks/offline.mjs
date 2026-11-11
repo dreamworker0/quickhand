@@ -124,6 +124,29 @@ try {
     await context.close();
     console.log('PASS: the card is never printed and comes back after printing'); passed++;
   }
+  {
+    // A tester waited for the card to go to read the sum of the selected cells, which
+    // Sheets shows in its bottom bar right where the card used to sit.
+    const gapFor = async (pathname) => {
+      const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+      await context.route('**/*', (route) => route.abort());
+      const page = await context.newPage();
+      await page.setContent('<p>본문</p>');
+      await page.evaluate(() => {
+        window.chrome = { i18n: { getMessage: (key) => key }, runtime: { onMessage: { addListener: (fn) => { window.deliver = fn; } } } };
+      });
+      const location = JSON.stringify({ hostname: 'docs.google.com', pathname });
+      await page.addScriptTag({ content: `(() => { const location = ${location}; ${source('content/card.js')}\n})();` });
+      await page.evaluate(() => deliver({ type: 'qh-card', variant: 'hint', id: 'sheets:range', label: '범위 선택', display: [['Ctrl', 'Shift', '→']] }));
+      await page.waitForTimeout(400); // past the 180 ms slide-in
+      const gap = await page.evaluate(() => innerHeight - document.querySelector('quickhand-card').shadowRoot.querySelector('.card').getBoundingClientRect().bottom);
+      await context.close();
+      return Math.round(gap);
+    };
+    assert.equal(await gapFor('/spreadsheets/d/test/edit'), 52, 'in Sheets the card clears the 37px bottom bar');
+    assert.equal(await gapFor('/document/d/test/edit'), 16, 'elsewhere it stays in the corner');
+    console.log('PASS: in Sheets the card sits above the bottom bar with the sum'); passed++;
+  }
   console.log(`${passed} offline Chrome checks passed`);
 } finally {
   await browser.close();

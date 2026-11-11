@@ -31,6 +31,10 @@
       .card { --bg: #1d2b31; --ink: #eef6f5; --quiet: #a9c0c4; --line: #2f444b; --chip: #24363d; }
     }
     @keyframes in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+    /* Sheets keeps a 37px bar along the bottom (sheet tabs, and on the right the sum
+       of the selected cells). Selecting a range is when both the sum and our card
+       show up, so in Sheets the card sits above that bar instead of on the sum. */
+    .card.above-bar { bottom: 52px; }
     img { width: 56px; height: 56px; flex: none; object-fit: contain; transform-origin: 50% 85%; }
     /* One short move when the card appears, then still: the mascot pops in, then
        wiggles (hint) or hops (learned), and the key chips press down twice. */
@@ -157,6 +161,10 @@
     return msg.site === 'sheets' && first.some((k, i) => k === 'Control' && first[i + 1] === 'Space');
   }
 
+  function inSheets() {
+    return location.hostname === 'docs.google.com' && location.pathname.startsWith('/spreadsheets/');
+  }
+
   function hide() {
     clearTimeout(hideTimer);
     if (host) host.remove();
@@ -251,7 +259,7 @@
     const root = host.attachShadow({ mode: 'open' });
     const style = el('style');
     style.textContent = CSS;
-    const card = el('div', 'card ' + (msg.variant || 'hint') + (msg.combo ? ' combo' : ''));
+    const card = el('div', 'card ' + (msg.variant || 'hint') + (msg.combo ? ' combo' : '') + (inSheets() ? ' above-bar' : ''));
     card.setAttribute('role', 'status');
     card.setAttribute('aria-live', 'polite');
 
