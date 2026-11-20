@@ -12,6 +12,7 @@
     "storyboard": "node storyboard.mjs",
     "sheets-scenarios": "node sheets-scenarios.mjs",
     "gmail-scenarios": "node gmail-scenarios.mjs",
+    "comment-scenarios": "node comment-scenarios.mjs",
     "sheets-compat": "node sheets-compat.mjs"
   },
   "devDependencies": {

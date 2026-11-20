@@ -98,6 +98,9 @@ src/sites/google-editors.js  구글 문서·시트·슬라이드 툴바·메뉴 
                        qh_sheets_compat), 켜져 있을 때만 엑셀식 키(Ctrl+2 굵게, Ctrl+9 행 숨기기 등 22개)를 같은 동작으로 셈.
                        문서·시트·슬라이드: 메뉴 막대(파일·수정·보기·삽입·서식·데이터·도구·도움말 등)를 마우스로 열면 Alt+글자를
                        안내(윈도에서 확인한 키만, Mac은 아직 안내하지 않음).
+                       문서·시트·슬라이드의 댓글·답글 입력 칸(.docos-input-textarea)에서는 Ctrl+Enter를 페이지 나누기·범위
+                       채우기·슬라이드쇼가 아니라 '댓글 올리기'로 셈. 그 칸에서는 복사·잘라내기·붙여넣기·실행취소·다시 실행·
+                       모두 선택만 세고 편집기 단축키는 세지 않음. 점검: checks/comment-scenarios.mjs
                        도움말의 시트 단축키를 모두 셈(두 단계 댓글 키, 댓글 안 R·J·K·E·U 포함). 서식 › 숫자 메뉴는
                        Ctrl+Shift+1~6 카드. 점검: checks/sheets-shortcuts.mjs(키, --from=번호), checks/editor-mouse.mjs sheets
                        문서: 도움말의 단축키를 마우스 동작만 빼고 모두 셈. "Ctrl+Alt+N, H" 같은 두 단계 키는
@@ -174,6 +177,8 @@ npm run sheets-compat       # 시트 '호환되는 스프레드시트 단축키 
                             # 끄면 안 세는지 확인. 계정 전체 설정이라 끝나면(실패해도) 반드시 끔. 사용자에게 먼저 물을 것
 npm run gmail-scenarios     # Gmail 목록에서 고르지 않고 E·#·Shift+U 등을 누르면 세지 않고, X로 고르거나 대화를 열면 세는지
                             # 시험 메일 한 통으로 13가지 확인 (로그인 필요, 끝나면 휴지통으로, results/gmail-scenarios.json)
+npm run comment-scenarios   # 문서·시트·슬라이드에서 댓글과 답글을 Ctrl+Enter로 올리고 '댓글 올리기'로 세는지, 본문·셀의
+                            # Ctrl+Enter는 그대로인지 확인 (로그인 필요, results/comment-scenarios.json, --only=docs,sheets)
 node cleanup.mjs --keep-login  # 점검용 시험 문서를 모두 휴지통으로 (--keep-login 없으면 로그아웃까지 함)
 ```
 

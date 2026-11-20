@@ -1065,6 +1065,43 @@ test('Docs: R, J, K, E, U count only while a comment (not its text box) is selec
   assert.equal(site.fromKey(event('KeyE', 'e', { target: new Element({ typing: true }) }), false), null);
 });
 
+// The comment and reply box (".docos-input-textarea", contenteditable) in all three editors.
+class CommentBox extends Element {
+  constructor() { super({ typing: true }); }
+  closest(sel) { return sel.includes('docos-input-textarea') || sel.includes('contenteditable') ? this : null; }
+}
+for (const app of ['docs', 'sheets', 'slides']) {
+  test(`${app}: Ctrl+Enter in a comment or reply box posts the comment (not page break, fill range or slideshow)`, () => {
+    const { site } = siteEnv(app);
+    for (const mac of [false, true]) {
+      const key = (code, k, mods = {}) => site.fromKey(event(code, k, Object.assign({ target: new CommentBox() }, mac ? { metaKey: !!mods.ctrlKey, shiftKey: !!mods.shiftKey, altKey: !!mods.altKey } : mods)), mac);
+      const post = key('Enter', 'Enter', { ctrlKey: true });
+      assert.equal(post.id, `${app}:comment:mod+enter`, `mac=${mac}`);
+      assert.equal(post.label, '댓글 올리기');
+      // The text box's own editing keys still count; the editor's keys do not.
+      assert.equal(key('KeyV', 'v', { ctrlKey: true }).id, `${app}:mod+v`);
+      assert.equal(key('KeyZ', 'z', { ctrlKey: true }).id, `${app}:mod+z`);
+      assert.equal(key('KeyA', 'a', { ctrlKey: true }).id, `${app}:mod+a`);
+      assert.equal(key('Digit1', '1', { ctrlKey: true, altKey: true }), null, `mac=${mac}`);
+      assert.equal(key('Enter', 'Enter', { ctrlKey: true, shiftKey: true }), null, `mac=${mac}`);
+      assert.equal(key('KeyM', 'm', { ctrlKey: true, altKey: true }), null, `mac=${mac}`);
+      // Ctrl+Y redoes on Windows; ⌘+Y on a Mac is Chrome's history.
+      assert.equal(key('KeyY', 'y', { ctrlKey: true }) ? 'counted' : null, mac ? null : 'counted');
+    }
+  });
+}
+
+test('Ctrl+Enter outside a comment box keeps its editor meaning', () => {
+  const id = (app, mac) => {
+    const r = siteEnv(app).site.fromKey(event('Enter', 'Enter', mac ? { metaKey: true } : { ctrlKey: true }), mac);
+    return r && r.id;
+  };
+  assert.equal(id('docs', false), 'docs:mod+enter');
+  assert.equal(id('docs', true), 'docs:mod+enter');
+  assert.equal(id('sheets', false), 'sheets:mod+enter');
+  assert.equal(id('slides', true), 'slides:mod+enter'); // ⌘+Enter starts the slideshow on a Mac
+});
+
 test('Docs menus: a two-step key printed as "Ctrl+Alt+O Ctrl+Alt+U" matches pressing O, then U', () => {
   const { site } = siteEnv('docs');
   const clicked = site.fromMouse({ target: new Element({ control: true, 'aria-label': '제안된 수정 사항 검토 (Ctrl+Alt+O Ctrl+Alt+U)' }) }, false);

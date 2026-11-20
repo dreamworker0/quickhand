@@ -17,6 +17,7 @@ class Element {
   querySelector() { return null; }
   querySelectorAll() { return []; }
   closest(selector) {
+    if (selector.includes('docos-input-textarea')) return null; // the editors' comment box (tests give their own)
     if (selector.includes('textarea')) return this.attrs.typing ? this : null;
     if (selector.startsWith('input') || selector.startsWith('a[') || selector === '.TO' || selector.includes('.docs-sheet-tab')) return null;
     return this.attrs.control ? this : null;

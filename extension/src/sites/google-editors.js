@@ -972,10 +972,34 @@
   // Option shortcuts there all the same (help pages, Mac tables): menu search, small caps, borders.
   const MAC_OPTION_KEYS = new Set(['alt+/', 'alt+shift+k', 'alt+shift+1', 'alt+shift+2', 'alt+shift+3', 'alt+shift+4', 'alt+shift+6', 'alt+shift+7']);
 
+  // A comment or reply box (the same in all three editors, outside the document's typing
+  // frame): Ctrl+Enter posts the comment (the box's "댓글 올리기" button), and the editor's
+  // own keys (page break, fill range, headings …) do nothing there. Only posting and
+  // the text box's own editing keys count (checks/comment-scenarios.mjs).
+  const COMMENT_BOX = '.docos-input-textarea';
+  const COMMENT_POST = ['댓글 올리기', 'Post comment'];
+  const COMMENT_BOX_KEYS = ['mod+c', 'mod+x', 'mod+v', 'mod+z', 'mod+shift+z', 'mod+a'];
+  function inCommentBox(e) {
+    const el = e.composedPath ? e.composedPath()[0] : e.target;
+    return !!(el && el.closest && el.closest(COMMENT_BOX));
+  }
+  function commentBoxKey(app, combo, mac) {
+    const id = K.toId(combo);
+    if (id === 'mod+enter') return { id: app.id + ':comment:mod+enter', label: QH.names.pick(COMMENT_POST), fallbackLabel: true, combos: [combo] };
+    // Ctrl+Y redoes on Windows; on a Mac ⌘+Y is Chrome's history.
+    if (!COMMENT_BOX_KEYS.includes(id) && !(id === 'mod+y' && !mac)) return null;
+    const seen = detected.get(app.id + ':' + id);
+    return { id: app.id + ':' + id, label: seen || QH.names.pick(QH.names.EDITING[id]), fallbackLabel: !seen, combos: [combo] };
+  }
+
   function fromKey(app, e, mac) {
     if (K.isModifierOnly(e)) return null;
     if (K.isTextEntry(e, mac) && !(mac && MAC_OPTION_KEYS.has(K.toId(K.fromEvent(e, mac))))) return null;
     const combo = K.fromEvent(e, mac);
+    if (inCommentBox(e)) {
+      firstStep = null; // a two-step key started in the document does not go on in the box
+      return commentBoxKey(app, combo, mac);
+    }
     const fnKey = /^f\d+$/.test(combo.key);
     if (app.id === 'sheets') {
       const wider = widened(app, combo, mac);
