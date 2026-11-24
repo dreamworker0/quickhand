@@ -46,9 +46,19 @@ test('the Korean input note shows a card without counting anything, unless hints
   assert.equal(bg.cards.length, 1);
 });
 
+test('a fresh install hints at the "active" strength', async () => {
+  const bg = backgroundEnv();
+  const settings = await bg.request({ type: 'qh-settings', patch: {} });
+  assert.equal(settings.strength, 'active');
+  await bg.request({ type: 'qh-mouse', action: { id: 'yt:playpause', site: 'youtube', label: '재생 / 일시정지', display: [['K']] } }, { tab: { id: 7 } });
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.deepEqual(bg.cards.map((c) => c.variant), ['hint']);
+});
+
 test('the first recognized click after install sends the watching card once', async () => {
   const bg = backgroundEnv();
   const sender = { tab: { id: 7 } };
+  await bg.request({ type: 'qh-settings', patch: { strength: 'normal' } }); // "active" hints at once, so no watching card
   const click = (id, label) => bg.request({ type: 'qh-mouse', action: { id, site: 'youtube', label, display: [['K']] } }, sender);
   await click('yt:playpause', '재생 / 일시정지');
   await click('yt:mute', '음소거');
@@ -78,6 +88,7 @@ test('with "active" strength every key use gets a cheer, even a shortcut already
   const sender = { tab: { id: 7 } };
   const action = { id: 'sheets:mod+space', site: 'sheets', label: '열 선택', display: [['Ctrl', 'Space']] };
   // "normal": a shortcut known from the keyboard is counted quietly.
+  await bg.request({ type: 'qh-settings', patch: { strength: 'normal' } });
   for (let i = 0; i < 3; i++) await bg.request({ type: 'qh-key', action }, sender);
   await new Promise((resolve) => setImmediate(resolve));
   assert.equal(bg.cards.filter((c) => c.variant === 'praise').length, 0);

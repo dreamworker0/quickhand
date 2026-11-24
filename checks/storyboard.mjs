@@ -1,5 +1,5 @@
 // The "first click to learned" storyboard for testers and the store: on a fresh
-// install at the default "normal" strength, play/pause on YouTube with the mouse,
+// install at the "normal" strength, play/pause on YouTube with the mouse,
 // then press K until it is learned, capturing the card after each of the 10
 // steps. Writes ../dist/손빠르미-10단계.png. Needs no sign-in: it uses its own
 // fresh profile, and the video is Big Buck Bunny (Blender Foundation, CC BY 3.0).

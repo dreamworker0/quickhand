@@ -6,7 +6,7 @@ const { engine } = self.QH;
 
 const DEFAULT_SETTINGS = {
   enabled: true,
-  strength: 'normal',
+  strength: 'active',
   pauseUntil: 0,
   disabledSites: [],
   onboarded: false,

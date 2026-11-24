@@ -30,7 +30,7 @@ for (const [value, nameKey, descKey] of STRENGTHS) {
   input.type = 'radio';
   input.name = 'strength';
   input.value = value;
-  input.checked = value === 'normal';
+  input.checked = value === 'active';
   const text = el('span');
   text.append(el('strong', null, t(nameKey)), el('small', null, t(descKey)));
   label.append(input, text);
