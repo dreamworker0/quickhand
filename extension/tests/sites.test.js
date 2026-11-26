@@ -84,7 +84,7 @@ test('Gmail and Drive normal two-step shortcuts still work', () => {
 
 test('Gmail on Mac: single keys typed with the Korean input source are not counted, since Gmail ignores them', () => {
   const { site } = siteEnv('gmail');
-  const id = (code, key, mods) => { const r = site.fromKey(event(code, key, mods), true); return r && r.id; };
+  const id = (code, key, mods) => { const r = site.fromKey(event(code, key, mods), true); return r && !r.ignored ? r.id : null; };
   const answer = (code, key, mods) => JSON.parse(JSON.stringify(site.fromKey(event(code, key, mods), true)));
   // G then I as "ㅎ", "ㅑ": Gmail stays put (checked on a real Mac, 2026-10-29).
   assert.equal(id('KeyG', 'ㅎ'), undefined);
@@ -111,7 +111,7 @@ test('Gmail on Mac: single keys typed with the Korean input source are not count
 
 test('Drive: keys for the selected items count only with an item selected (focused, for rename and the item menu)', () => {
   const { site, ctx } = siteEnv('drive');
-  const id = (code, key, mods, target) => { const r = site.fromKey(event(code, key, { ...mods, target }), false); return r && r.id; };
+  const id = (code, key, mods, target) => { const r = site.fromKey(event(code, key, { ...mods, target }), false); return r && !r.ignored ? r.id : null; };
   const ctrlAlt = { ctrlKey: true, altKey: true };
   const keys = [['KeyS', 's', ctrlAlt, 'mod+alt+s'], ['KeyA', 'a', ctrlAlt, 'mod+alt+a'], ['KeyM', 'm', ctrlAlt, 'mod+alt+m'], ['KeyL', 'l', ctrlAlt, 'mod+alt+l'],
     ['KeyP', 'p', ctrlAlt, 'mod+alt+p'], ['Delete', 'Delete', {}, 'delete'], ['KeyX', 'x', { ctrlKey: true }, 'mod+x'], ['Enter', 'Enter', { ctrlKey: true }, 'mod+enter']];
@@ -132,7 +132,7 @@ test('Drive: keys for the selected items count only with an item selected (focus
 test('Drive: the help page keys found missing in the real-site check are named', () => {
   const { site, ctx } = siteEnv('drive');
   ctx.document.querySelectorAll = (sel) => (sel.includes('aria-selected="true"') ? [{ getClientRects: () => [{}] }] : []); // an item selected
-  const id = (code, key, mods) => { const r = site.fromKey(event(code, key, mods), false); return r && r.id; };
+  const id = (code, key, mods) => { const r = site.fromKey(event(code, key, mods), false); return r && !r.ignored ? r.id : null; };
   assert.equal(id('KeyG', 'g', { altKey: true }), null);
   assert.equal(id('KeyF', 'f', { altKey: true }), 'drive:alt+g>f'); // Alt still held for the second key
   assert.equal(id('KeyG', 'g', { altKey: true }), null);
@@ -316,7 +316,7 @@ test('Docs, Sheets, Slides: opening a menu bar menu with the mouse hints its Alt
     item.closest = (sel) => (sel.includes('#docs-menubar') ? item : null);
     return item;
   };
-  const click = (id, text, mac = false) => { const r = siteEnv(id).site.fromMouse({ target: bar(text), button: 0, clientX: 5, clientY: 5 }, mac); return r && r.id; };
+  const click = (id, text, mac = false) => { const r = siteEnv(id).site.fromMouse({ target: bar(text), button: 0, clientX: 5, clientY: 5 }, mac); return r && !r.ignored ? r.id : null; };
   assert.equal(click('sheets', '데이터'), 'sheets:alt+d');
   assert.equal(click('sheets', '파일'), 'sheets:alt+f');
   assert.equal(click('docs', '서식'), 'docs:alt+o');
@@ -592,7 +592,7 @@ test('YouTube: chapter, frame, start/end, volume and number keys are counted', (
   const { site, ctx } = siteEnv('youtube');
   withChapters(ctx);
   const inPlayer = new In('#movie_player');
-  const id = (code, key, patch) => { const r = site.fromKey(event(code, key, patch), false); return r && r.id; };
+  const id = (code, key, patch) => { const r = site.fromKey(event(code, key, patch), false); return r && !r.ignored ? r.id : null; };
   assert.equal(id('ArrowRight', 'ArrowRight', { ctrlKey: true }), 'yt:chapter');
   assert.equal(id('ArrowLeft', 'ArrowLeft', { ctrlKey: true }), 'yt:chapter');
   assert.equal(id('Period', '.'), 'yt:frame');
@@ -614,7 +614,7 @@ test('YouTube: chapter, frame, start/end, volume and number keys are counted', (
 
 test('YouTube: keys count only where the video allows them', () => {
   const { site, ctx } = siteEnv('youtube');
-  const id = (code, key, patch) => { const r = site.fromKey(event(code, key, patch), false); return r && r.id; };
+  const id = (code, key, patch) => { const r = site.fromKey(event(code, key, patch), false); return r && !r.ignored ? r.id : null; };
   const page = (parts) => { ctx.document.querySelectorAll = (sel) => parts[Object.keys(parts).find((k) => sel.includes(k))] || []; };
   const video = (paused) => ({ paused });
   const cc = (title) => ({ getAttribute: (n) => (n === 'data-title-no-tooltip' ? title : null) });
@@ -637,7 +637,7 @@ test('YouTube: keys count only where the video allows them', () => {
 
 test('YouTube: Home/End and ↑/↓ outside the player scroll the page, so they are not counted', () => {
   const { site } = siteEnv('youtube');
-  const id = (code, key, target) => { const r = site.fromKey(event(code, key, { target }), false); return r && r.id; };
+  const id = (code, key, target) => { const r = site.fromKey(event(code, key, { target }), false); return r && !r.ignored ? r.id : null; };
   assert.equal(id('ArrowUp', 'ArrowUp', new In()), null);
   assert.equal(id('End', 'End', new In()), null);
   // On the seek bar ↑/↓ leave the volume alone (measured on the real page).
@@ -655,7 +655,7 @@ test('YouTube on Mac: chapters are Option+←/→', () => {
 
 test('YouTube: the volume slider hints ↑/↓, the timeline J/L and a chapter in the list Ctrl+←/→', () => {
   const { site } = siteEnv('youtube');
-  const click = (el) => { const r = site.fromMouse({ target: el }, false); return r && r.id; };
+  const click = (el) => { const r = site.fromMouse({ target: el }, false); return r && !r.ignored ? r.id : null; };
   assert.equal(click(new In('#movie_player', '.html5-video-player', '.ytp-volume-panel')), 'yt:volume');
   assert.equal(click(new In('#movie_player', '.html5-video-player', '.ytp-progress-bar-container', '.ytp-progress-bar')), 'yt:seek');
   assert.equal(click(new In('ytd-macro-markers-list-item-renderer')), 'yt:chapter');
@@ -663,7 +663,7 @@ test('YouTube: the volume slider hints ↑/↓, the timeline J/L and a chapter i
 
 test('Gmail: keys that change conversations count only when one is open or ticked', () => {
   const { site, ctx } = siteEnv('gmail');
-  const id = (code, key, patch) => { const r = site.fromKey(event(code, key, patch), false); return r && r.id; };
+  const id = (code, key, patch) => { const r = site.fromKey(event(code, key, patch), false); return r && !r.ignored ? r.id : null; };
   const keys = [['KeyE', 'e', 'archive'], ['Digit3', '#', 'remove', { shiftKey: true }], ['KeyU', 'U', 'unread', { shiftKey: true }], ['KeyM', 'm', 'mute'], ['Minus', '-', 'notImportant'], ['KeyV', 'v', 'move']];
   // The list with nothing ticked: Gmail answers "No conversations selected".
   for (const [code, key, , mods] of keys) assert.equal(id(code, key, mods), null, key);
@@ -684,7 +684,7 @@ test('Gmail: keys that change conversations count only when one is open or ticke
 
 test('Gmail: reply, message and conversation-view keys count only in an open conversation', () => {
   const { site, ctx } = siteEnv('gmail');
-  const id = (code, key, patch) => { const r = site.fromKey(event(code, key, patch), false); return r && r.id; };
+  const id = (code, key, patch) => { const r = site.fromKey(event(code, key, patch), false); return r && !r.ignored ? r.id : null; };
   const shift = { shiftKey: true };
   const keys = [['KeyR', 'r', 'reply'], ['KeyA', 'a', 'replyAll'], ['KeyF', 'f', 'forward'], ['KeyR', 'R', 'replyWindow', shift],
     ['KeyN', 'n', 'nextMessage'], ['KeyP', 'p', 'prevMessage'], ['Semicolon', ';', 'expandAll'], ['Semicolon', ':', 'collapseAll', shift],
@@ -701,7 +701,7 @@ test('Gmail: reply, message and conversation-view keys count only in an open con
 
 test("Gmail: the sidebar's \"더보기\" (more labels) is not the toolbar's More actions (.)", () => {
   const { site } = siteEnv('gmail');
-  const click = (attrs, text) => { const r = site.fromMouse({ target: new Element({ control: true, role: 'button', ...attrs }, text) }, false); return r && r.id; };
+  const click = (attrs, text) => { const r = site.fromMouse({ target: new Element({ control: true, role: 'button', ...attrs }, text) }, false); return r && !r.ignored ? r.id : null; };
   assert.equal(click({ 'aria-label': '라벨 더보기' }, '더보기'), null);
   assert.equal(click({ 'aria-label': '이메일 옵션 더보기', 'data-tooltip': '더보기' }, ''), 'gmail:more');
   assert.equal(click({}, '편지쓰기'), 'gmail:compose'); // a name shown only as text still counts
@@ -757,7 +757,7 @@ test("Gmail: one of the person's labels clicked in the left list hints G then L,
 
 test("Gmail: the \"선택\" arrow beside the select-all box opens a menu, not select all", () => {
   const { site } = siteEnv('gmail');
-  const click = (attrs, text) => { const r = site.fromMouse({ target: new Element({ control: true, ...attrs }, text) }, false); return r && r.id; };
+  const click = (attrs, text) => { const r = site.fromMouse({ target: new Element({ control: true, ...attrs }, text) }, false); return r && !r.ignored ? r.id : null; };
   assert.equal(click({ role: 'button', 'aria-label': '선택' }), null);
   const box = new Element({ role: 'checkbox' });
   box.closest = (sel) => (sel === 'tr.zA' || sel.startsWith('input') || sel.startsWith('a[') || sel === '.TO' ? null : box);
@@ -774,7 +774,7 @@ test('Sheets: the arrow beside the name box (named ranges) is not Ctrl+J', () =>
 
 test('Gmail: z counts only while Gmail offers to undo', () => {
   const { site, ctx } = siteEnv('gmail');
-  const id = () => { const r = site.fromKey(event('KeyZ', 'z'), false); return r && r.id; };
+  const id = () => { const r = site.fromKey(event('KeyZ', 'z'), false); return r && !r.ignored ? r.id : null; };
   assert.equal(id(), null);
   const toast = (text, shown) => ({ textContent: text, getClientRects: () => (shown ? [{}] : []) });
   ctx.document.querySelectorAll = (sel) => (sel.includes('.bAq') ? [toast('대화가 보관처리되었습니다. 실행취소', false)] : []);
@@ -797,7 +797,7 @@ test('Gmail: a long search term or label name is not an open conversation', () =
   const { site, ctx } = siteEnv('gmail');
   const remove = () => site.fromMouse({ target: new Element({ control: true, act: '10' }) }, false);
   const shown = (r) => JSON.parse(JSON.stringify(r.combos.map((c) => ctx.QH.keys.display(c, false))));
-  const key = (code, k, patch) => { const r = site.fromKey(event(code, k, patch), false); return r && r.id; };
+  const key = (code, k, patch) => { const r = site.fromKey(event(code, k, patch), false); return r && !r.ignored ? r.id : null; };
   // These lists all end in one long word, which used to read as a conversation id: the
   // hint lost its x step and Shift+3 was counted though Gmail only says "No conversations
   // selected". 16 letters was enough; the search box and nested labels make that common.
@@ -828,7 +828,7 @@ test('Gmail: a drawn message body says a conversation is open, list rows say it 
 
 test("Gmail: every key on Gmail's help page that changes something is counted", () => {
   const { site, ctx } = siteEnv('gmail');
-  const id = (code, key, patch) => { const r = site.fromKey(event(code, key, patch), false); return r && r.id; };
+  const id = (code, key, patch) => { const r = site.fromKey(event(code, key, patch), false); return r && !r.ignored ? r.id : null; };
   const shift = { shiftKey: true };
   const ctrl = { ctrlKey: true };
   const ctrlShift = { ctrlKey: true, shiftKey: true };
@@ -880,7 +880,7 @@ test("Gmail: every key on Gmail's help page that changes something is counted", 
 test('Gmail: clicking a row star or importance marker hints s and + / -', () => {
   const { site } = siteEnv('gmail');
   class Row extends Element { closest(sel) { return sel === 'tr.zA' || sel.includes('[role="button"]') || sel.includes('[role="switch"]') ? this : null; } }
-  const click = (attrs) => { const r = site.fromMouse({ target: new Row(attrs) }, false); return r && r.id; };
+  const click = (attrs) => { const r = site.fromMouse({ target: new Row(attrs) }, false); return r && !r.ignored ? r.id : null; };
   assert.equal(click({ role: 'button', 'aria-label': '별표 없음' }), 'gmail:star');
   assert.equal(click({ role: 'button', 'aria-label': '별표표시됨' }), 'gmail:star');
   assert.equal(click({ role: 'switch', 'aria-label': 'Google 매직에 따르면 중요한 메일입니다.' }), 'gmail:notImportant');
@@ -1024,7 +1024,7 @@ test('Drive on Mac: ⌘+Control+R is Ctrl+Alt+R (add shortcut)', () => {
 
 test('Docs: the rest of the help page is named, plus Shift selection and page keys', () => {
   const { site } = siteEnv('docs');
-  const id = (code, key, mods) => { const r = site.fromKey(event(code, key, mods), false); return r && r.id; };
+  const id = (code, key, mods) => { const r = site.fromKey(event(code, key, mods), false); return r && !r.ignored ? r.id : null; };
   assert.equal(id('KeyO', 'o', { ctrlKey: true }), 'docs:mod+o');
   assert.equal(id('Period', '.', { ctrlKey: true }), 'docs:mod+.');
   assert.equal(id('KeyX', 'x', { ctrlKey: true, altKey: true, shiftKey: true }), 'docs:mod+alt+shift+x');
@@ -1049,7 +1049,7 @@ test('Docs: copy and cut count only with text selected', () => {
     target.ownerDocument = { getSelection: () => ({ toString: () => selected }) };
     return target;
   };
-  const id = (code, key, target) => { const r = site.fromKey(event(code, key, { ctrlKey: true, target }), false); return r && r.id; };
+  const id = (code, key, target) => { const r = site.fromKey(event(code, key, { ctrlKey: true, target }), false); return r && !r.ignored ? r.id : null; };
   assert.equal(id('KeyC', 'c', typing('')), null);
   assert.equal(id('KeyX', 'x', typing('')), null);
   assert.equal(id('KeyB', 'b', typing('')), 'docs:mod+b'); // bold applies to what is typed next
@@ -1122,7 +1122,7 @@ test('Sheets: clicking the file name box is not the sheet rename shortcut', () =
 
 test("Sheets: the rest of the help page is counted, including two-step comment keys", () => {
   const { site } = siteEnv('sheets');
-  const id = (code, key, mods) => { const r = site.fromKey(event(code, key, mods), false); return r && r.id; };
+  const id = (code, key, mods) => { const r = site.fromKey(event(code, key, mods), false); return r && !r.ignored ? r.id : null; };
   assert.equal(id('Space', ' ', { ctrlKey: true, shiftKey: true }), 'sheets:mod+shift+space');
   assert.equal(id('F4', 'F4'), 'sheets:f4');
   assert.equal(id('Home', 'Home', { ctrlKey: true }), 'sheets:mod+home');
@@ -1153,7 +1153,7 @@ test('Sheets: a menu item lying over the column letters is not a column select',
 
 test('Slides: the help page keys are named, with two-step keys and comment letters', () => {
   const { site } = siteEnv('slides');
-  const id = (code, key, mods) => { const r = site.fromKey(event(code, key, mods), false); return r && r.id; };
+  const id = (code, key, mods) => { const r = site.fromKey(event(code, key, mods), false); return r && !r.ignored ? r.id : null; };
   assert.equal(id('ArrowRight', 'ArrowRight', { altKey: true }), 'slides:alt+arrowright');
   assert.equal(id('Digit9', '9', { ctrlKey: true, altKey: true }), 'slides:mod+alt+9');
   assert.equal(id('PageDown', 'PageDown'), 'slides:pagedown');
@@ -1165,4 +1165,41 @@ test('Slides: the help page keys are named, with two-step keys and comment lette
   class Comment extends Element { closest(sel) { return sel.includes('docos-anchoreddocoview') ? this : null; } }
   assert.equal(site.fromKey(event('KeyR', 'r', { target: new Comment() }), false).id, 'slides:r');
   assert.equal(id('KeyR', 'r'), null);
+});
+
+test('Gmail, Drive and YouTube: a key that does nothing here says why instead of counting', () => {
+  const why = (site, code, key, patch) => site.fromKey(event(code, key, patch), false)?.ignored ?? null;
+
+  const gmail = siteEnv('gmail');
+  // The list, nothing ticked: tick with x or open it first.
+  assert.equal(why(gmail.site, 'KeyE', 'e'), 'gmailPick');
+  assert.equal(why(gmail.site, 'Digit3', '#', { shiftKey: true }), 'gmailPick');
+  // Keys of an open conversation, in the list.
+  assert.equal(why(gmail.site, 'KeyR', 'r'), 'gmailOpen');
+  // z with nothing to undo stays silent; keys that work say nothing.
+  assert.equal(gmail.site.fromKey(event('KeyZ', 'z'), false), null);
+  assert.equal(why(gmail.site, 'KeyS', 's'), null);
+  gmail.ctx.location.hash = '#inbox/FMfcgzQXJWDsKlmBhQZHJTrzvNZsxwlL';
+  assert.equal(why(gmail.site, 'KeyE', 'e'), null);
+  assert.equal(why(gmail.site, 'KeyR', 'r'), null);
+
+  const drive = siteEnv('drive');
+  const ctrlAlt = { ctrlKey: true, altKey: true };
+  assert.equal(why(drive.site, 'KeyA', 'a', ctrlAlt), 'drivePick');
+  assert.equal(why(drive.site, 'F2', 'F2'), 'drivePick');
+  // Delete, copy and cut with nothing chosen stay silent.
+  assert.equal(drive.site.fromKey(event('Delete', 'Delete'), false), null);
+  assert.equal(drive.site.fromKey(event('KeyC', 'c', { ctrlKey: true }), false), null);
+  assert.equal(drive.site.fromKey(event('KeyX', 'x', { ctrlKey: true }), false), null);
+  drive.ctx.document.querySelectorAll = (sel) => (sel.includes('aria-selected="true"') ? [{ getClientRects: () => [{}] }] : []);
+  assert.equal(why(drive.site, 'KeyA', 'a', ctrlAlt), null);
+
+  const yt = siteEnv('youtube');
+  const page = (parts) => { yt.ctx.document.querySelectorAll = (sel) => parts[Object.keys(parts).find((k) => sel.includes(k))] || []; };
+  page({ 'ytp-chapter-hover-container': [{}], video: [{ paused: false }], 'ytp-subtitles-button': [{ getAttribute: (n) => (n === 'data-title-no-tooltip' ? '자막 사용 불가' : null) }] });
+  assert.equal(why(yt.site, 'KeyC', 'c'), 'ytCaptions');
+  assert.equal(why(yt.site, 'ArrowRight', 'ArrowRight', { ctrlKey: true }), 'ytChapters');
+  assert.equal(why(yt.site, 'Period', '.'), 'ytFrame');
+  assert.equal(why(yt.site, 'KeyP', 'P', { shiftKey: true }), 'ytPlaylist');
+  assert.equal(why(yt.site, 'KeyK', 'k'), null);
 });

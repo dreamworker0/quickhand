@@ -108,7 +108,12 @@
     if (name === 'prev') return inPlaylist();
     return true;
   }
-  const act = (name) => (works(name) ? action(name) : null);
+  // A key the video doesn't allow is not counted; card.js says why ("이 영상에는 자막이
+  // 없어요") under "여기서는 안 되는 키예요". The reason names the message (ignoredYtCaptions …).
+  const WHY = { captions: 'ytCaptions', chapter: 'ytChapters', frame: 'ytFrame', prev: 'ytPlaylist' };
+  const act = (name) => (works(name) ? action(name) : Object.assign(action(name), { ignored: WHY[name] }));
+  // A button the video doesn't allow (the greyed captions button) is no hint either.
+  const clicked = (name) => (works(name) ? action(name) : null);
 
   function fromShortsMouse(el) {
     for (const [sel, name] of SHORTS_BUTTONS) if (el.closest(sel)) return action(name);
@@ -131,8 +136,8 @@
     const button = el.closest('button, .ytp-button');
     if (button) {
       const aria = (button.getAttribute('aria-keyshortcuts') || '').toLowerCase();
-      if (ARIA_KEYS[aria]) return act(ARIA_KEYS[aria]);
-      for (const [cls, name] of BUTTONS) if (button.closest('.' + cls)) return act(name);
+      if (ARIA_KEYS[aria]) return clicked(ARIA_KEYS[aria]);
+      for (const [cls, name] of BUTTONS) if (button.closest('.' + cls)) return clicked(name);
       return null;
     }
     // Moving along the timeline is what J/L do in 10-second steps.

@@ -258,8 +258,9 @@
     return button;
   }
 
-  // Why a pressed shortcut did nothing (sites/calendar.js: blocked()).
-  const IGNORED = { search: 'ignoredSearch', window: 'ignoredWindow', eventPage: 'ignoredEventPage', needEvent: 'ignoredNeedEvent' };
+  // Why a pressed shortcut did nothing. Calendar's reasons are named here (sites/calendar.js:
+  // blocked()); any other reason names its message itself: "gmailPick" → ignoredGmailPick.
+  const IGNORED ={ search: 'ignoredSearch', window: 'ignoredWindow', eventPage: 'ignoredEventPage', needEvent: 'ignoredNeedEvent' };
 
   function show(msg) {
     // A cheer never pushes aside a hint for something else or the "learned" card.
@@ -298,7 +299,8 @@
       else body.append(el('p', 'sub', t(msg.combo ? 'praiseComboText' : 'praiseKey')));
     } else if (msg.variant === 'ignored') {
       body.append(el('p', 'title', t('ignoredTitle')), el('p', 'label', msg.label), keysNode(msg.display));
-      if (IGNORED[msg.reason]) body.append(el('p', 'sub', t(IGNORED[msg.reason])));
+      const why = msg.reason && chrome.i18n.getMessage(IGNORED[msg.reason] || 'ignored' + msg.reason[0].toUpperCase() + msg.reason.slice(1));
+      if (why) body.append(el('p', 'sub', why));
     } else if (msg.variant === 'learned') {
       body.append(el('p', 'title', t('learnedTitle')), el('p', 'label', msg.label), keysNode(msg.display), el('p', 'sub', t('learnedText')));
     } else {

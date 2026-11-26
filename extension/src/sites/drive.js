@@ -142,6 +142,7 @@
   const ITEM = '[role="row"][data-id], [role="gridcell"][data-id]';
   const anySelected = () => [...document.querySelectorAll('[role="row"][data-id][aria-selected="true"], [role="gridcell"][data-id][aria-selected="true"]')]
     .some((el) => el.getClientRects().length > 0);
+  const QUIET_WHEN_DEAD = new Set(['delete', 'mod+x', 'mod+c', 'mod+shift+c']);
   function works(id, e) {
     if (ON_SELECTED.has(id)) return anySelected();
     if (ON_FOCUSED.has(id)) return anySelected() || (e.target instanceof Element && !!e.target.closest(ITEM));
@@ -167,11 +168,15 @@
       if (c.then) c.then.alt = c.then.ctrl = false; // the modifier may still be held for the second key
     }
     const id = K.toId(c);
-    if (!typing && !works(id, e)) return null;
+    const dead = !typing && !works(id, e);
+    // Delete, copy and cut with nothing chosen stay silent: they are pressed by habit.
+    if (dead && QUIET_WHEN_DEAD.has(id)) return null;
     const seen = detected.get('drive:' + id);
     const name = seen || nameFor(id);
-    if (name) return { id: 'drive:' + id, label: name, fallbackLabel: !seen, combos: [c] };
-    return null;
+    if (!name) return null;
+    const found = { id: 'drive:' + id, label: name, fallbackLabel: !seen, combos: [c] };
+    // A key that needs a chosen file: not counted, and card.js says to choose one first.
+    return dead ? Object.assign(found, { ignored: 'drivePick' }) : found;
   }
 
   (QH.sites = QH.sites || []).push({

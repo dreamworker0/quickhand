@@ -238,6 +238,15 @@
     if (name === 'undo') return undoOffered();
     return true;
   }
+  // A key that does nothing here comes back marked `ignored` with the reason (card.js
+  // shows "여기서는 안 되는 키예요" and how to get there). z with nothing to undo stays
+  // silent: it is pressed by habit, and there is nothing to do about it.
+  function keyed(name) {
+    if (works(name)) return action(name);
+    if (ON_CONVERSATIONS.has(name)) return Object.assign(action(name), { ignored: 'gmailPick' });
+    if (IN_CONVERSATION.has(name)) return Object.assign(action(name), { ignored: 'gmailOpen' });
+    return null;
+  }
 
   // "g then i" (go to) and "* then a" (select).
   const nextKey = K.sequencer((c) => !K.hasModifier(c) && ((!c.shift && c.key === 'g') || (c.shift && c.key === '8')));
@@ -257,7 +266,7 @@
     c = nextKey(c, Date.now());
     if (!c) return null;
     const id = K.toId(c);
-    if (byCombo[id]) return works(byCombo[id]) ? action(byCombo[id]) : null;
+    if (byCombo[id]) return keyed(byCombo[id]);
     // Enter opens the conversation under the list cursor, which is not a focus: the
     // key then goes to the page itself. On a focused button it just presses it.
     if (id === 'enter' && e.target instanceof Element && (e.target.closest('tr.zA') || e.target.tagName === 'BODY')) return action('open');
