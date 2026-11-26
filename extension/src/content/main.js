@@ -104,11 +104,23 @@
     send({ type: 'qh-input-source', site: site.id });
   }
 
+  // A known shortcut the page ignores here (Calendar's S on the search results): not
+  // counted, but the person hears why, at most once a minute for the same key.
+  const IGNORED_GAP_MS = 60 * 1000;
+  const ignoredAt = {};
+  function noteIgnored(found, e) {
+    const now = Date.now();
+    if (now - (ignoredAt[found.id] || 0) < IGNORED_GAP_MS) return;
+    ignoredAt[found.id] = now;
+    send({ type: 'qh-key-ignored', action: toAction(found), used: used(found, e), reason: found.ignored });
+  }
+
   function onKey(e) {
     if (stopped || !e.isTrusted || e.repeat) return;
     if (!alive()) return stop();
     const found = site.fromKey(e, mac);
     if (found && found.inputSource) return noteInputSource();
+    if (found && found.ignored) return noteIgnored(found, e);
     // A site may need a moment to tell (Sheets' Shift+Space) and answer later.
     if (found && typeof found.then === 'function') found.then((later) => later && send({ type: 'qh-key', action: toAction(later), used: used(later, e) }));
     else if (found && site.confirmKey) {

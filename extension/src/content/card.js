@@ -250,6 +250,9 @@
     return button;
   }
 
+  // Why a pressed shortcut did nothing (sites/calendar.js: blocked()).
+  const IGNORED = { search: 'ignoredSearch', window: 'ignoredWindow', eventPage: 'ignoredEventPage', needEvent: 'ignoredNeedEvent' };
+
   function show(msg) {
     // A cheer never pushes aside a hint for something else or the "learned" card.
     if (msg.variant === 'praise' && current && (current.variant === 'learned' || (current.variant === 'hint' && current.id !== msg.id))) return;
@@ -285,6 +288,9 @@
       body.append(title, el('p', 'label', msg.label), keysNode(msg.display));
       if (msg.left) body.append(dots(msg.done || 0, msg.left), el('p', 'sub', t('praiseLeft', [String(msg.left)])));
       else body.append(el('p', 'sub', t(msg.combo ? 'praiseComboText' : 'praiseKey')));
+    } else if (msg.variant === 'ignored') {
+      body.append(el('p', 'title', t('ignoredTitle')), el('p', 'label', msg.label), keysNode(msg.display));
+      if (IGNORED[msg.reason]) body.append(el('p', 'sub', t(IGNORED[msg.reason])));
     } else if (msg.variant === 'learned') {
       body.append(el('p', 'title', t('learnedTitle')), el('p', 'label', msg.label), keysNode(msg.display), el('p', 'sub', t('learnedText')));
     } else {

@@ -2,7 +2,13 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const { siteEnv, Element, event } = require('./helpers/browser-env.cjs');
 
-const press = (site, code, key, patch, mac = false) => site.fromKey(event(code, key, patch), mac)?.id ?? null;
+// The action a key counts as; a key Calendar ignores there (marked `ignored`) counts as nothing.
+const press = (site, code, key, patch, mac = false) => {
+  const found = site.fromKey(event(code, key, patch), mac);
+  return found && !found.ignored ? found.id : null;
+};
+// Why a known key does nothing there (the note shown instead), or null.
+const why = (site, code, key, patch) => site.fromKey(event(code, key, patch), false)?.ignored ?? null;
 
 test('Calendar: every help-page shortcut is counted', () => {
   const { site, ctx } = siteEnv('calendar');
@@ -224,4 +230,31 @@ test('Calendar: a key counts only once the page shows it did something', async (
   pending = site.confirmKey();
   setTimeout(() => { live.textContent = '로드됨 / 실행취소되었습니다.'; }, 150);
   assert.equal(await pending, true);
+});
+
+test('Calendar: a key that does nothing here says why instead of counting', () => {
+  const { site, ctx } = siteEnv('calendar');
+  const open = (shown) => { ctx.document.querySelectorAll = (sel) => (sel === '[role="dialog"]' ? [{ getClientRects: () => (shown ? [{}] : []) }] : []); };
+  open(false);
+  ctx.location.pathname = '/calendar/u/0/r/search';
+  assert.equal(why(site, 'KeyS', 's'), 'search');
+  assert.equal(why(site, 'KeyW', 'w'), 'search');
+  assert.equal(why(site, 'Equal', '+', { shiftKey: true }), 'search');
+  assert.equal(why(site, 'KeyC', 'c'), null); // works there
+  ctx.location.pathname = '/calendar/u/0/r/week';
+  assert.equal(why(site, 'KeyS', 's'), null);
+  assert.equal(why(site, 'KeyE', 'e'), 'needEvent');
+  // Delete and Backspace with nothing open stay silent: easy to press by accident.
+  assert.equal(site.fromKey(event('Delete', 'Delete'), false), null);
+  assert.equal(site.fromKey(event('Backspace', 'Backspace'), false), null);
+  open(true);
+  assert.equal(why(site, 'KeyJ', 'j'), 'window');
+  assert.equal(why(site, 'KeyE', 'e'), null);
+  open(false);
+  ctx.location.pathname = '/calendar/u/0/r/eventedit/abc123';
+  assert.equal(why(site, 'KeyJ', 'j'), 'eventPage');
+  assert.equal(why(site, 'KeyC', 'c'), null);
+  // Typing is never a shortcut, ignored or not.
+  ctx.location.pathname = '/calendar/u/0/r/search';
+  assert.equal(site.fromKey(event('KeyS', 's', { target: new Element({ typing: true }) }), false), null);
 });

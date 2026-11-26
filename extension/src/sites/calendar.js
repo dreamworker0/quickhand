@@ -75,11 +75,26 @@
   // s there opened nothing but was cheered. c, Shift+C, ?, / and Esc still work there.
   const onSearchPage = () => /\/r\/search\b/.test(location.pathname);
   const DEAD_ON_SEARCH = new Set(['today', 'next', 'prev', 'day', 'week', 'month', 'year', 'schedule', 'custom', 'allDay', 'settings', 'goto', 'people']);
-  function works(name) {
-    if (onSearchPage() && DEAD_ON_SEARCH.has(name)) return false;
-    if (name === 'edit' || name === 'remove') return windowOpen();
-    if (GRID.has(name)) return !windowOpen() && !(onEventPage() && name !== 'create');
-    return true;
+  // Why a key does nothing here, or null when it works. The reason picks the note shown
+  // instead of a cheer (card.js: ignoredSearch and so on).
+  function blocked(name) {
+    if (onSearchPage() && DEAD_ON_SEARCH.has(name)) return 'search';
+    if (name === 'edit' || name === 'remove') return windowOpen() ? null : 'needEvent';
+    if (GRID.has(name)) {
+      if (windowOpen()) return 'window';
+      if (onEventPage() && name !== 'create') return 'eventPage';
+    }
+    return null;
+  }
+  const works = (name) => !blocked(name);
+  // A key that does nothing here is not counted; it comes back marked `ignored` so the
+  // person hears why. Delete and Backspace with no event open stay silent: they are
+  // too easy to press by accident.
+  function keyed(name) {
+    const why = blocked(name);
+    if (!why) return action(name);
+    if (name === 'remove') return null;
+    return Object.assign(action(name), { ignored: why });
   }
 
   function action(name) {
@@ -143,11 +158,11 @@
     if (id === 'mod+p') return action('print');
     if (K.isTyping(e)) return null;
     if (/^mod\+[z/]$/.test(id)) return action(MOD_KEYS[c.key]);
-    if (e.shiftKey && !e.ctrlKey && !e.metaKey && !e.altKey && SHIFT_KEYS[c.key]) return works(SHIFT_KEYS[c.key]) ? action(SHIFT_KEYS[c.key]) : null;
-    if (c.key === '+' && !e.ctrlKey && !e.metaKey && !e.altKey) return works('people') ? action('people') : null;
+    if (e.shiftKey && !e.ctrlKey && !e.metaKey && !e.altKey && SHIFT_KEYS[c.key]) return keyed(SHIFT_KEYS[c.key]);
+    if (c.key === '+' && !e.ctrlKey && !e.metaKey && !e.altKey) return keyed('people');
     if (e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) return null;
     const name = BY_KEY[c.key];
-    return name && works(name) ? action(name) : null;
+    return name ? keyed(name) : null;
   }
 
   // Did the key do anything? Every key Calendar acted on in checks/calendar-shortcuts.mjs

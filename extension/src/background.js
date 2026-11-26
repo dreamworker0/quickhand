@@ -60,7 +60,7 @@ async function updateBadge(settings) {
 // it from the extension's own address is refused after the extension is
 // reloaded while the tab stays open, and that address would also let sites
 // detect the extension.
-const MASCOT = { hint: 'hint', learned: 'praise', toast: 'main', intro: 'main', praise: 'praise', inputSource: 'hint' };
+const MASCOT = { hint: 'hint', learned: 'praise', toast: 'main', intro: 'main', praise: 'praise', inputSource: 'hint', ignored: 'hint' };
 const pictures = {};
 
 async function picture(name) {
@@ -134,6 +134,19 @@ async function handle(msg, sender) {
         }
         return { ok: true };
       });
+    case 'qh-key-ignored': {
+      // A shortcut the page ignores where it was pressed: nothing is counted.
+      const settings = await getSettings();
+      if (isOff(settings) || settings.disabledSites.includes(msg.action.site) || tabId === null) return { ok: true };
+      showCard(tabId, {
+        variant: 'ignored',
+        id: msg.action.id,
+        label: msg.action.label,
+        display: msg.used ? [msg.used] : msg.action.display,
+        reason: msg.reason,
+      });
+      return { ok: true };
+    }
     case 'qh-input-source': {
       // Nothing is counted; the page only hears how to switch to English.
       const settings = await getSettings();

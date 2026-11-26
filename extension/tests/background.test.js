@@ -145,3 +145,21 @@ test('a button not recognized is kept by name and site, unless the site is turne
   const res = await bg.request({ type: 'qh-summary' }, sender);
   assert.equal(res.summary.unknown[0].label, '필터 만들기');
 });
+
+test('a shortcut the page ignored shows why without counting it, unless hints are off or the site is', async () => {
+  const bg = backgroundEnv();
+  const sender = { tab: { id: 7 } };
+  const action = { id: 'calendar:settings', site: 'calendar', label: '설정 열기', display: [['S']] };
+  const note = () => bg.request({ type: 'qh-key-ignored', action, used: ['S'], reason: 'search' }, sender);
+  await note();
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.deepEqual(bg.cards.map((c) => [c.variant, c.label, c.reason]), [['ignored', '설정 열기', 'search']]);
+  assert.equal(bg.storage.local?.qh_state, undefined);
+
+  await bg.request({ type: 'qh-settings', patch: { disabledSites: ['calendar'] } });
+  await note();
+  await bg.request({ type: 'qh-settings', patch: { disabledSites: [], enabled: false } });
+  await note();
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.equal(bg.cards.length, 1);
+});
