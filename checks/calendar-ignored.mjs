@@ -12,6 +12,8 @@ const OUT = path.join(RESULTS, 'calendar-ignored.json');
 
 const { context } = await launch({ headless: false });
 const page = await context.newPage();
+// QH_DARK=1: the same run with the page in dark mode, to see the card's dark colours.
+if (process.env.QH_DARK) await page.emulateMedia({ colorScheme: 'dark' });
 page.setDefaultTimeout(15000);
 page.on('dialog', (d) => d.accept().catch(() => {}));
 
@@ -56,7 +58,7 @@ for (const c of CASES) {
     await page.keyboard.press(c.key);
     await page.waitForTimeout(1200);
     const shown = await card();
-    const shot = path.join(RESULTS, `calendar-ignored-${results.length + 1}.png`);
+    const shot = path.join(RESULTS, `calendar-ignored-${process.env.QH_DARK ? 'dark-' : ''}${results.length + 1}.png`);
     await page.screenshot({ path: shot });
     const still = await where();
     let followed = null;

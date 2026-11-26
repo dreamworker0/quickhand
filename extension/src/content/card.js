@@ -74,6 +74,14 @@
     .card.learned .close:hover, .card.learned .close:focus-visible { background: rgba(255, 255, 255, 0.45); }
     @keyframes rise { from { opacity: 0; transform: translateY(24px) scale(0.8); } to { opacity: 1; transform: none; } }
     @keyframes cheer { 0%, 100% { transform: none; } 35% { transform: scale(1.07); } 65% { transform: scale(0.98); } }
+    /* "This key doesn't work here": coral (the sparks' #e76f51), so it never reads as a
+       teal "try this key" hint or a gold cheer, yet stays a friendly note, not an error. */
+    .card.ignored { --accent: #e76f51; --line: #f2cfc4; --chip: #fff3ee; background: #fffaf8; }
+    .card.ignored .title { font-size: 13px; font-weight: 700; color: #b0432a; }
+    @media (prefers-color-scheme: dark) {
+      .card.ignored { --accent: #f08a6e; --line: #5b3b33; --chip: #34282a; background: #2a2224; }
+      .card.ignored .title { color: #ffb29c; }
+    }
     .dots { display: flex; gap: 3px; margin-top: 6px; }
     .dots i { width: 8px; height: 8px; border-radius: 50%; background: var(--line); }
     .dots i.on { background: var(--accent); }
