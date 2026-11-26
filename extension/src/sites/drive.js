@@ -179,12 +179,39 @@
     return dead ? Object.assign(found, { ignored: 'drivePick' }) : found;
   }
 
+  // Did the key do anything? Measured in checks/drive-shortcuts.mjs: besides the usual look,
+  // Drive changes which items are selected, the side panes (details, activity), the
+  // list/grid layout and the row height (density). Keys whose result never shows on this
+  // page are counted at once: copies to the clipboard, new tabs and file pickers, the
+  // star, undo and redo, print, find, and the copy/paste/delete whose rows come back from
+  // the server later.
+  const CONFIRM_SKIP = new Set([
+    'mod+c', 'mod+x', 'mod+shift+c', 'mod+alt+l', 'mod+v', 'mod+shift+v', 'mod+c>mod+v',
+    'mod+enter', 'alt+c>t', 'alt+c>p', 'alt+c>s', 'alt+c>d', 'alt+c>o', 'alt+c>u', 'alt+c>i',
+    'mod+alt+s', 'mod+z', 'mod+y', 'mod+p', 'mod+f', 'delete',
+  ]);
+  function look() {
+    const items = K.shown(ITEM);
+    return K.pageLook() + '\n' + [
+      items.filter((r) => r.getAttribute('aria-selected') === 'true').map((r) => r.getAttribute('data-id')).join(','),
+      K.shown('[role="complementary"], [role="region"], aside').map((p) => p.getAttribute('aria-label') || '').join(','),
+      K.shown('[aria-pressed="true"]').map((b) => b.getAttribute('aria-label') || '').join(','),
+      items[0] ? Math.round(items[0].getBoundingClientRect().height) : 0,
+    ].join('|');
+  }
+  function confirmKey(found) {
+    if (CONFIRM_SKIP.has(found.id.slice('drive:'.length))) return Promise.resolve(true);
+    // The move window took longer than 1.5 seconds to open in the check.
+    return K.watchChange(look, 3000);
+  }
+
   (QH.sites = QH.sites || []).push({
     id: 'drive',
     matches: (loc) => loc.hostname === 'drive.google.com',
     mouseEvent: 'mouseup', // Drive menus act on mouseup
     fromMouse,
     fromKey,
+    confirmKey,
     // Files, folders and the folder path hold the person's own names.
     contentAreas: '[role="main"] [role="grid"], [role="main"] [role="heading"], [role="navigation"], [data-id]',
   });

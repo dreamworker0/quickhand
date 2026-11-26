@@ -1203,3 +1203,43 @@ test('Gmail, Drive and YouTube: a key that does nothing here says why instead of
   assert.equal(why(yt.site, 'KeyP', 'P', { shiftKey: true }), 'ytPlaylist');
   assert.equal(why(yt.site, 'KeyK', 'k'), null);
 });
+
+test('Gmail and Drive: a key counts only once the page shows it did something', async () => {
+  const quick = async (p) => { const t = Date.now(); const ok = await p; return { ok, ms: Date.now() - t }; };
+
+  const gmail = siteEnv('gmail');
+  const row = { classList: { contains: () => false }, getClientRects: () => [{}], ticked: false,
+    querySelector(sel) { return sel.includes('aria-checked="true"') && this.ticked ? {} : null; } };
+  gmail.ctx.document.querySelectorAll = (sel) => (sel === 'tr.zA' ? [row] : []);
+  gmail.ctx.document.activeElement = {};
+  gmail.ctx.location.href = 'https://mail.google.com/mail/u/0/#inbox';
+  const x = gmail.site.fromKey(event('KeyX', 'x'), false);
+  // x ticks a row: only the tick changes, and that is enough.
+  let pending = gmail.site.confirmKey(x);
+  setTimeout(() => { row.ticked = true; }, 150);
+  assert.equal((await quick(pending)).ok, true);
+  // Nothing changes (Shift+N with nothing new): no.
+  assert.equal(await gmail.site.confirmKey(x), false);
+  // Ctrl+B in a compose window changes only the text: counted at once.
+  const bold = { id: 'gmail:mod+b', combos: [{ key: 'b', mod: true }] };
+  let r = await quick(gmail.site.confirmKey(bold));
+  assert.equal(r.ok, true);
+  assert.ok(r.ms < 100);
+  // d opens a new tab: counted at once.
+  assert.equal(await gmail.site.confirmKey({ id: 'gmail:composeTab', combos: [{ key: 'd' }] }), true);
+
+  const drive = siteEnv('drive');
+  const item = { attrs: { 'aria-selected': 'false', 'data-id': 'f1' }, getAttribute(n) { return this.attrs[n]; }, getClientRects: () => [{}], getBoundingClientRect: () => ({ height: 48 }) };
+  drive.ctx.document.querySelectorAll = (sel) => (sel.includes('data-id') ? [item] : []);
+  drive.ctx.document.activeElement = {};
+  drive.ctx.location.href = 'https://drive.google.com/drive/my-drive';
+  pending = drive.site.confirmKey({ id: 'drive:mod+a', combos: [] });
+  setTimeout(() => { item.attrs['aria-selected'] = 'true'; }, 150);
+  assert.equal(await pending, true);
+  // The sort menu that never opens: no.
+  assert.equal(await drive.site.confirmKey({ id: 'drive:alt+r', combos: [] }), false);
+  // Copy link goes to the clipboard only: counted at once.
+  r = await quick(drive.site.confirmKey({ id: 'drive:mod+alt+l', combos: [] }));
+  assert.equal(r.ok, true);
+  assert.ok(r.ms < 100);
+});

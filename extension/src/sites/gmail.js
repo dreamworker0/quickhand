@@ -280,12 +280,38 @@
     return null;
   }
 
+  // Did the key do anything? Measured in checks/gmail-shortcuts.mjs: list keys change only
+  // the ticks, stars, bold (unread) rows, importance marks, the list cursor or the note at
+  // the bottom ("대화가 보관처리되었습니다."), so those join the usual look. Keys with
+  // Ctrl or Alt are counted at once: in a compose window they change only the text's
+  // formatting. d opens a new tab, leaving this one as it was.
+  const CONFIRM_SKIP = new Set(['gmail:composeTab']);
+  function look() {
+    const rows = K.shown('tr.zA');
+    const count = (sel) => rows.filter((r) => r.querySelector(sel)).length;
+    return K.pageLook() + '\n' + [
+      rows.length,
+      count('[role="checkbox"][aria-checked="true"]'),
+      rows.filter((r) => r.classList.contains('zE')).length,
+      rows.map((r) => { const s = r.querySelector('.T-KT, [aria-label*="별표"], [aria-label*="Star"]'); return s ? s.getAttribute('aria-label') || s.getAttribute('title') || '' : ''; }).join(','),
+      count('.pG.pH-Jp, .pH-A7'),
+      rows.findIndex((r) => r.classList.contains('btb')),
+      K.shown('.bAq, .vh').map((e) => e.textContent).join('|'),
+    ].join('|');
+  }
+  function confirmKey(found) {
+    const c = found.combos[0];
+    if (CONFIRM_SKIP.has(found.id) || K.hasModifier(c)) return Promise.resolve(true);
+    return K.watchChange(look);
+  }
+
   (QH.sites = QH.sites || []).push({
     id: 'gmail',
     matches: (loc) => loc.hostname === 'mail.google.com',
     mouseEvent: 'mouseup', // Gmail buttons act on mouseup
     fromMouse,
     fromKey,
+    confirmKey,
     // Mail, its senders and labels hold the person's own words.
     contentAreas: '.adn, .a3s, .gs, .aeF, [role="main"] table, [role="navigation"]',
   });

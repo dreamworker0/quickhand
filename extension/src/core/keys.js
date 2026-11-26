@@ -207,9 +207,43 @@
     return next;
   }
 
+  // Did a key do anything? A site's confirmKey takes a look at the page right as the key
+  // goes down (before the page handles it) and answers yes once the look or the focus
+  // changes, or no after a moment. pageLook() is what every site shows when it reacts:
+  // the address, the title, an open window or menu, a spoken status. A site adds what
+  // only it changes (Gmail's ticks and stars, Drive's selection). Quickhand's own card
+  // lives in a shadow root, so it is never part of the look.
+  const CONFIRM_MS = 1500;
+  const CONFIRM_STEP_MS = 100;
+  const shown = (sel) => [...document.querySelectorAll(sel)].filter((x) => x.getClientRects().length > 0);
+  function pageLook() {
+    const windows = shown('[role="dialog"], [role="alertdialog"]');
+    return [
+      location.href,
+      document.title,
+      windows.map((d) => d.getAttribute('aria-label') || '').join('|') + '#' + windows.length,
+      shown('[role="menu"], [role="listbox"]').length,
+      [...document.querySelectorAll('[role="alert"], [aria-live]')].map((x) => x.textContent).join('|'),
+    ].join('\n');
+  }
+  function watchChange(look, waitMs) {
+    const limit = waitMs || CONFIRM_MS;
+    const before = look();
+    const focus = document.activeElement;
+    const started = Date.now();
+    return new Promise((resolve) => {
+      const check = () => {
+        if (document.activeElement !== focus || look() !== before) return resolve(true);
+        if (Date.now() - started >= limit) return resolve(false);
+        setTimeout(check, CONFIRM_STEP_MS);
+      };
+      setTimeout(check, CONFIRM_STEP_MS);
+    });
+  }
+
   QH.keys = {
     THEN, isMac, combo, sequence, fromEvent, isModifierOnly, isTyping, isTextEntry, typedHangul, toId, parse, splitLabel,
-    hasModifier, display, sequencer,
+    hasModifier, display, sequencer, shown, pageLook, watchChange,
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = QH.keys;
 })(typeof globalThis !== 'undefined' ? globalThis : this);
