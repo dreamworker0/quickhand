@@ -150,12 +150,44 @@
     return name && works(name) ? action(name) : null;
   }
 
+  // Did the key do anything? Every key Calendar acted on in checks/calendar-shortcuts.mjs
+  // changed the address, the title, an open window or menu, the focus, or a spoken status
+  // ("실행취소되었습니다."); a key it ignores changes none of them. Asked right as the key
+  // goes down (before Calendar handles it) and answered once something changes, or "no"
+  // after a moment.
+  const CONFIRM_MS = 1500;
+  const CONFIRM_STEP_MS = 100;
+  function look() {
+    const shown = (sel) => [...document.querySelectorAll(sel)].filter((x) => x.getClientRects().length > 0);
+    return [
+      location.href,
+      document.title,
+      shown('[role="dialog"], [role="alertdialog"]').map((d) => d.getAttribute('aria-label') || '').join('|') + '#' + shown('[role="dialog"], [role="alertdialog"]').length,
+      shown('[role="menu"], [role="listbox"]').length,
+      [...document.querySelectorAll('[role="alert"], [aria-live]')].map((x) => x.textContent).join('|'),
+    ].join('\n');
+  }
+  function confirmKey() {
+    const before = look();
+    const focus = document.activeElement;
+    const started = Date.now();
+    return new Promise((resolve) => {
+      const check = () => {
+        if (document.activeElement !== focus || look() !== before) return resolve(true);
+        if (Date.now() - started >= CONFIRM_MS) return resolve(false);
+        setTimeout(check, CONFIRM_STEP_MS);
+      };
+      setTimeout(check, CONFIRM_STEP_MS);
+    });
+  }
+
   (QH.sites = QH.sites || []).push({
     id: 'calendar',
     matches: (loc) => loc.hostname === 'calendar.google.com',
     mouseEvent: 'click',
     fromMouse,
     fromKey,
+    confirmKey,
     // Events and their details hold the person's own words; not kept as unknown buttons.
     contentAreas: '[data-eventid], [role="grid"], [role="dialog"] [role="heading"]',
   });

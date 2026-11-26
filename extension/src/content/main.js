@@ -111,7 +111,12 @@
     if (found && found.inputSource) return noteInputSource();
     // A site may need a moment to tell (Sheets' Shift+Space) and answer later.
     if (found && typeof found.then === 'function') found.then((later) => later && send({ type: 'qh-key', action: toAction(later), used: used(later, e) }));
-    else if (found) send({ type: 'qh-key', action: toAction(found), used: used(found, e) });
+    else if (found && site.confirmKey) {
+      // A site that can tell whether the key did anything (Calendar) is asked first,
+      // so a key the page ignored is neither counted nor cheered.
+      const message = { type: 'qh-key', action: toAction(found), used: used(found, e) };
+      site.confirmKey(found).then((ok) => ok && send(message));
+    } else if (found) send({ type: 'qh-key', action: toAction(found), used: used(found, e) });
   }
 
   window.addEventListener(mouseEvent, onMouse, true);

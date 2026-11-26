@@ -197,3 +197,31 @@ test('Calendar: on the search results page a click is not hinted with a key that
   ctx.location.pathname = '/calendar/u/0/r/week';
   assert.equal(click(site, people), 'calendar:people');
 });
+
+test('Calendar: a key counts only once the page shows it did something', async () => {
+  const { site, ctx } = siteEnv('calendar');
+  const focus = {};
+  ctx.document.activeElement = focus;
+  ctx.document.title = 'Google 캘린더 - 검색';
+  ctx.location.href = 'https://calendar.google.com/calendar/u/0/r/search?q=a';
+  // Nothing changes (s on the search page): no.
+  const t0 = Date.now();
+  assert.equal(await site.confirmKey(), false);
+  assert.ok(Date.now() - t0 >= 1400);
+  // The address changes (s opens the settings): yes, without waiting it out.
+  let pending = site.confirmKey();
+  setTimeout(() => { ctx.location.href = 'https://calendar.google.com/calendar/u/0/r/settings'; }, 150);
+  const t1 = Date.now();
+  assert.equal(await pending, true);
+  assert.ok(Date.now() - t1 < 1000);
+  // Only the focus moves (/ to the search box): yes.
+  pending = site.confirmKey();
+  setTimeout(() => { ctx.document.activeElement = {}; }, 150);
+  assert.equal(await pending, true);
+  // A spoken status changes (z: "실행취소되었습니다."): yes.
+  const live = { textContent: '로드됨' };
+  ctx.document.querySelectorAll = (sel) => (sel.includes('aria-live') ? [live] : []);
+  pending = site.confirmKey();
+  setTimeout(() => { live.textContent = '로드됨 / 실행취소되었습니다.'; }, 150);
+  assert.equal(await pending, true);
+});
