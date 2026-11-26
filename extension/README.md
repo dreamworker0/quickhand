@@ -179,6 +179,8 @@ npm run gmail-scenarios     # Gmail 목록에서 고르지 않고 E·#·Shift+U 
                             # 시험 메일 한 통으로 13가지 확인 (로그인 필요, 끝나면 휴지통으로, results/gmail-scenarios.json)
 npm run comment-scenarios   # 문서·시트·슬라이드에서 댓글과 답글을 Ctrl+Enter로 올리고 '댓글 올리기'로 세는지, 본문·셀의
                             # Ctrl+Enter는 그대로인지 확인 (로그인 필요, results/comment-scenarios.json, --only=docs,sheets)
+node calendar-search.mjs   # 캘린더 검색 결과 화면에서 키를 하나씩 눌러 캘린더가 반응하는지와 손빠르미가 세는지를 표로
+                            # (로그인 필요, 일정을 바꾸는 키는 누르지 않음, results/calendar-search.json)
 node cleanup.mjs --keep-login  # 점검용 시험 문서를 모두 휴지통으로 (--keep-login 없으면 로그아웃까지 함)
 ```
 

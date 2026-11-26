@@ -158,3 +158,42 @@ test('Calendar: clicks that match the new shortcuts', () => {
   print.parents = { button: print };
   assert.equal(click(site, print), 'calendar:print');
 });
+
+test('Calendar: the search results page counts only the keys it takes', () => {
+  // Checked in a real Calendar (checks/calendar-search.mjs): s, the view keys, moving
+  // between periods, q, g and + do nothing on /r/search; c, Shift+C, ?, / and Esc work.
+  const { site, ctx } = siteEnv('calendar');
+  ctx.document.querySelectorAll = () => [];
+  ctx.location.pathname = '/calendar/u/0/r/search';
+  for (const [code, key] of [['KeyS', 's'], ['KeyT', 't'], ['KeyJ', 'j'], ['KeyK', 'k'], ['KeyW', 'w'], ['Digit3', '3'], ['KeyA', 'a'], ['KeyQ', 'q'], ['KeyG', 'g'], ['NumpadAdd', '+']]) {
+    assert.equal(press(site, code, key), null, key);
+  }
+  assert.equal(press(site, 'Equal', '+', { shiftKey: true }), null);
+  assert.equal(press(site, 'KeyC', 'c'), 'calendar:create');
+  assert.equal(press(site, 'KeyC', 'C', { shiftKey: true }), 'calendar:quickCreate');
+  assert.equal(press(site, 'Slash', '?', { shiftKey: true }), 'calendar:help');
+  assert.equal(press(site, 'Slash', '/', { ctrlKey: true }), 'calendar:help');
+  assert.equal(press(site, 'Slash', '/'), 'calendar:search');
+  assert.equal(press(site, 'Escape', 'Escape'), 'calendar:back');
+  // Esc with the shortcut list open only closes that window.
+  ctx.document.querySelectorAll = (sel) => (sel === '[role="dialog"]' ? [{ getClientRects: () => [{}] }] : []);
+  assert.equal(press(site, 'Escape', 'Escape'), null);
+  // Back on the calendar the same keys count again.
+  ctx.document.querySelectorAll = () => [];
+  ctx.location.pathname = '/calendar/u/0/r/week';
+  assert.equal(press(site, 'KeyS', 's'), 'calendar:settings');
+  assert.equal(press(site, 'Escape', 'Escape'), null);
+});
+
+test('Calendar: on the search results page a click is not hinted with a key that does nothing there', () => {
+  const { site, ctx } = siteEnv('calendar');
+  const people = new Node({ 'aria-label': '사용자 검색' });
+  people.parents = { input: people };
+  ctx.location.pathname = '/calendar/u/0/r/search';
+  assert.equal(site.fromMouse({ target: people }, false).quiet, true);
+  const help = new Node({ role: 'menuitem' }, '키보드 단축키');
+  help.parents = { button: help };
+  assert.equal(click(site, help), 'calendar:help');
+  ctx.location.pathname = '/calendar/u/0/r/week';
+  assert.equal(click(site, people), 'calendar:people');
+});

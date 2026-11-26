@@ -71,7 +71,12 @@
   // Checked in a real Calendar (checks/calendar-prereq.mjs): with an event's window open
   // the grid keys do nothing; on the event page moving between periods does nothing.
   const GRID = new Set(['today', 'next', 'prev', 'day', 'week', 'month', 'year', 'schedule', 'custom', 'create', 'allDay']);
+  // The search results page ("검색", /r/search) ignores these keys (checks/calendar-search.mjs):
+  // s there opened nothing but was cheered. c, Shift+C, ?, / and Esc still work there.
+  const onSearchPage = () => /\/r\/search\b/.test(location.pathname);
+  const DEAD_ON_SEARCH = new Set(['today', 'next', 'prev', 'day', 'week', 'month', 'year', 'schedule', 'custom', 'allDay', 'settings', 'goto', 'people']);
   function works(name) {
+    if (onSearchPage() && DEAD_ON_SEARCH.has(name)) return false;
     if (name === 'edit' || name === 'remove') return windowOpen();
     if (GRID.has(name)) return !windowOpen() && !(onEventPage() && name !== 'create');
     return true;
@@ -82,7 +87,13 @@
     return { id: 'calendar:' + name, label: QH.names.pick(a.name), combos: a.combos };
   }
 
+  // A click whose key does nothing on this page is known but not hinted.
   function fromMouse(e) {
+    const found = clicked(e);
+    return found && !works(found.id.slice('calendar:'.length)) && onSearchPage() ? { quiet: true } : found;
+  }
+
+  function clicked(e) {
     if (!(e.target instanceof Element)) return null;
     // The sidebar's people box, which "+" jumps to.
     const box = e.target.closest('input');
@@ -126,12 +137,14 @@
       const on = e.target instanceof Element ? e.target.getAttribute('aria-label') || '' : '';
       return DISCARD.test(on) ? null : action('back');
     }
+    // On the search results page Esc goes back to the calendar too (not while a window is open).
+    if (c.key === 'escape' && !e.ctrlKey && !e.metaKey && !e.altKey && !e.shiftKey && onSearchPage() && !windowOpen()) return action('back');
     if (/^mod\+alt\+[.,]$/.test(id)) return action('sidePanel');
     if (id === 'mod+p') return action('print');
     if (K.isTyping(e)) return null;
     if (/^mod\+[z/]$/.test(id)) return action(MOD_KEYS[c.key]);
-    if (e.shiftKey && !e.ctrlKey && !e.metaKey && !e.altKey && SHIFT_KEYS[c.key]) return action(SHIFT_KEYS[c.key]);
-    if (c.key === '+' && !e.ctrlKey && !e.metaKey && !e.altKey) return action('people');
+    if (e.shiftKey && !e.ctrlKey && !e.metaKey && !e.altKey && SHIFT_KEYS[c.key]) return works(SHIFT_KEYS[c.key]) ? action(SHIFT_KEYS[c.key]) : null;
+    if (c.key === '+' && !e.ctrlKey && !e.metaKey && !e.altKey) return works('people') ? action('people') : null;
     if (e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) return null;
     const name = BY_KEY[c.key];
     return name && works(name) ? action(name) : null;
