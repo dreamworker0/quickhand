@@ -1243,3 +1243,38 @@ test('Gmail and Drive: a key counts only once the page shows it did something', 
   assert.equal(r.ok, true);
   assert.ok(r.ms < 100);
 });
+
+test('YouTube: a key counts only once the video shows it did something', async () => {
+  const { site, ctx } = siteEnv('youtube');
+  const video = { paused: false, muted: false, volume: 1, playbackRate: 1, currentTime: 100, getClientRects: () => [{}] };
+  ctx.document.querySelectorAll = (sel) => (sel.includes('video') ? [video] : []);
+  ctx.document.querySelector = () => null;
+  ctx.document.activeElement = {};
+  ctx.location.href = 'https://www.youtube.com/watch?v=abc';
+  // Playing on its own: the time moves with the clock, which is not a reaction.
+  const clock = setInterval(() => { video.currentTime += 0.1; }, 100);
+  try {
+    assert.equal(await site.confirmKey(), false);
+    // l jumps 10 seconds ahead.
+    let pending = site.confirmKey();
+    setTimeout(() => { video.currentTime += 10; }, 150);
+    assert.equal(await pending, true);
+    // k pauses.
+    pending = site.confirmKey();
+    setTimeout(() => { video.paused = true; }, 150);
+    assert.equal(await pending, true);
+  } finally {
+    clearInterval(clock);
+  }
+  // Paused: . steps one frame, a tiny move that still counts.
+  video.paused = true;
+  let pending = site.confirmKey();
+  setTimeout(() => { video.currentTime += 1 / 30; }, 150);
+  assert.equal(await pending, true);
+  // Paused and nothing moves (a key the player ignored): no.
+  assert.equal(await site.confirmKey(), false);
+  // Shift+. changes the speed.
+  pending = site.confirmKey();
+  setTimeout(() => { video.playbackRate = 1.25; }, 150);
+  assert.equal(await pending, true);
+});

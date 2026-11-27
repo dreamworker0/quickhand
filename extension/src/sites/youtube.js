@@ -180,12 +180,52 @@
     return expected.filter(([sel]) => !document.querySelector(sel)).map(([, name]) => action(name).label);
   }
 
+  // Did the key do anything? The page never sits still while a video plays, so the usual
+  // look (keys.js: pageLook) would always say yes. Instead the video itself is read, as
+  // checks/youtube-shortcuts.mjs measures it: paused, muted, volume, speed, and whether
+  // the time jumped (more than 2 s off the clock while playing, any step while paused, for
+  // the frame keys); plus the address (next video, miniplayer), full screen, theater mode,
+  // the captions button and the miniplayer, and the player's ended/paused/playing mark and
+  // play button name (End only marks the player "ended"). The player's own methods live in the page's
+  // world, out of reach here, so only the <video> element and the page are read.
+  const playing = () => first('#movie_player video') || QH.keys.shown('video')[0] || null;
+  function confirmKey() {
+    const v0 = playing();
+    const t0 = v0 ? v0.currentTime : 0;
+    const at = Date.now();
+    const look = () => {
+      const v = playing();
+      let jumped = false;
+      if (v && v === v0) {
+        const expected = v.paused && v0.paused ? t0 : t0 + ((Date.now() - at) / 1000) * (v.playbackRate || 1);
+        jumped = Math.abs(v.currentTime - expected) > (v.paused && v0.paused ? 0.01 : 2);
+      }
+      const cc = first('.ytp-subtitles-button');
+      const mp = first('#movie_player');
+      const play = first('#movie_player .ytp-play-button');
+      return [
+        location.href,
+        // End leaves the <video> alone and only puts the player in its "ended" state.
+        mp ? ['ended-mode', 'paused-mode', 'playing-mode'].filter((c) => mp.classList.contains(c)).join(',') : '',
+        play ? play.getAttribute('data-title-no-tooltip') || play.getAttribute('aria-label') || '' : '',
+        v ? [v.paused, v.muted, Math.round(v.volume * 100), v.playbackRate].join(',') : '',
+        jumped,
+        !!document.fullscreenElement,
+        !!document.querySelector('ytd-watch-flexy[theater]'),
+        cc ? cc.getAttribute('aria-pressed') : '',
+        !!document.querySelector('ytd-miniplayer[active]'),
+      ].join('\n');
+    };
+    return QH.keys.watchChange(look);
+  }
+
   (QH.sites = QH.sites || []).push({
     id: 'youtube',
     matches: (loc) => loc.hostname === 'www.youtube.com',
     mouseEvent: 'click',
     fromMouse,
     fromKey,
+    confirmKey,
     missing,
     // Comments, the description, recommendations and playlists hold others' words and titles.
     contentAreas: '#comments, #description, #related, #secondary, ytd-playlist-panel-renderer, ytd-rich-grid-renderer, ytd-rich-item-renderer',

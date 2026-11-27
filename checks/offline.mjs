@@ -33,9 +33,13 @@ async function fixture(site, pathname, html, mac = false) {
 
 try {
   {
-    const { context, page } = await fixture('youtube', '/watch', '<div id="movie_player"><button class="ytp-play-button">Play</button></div>');
+    // Like the real player, Space switches the player's paused/playing mark; Quickhand
+    // counts a YouTube key only once the player shows it did something (confirmKey).
+    const { context, page } = await fixture('youtube', '/watch', '<div id="movie_player" class="paused-mode"><button class="ytp-play-button">Play</button></div>'
+      + '<script>addEventListener("keydown", (e) => { if (e.code === "Space") { const p = document.getElementById("movie_player"); p.classList.toggle("paused-mode"); p.classList.toggle("playing-mode"); } });</script>');
     await page.locator('button').focus();
     await page.keyboard.press('Space');
+    await page.waitForFunction(() => messages.length > 0, null, { timeout: 3000 });
     assert.deepEqual(await page.evaluate(() => messages.map((m) => m.type)), ['qh-key']);
     await page.locator('button').click();
     assert.deepEqual(await page.evaluate(() => messages.map((m) => m.type)), ['qh-key', 'qh-mouse']);
